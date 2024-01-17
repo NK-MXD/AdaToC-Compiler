@@ -6,11 +6,22 @@ The project is to implement transform from high-level language Ada to high-level
 2023.10.1 ~ 2023.10.31: rganize Ada Synatx Grammer and Write cases.
 2023.11.1 ~ 2023.11.31: build benchmark of the program.
 2023.12.1 ~ 2023.12.31: explore the implement frame of Ada to C.
-2024.1.1 ~ 2024.1.15: try to implement the synax analysize of Ada to C.
+2024.1.1 ~ 2024.1.31: try to implement the synax analysize of Ada to C.
 
-## List
+## Todo AND List
 
-Benchmark of Ada grammar Cases:
+### PhaseOne Features
+
+- procedure
+- if
+- for 
+- while
+- case
+- var
+- Interger
+- comment
+
+### Benchmark of Ada grammar Cases:
 - [x] print
 - [x] if else
 - [x] loop
