@@ -1,0 +1,21 @@
+[GENERATED OBJECT FILE]
+b__example.o
+[PROJECT FILES]
+/mnt/d/WorkSpace/Ada2C-Project/example/default.gpr
+20240117055545
+[BOUND OBJECT FILES]
+/mnt/d/WorkSpace/Ada2C-Project/example/obj/opt/example.o
+[GENERATED SOURCE FILES]
+b__example.ads
+b__example.adb
+b__example.ali
+[RESULTING OPTIONS]
+-L/mnt/d/WorkSpace/Ada2C-Project/example/obj/opt/
+-L/mnt/d/WorkSpace/Ada2C-Project/example/obj/opt/
+-L/usr/lib/gcc/x86_64-linux-gnu/7/adalib/
+-shared
+-shared-libgcc
+-lgnat-7
+[RUN PATH OPTION]
+/usr/lib/gcc/x86_64-linux-gnu/7/adalib/
+/usr/lib
