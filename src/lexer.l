@@ -3,15 +3,22 @@
 %{
     #define YY_NO_UNPUT
     #define YY_NO_INPUT
-    #include "parser.h"
+    #define ONLY_FOR_LEX
+    // #include "parser.h"
     #include <ostream>
     #include <fstream>
     #include <iostream>
     using namespace std;
     extern FILE *yyin; 
     extern FILE *yyout;
+    extern bool dump_token;
     int offsets = 0;
     int newoffsets = 0;
+
+    void DUMP_TOKEN(std::string s){
+        std::string DEBUG_INFO = "[TOKEN]: \t" + s + "\n";
+        fputs(DEBUG_INFO.c_str(), yyout);
+    }
 
     void update_loc(){
         offsets = newoffsets;
@@ -30,97 +37,99 @@ LINECOMMENT --[^\n]*
 
 %%
 "+" {
-    return ADD;
+    if(dump_token) 
+        DUMP_TOKEN("ADD\t+");
+    // return ADD;
 }
 "-" {
-    return SUB;
+    if(dump_token) 
+        DUMP_TOKEN("SUB\t-");
+    // return SUB;
 }
 "*" {
-    return MUL;
+    if(dump_token) 
+        DUMP_TOKEN("MUL\t*");
+    // return MUL;
 }
 "/" {
-    return DIV;
+    if(dump_token) 
+        DUMP_TOKEN("DIV\t/");
+    // return DIV;
 }
 "=" {
-    return EQUAL;
-}
-"!=" {
-    return NOTEQUAL;
+    if(dump_token) 
+        DUMP_TOKEN("EQUAL\t=");
+    // return EQUAL;
 }
 ":=" {
-    return ASSIGN;
+    if(dump_token) 
+        DUMP_TOKEN("ASSIGN\t:=");
+    // return ASSIGN;
 }
-
-"<" {
-    return LESS;
-}
-"<=" {
-    return LESSEQUAL;
-}
-">" {
-    return GREATER;
-}
-">=" {
-    return GREATEREQUAL;
-}
-"%" {
-    return MOD;
-}
-"&&" {
-    return AND;
-}
-"||" {
-    return OR;
-}
-"int" {
-    return INT;
-}
-"const" {
-    return CONST;
-}
-"if" {
-    return IF;
-};
-"else" {
-    return ELSE;
-};
-"return" {
-    return RETURN;
-}
-"while" {
-    return WHILE;
-}
-"break" {
-    return BREAK;
-}
-"continue" {
-    return CONTINUE;
-}
-"!" {
-    return NOT;
+":" {
+    if(dump_token) 
+        DUMP_TOKEN("COLON\t:");
+    // return COLON;
 }
 ";" {
-    return SEMICOLON;
+    if(dump_token) 
+        DUMP_TOKEN("SEMICOLON\t;");
+    // return SEMICOLON;
 }
-"(" {
-    return LPAREN;
+"Integer" {
+    if(dump_token) 
+        DUMP_TOKEN("INTEGER\tInteger");
+    // return INTEGER;
 }
-")" {
-    return RPAREN;
+"Natural" {
+    if(dump_token) 
+        DUMP_TOKEN("NATURAL\tNatural");
+    // return NATURAL;
 }
-"{" {
-    return LBRACE;
+"procedure" {
+    if(dump_token) 
+        DUMP_TOKEN("PROCEDURE\tprocedure");
+    // return PROCEDURE;
 }
-"}" {
-    return RBRACE;
+"is" {
+    if(dump_token)
+        DUMP_TOKEN("RAGIN_SIGN\tis");
+    // return RAGIN_SIGN;
 }
-"[" {
-    return LBRACKET;
+"begin" {
+    if(dump_token)
+        DUMP_TOKEN("BEGIN\tbegin");
+    // return BEGIN;
 }
-"]" {
-    return RBRACKET;
-}
-"," {
-    return COMMA;
+"end" {
+    if(dump_token)
+        DUMP_TOKEN("END\tend");
+    // return END;
 }
 
+{DECIMIAL} {
+    int num = atoi(yytext);
+    if(dump_token)
+        DUMP_TOKEN("DECIMIAL\t" + std::string(yytext));
+    // yylval.IntType = atoi(yytext);
+    // return DECIMIAL;
+}
+
+{ID} {
+    char *token;
+    token = new char[strlen(yytext) + 1];
+    strcpy(token, yytext);
+    // yylval.StrType = token;
+    if(dump_token)
+        DUMP_TOKEN(std::string("ID\t") + std::string(token));
+    // return ID;
+}
+
+<*>{EOL} {
+    newoffsets = 0;
+}
+
+{WHITE}
+{LINECOMMENT} {}
+
+%%

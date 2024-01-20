@@ -21,6 +21,8 @@ The project is to implement transform from high-level language Ada to high-level
 - Interger
 - comment
 
+PhaseOne will not include grammar like input and output. Just exercise!
+
 ### Benchmark of Ada grammar Cases:
 - [x] print
 - [x] if else
