@@ -30,6 +30,7 @@
 
 DECIMIAL ([1-9][0-9]*|0)
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
+STRINGLITERAL \".*\"
 EOL (\r\n|\n|\r)
 WHITE [\t ]
 
@@ -116,6 +117,21 @@ LINECOMMENT --[^\n]*
         DUMP_TOKEN("COMMA\t,");
     // return COMMA;
 }
+"&" {
+    if(dump_token) 
+        DUMP_TOKEN("SINGLEAND\t&");
+    // return SINGLEAND;
+}
+"|" {
+    if(dump_token) 
+        DUMP_TOKEN("SINGLEOR\t|");
+    // return SINGLEOR;
+}
+"'" {
+    if(dump_token) 
+        DUMP_TOKEN("SINGLEQUOTESt\t'");
+    // return SINGLEQUOTES;
+}
 ".." {
     if(dump_token) 
         DUMP_TOKEN("ELLIPISIS\t..");
@@ -186,10 +202,25 @@ LINECOMMENT --[^\n]*
         DUMP_TOKEN("IN\tin");
     // return IN;
 }
+"String" {
+    if(dump_token) 
+        DUMP_TOKEN("String\tString");
+    // return STRING;
+}
 "Integer" {
     if(dump_token) 
         DUMP_TOKEN("INTEGER\tInteger");
     // return INTEGER;
+}
+"Image" {
+    if(dump_token) 
+        DUMP_TOKEN("IMAGE\tImage");
+    // return IMAGE;
+}
+"Last" {
+    if(dump_token) 
+        DUMP_TOKEN("LAST\tLast");
+    // return LAST;
 }
 "Natural" {
     if(dump_token) 
@@ -230,6 +261,17 @@ LINECOMMENT --[^\n]*
     if(dump_token)
         DUMP_TOKEN("NULL\tnull");
     // return NULL;
+}
+
+
+{STRINGLITERAL} {
+    char *token;
+    token = new char[strlen(yytext) + 1];
+    strcpy(token, yytext);
+    // yylval.StrType = token;
+    if(dump_token)
+        DUMP_TOKEN(std::string("STRINGLTTERAL\t") + std::string(token));
+    // return SYRINGLITERAL;
 }
 
 {DECIMIAL} {
