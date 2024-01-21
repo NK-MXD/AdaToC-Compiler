@@ -1,16 +1,16 @@
-procedure example is
-   I : Integer := 1;
+procedure case11 is
 begin
    loop
+
       declare
-         Name : constant String := "Num is: " & Integer'Image (I);
+         Name : Integer := 22;
          --               ^ Call to the
          --                 Get_Line function
       begin
-         exit when I = 4;
+         exit when Name >= 10;
 
       end;
-      I := I + 1;
+
       --  Name is undefined here
    end loop;
-end example;
+end case11;
