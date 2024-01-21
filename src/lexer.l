@@ -61,6 +61,26 @@ LINECOMMENT --[^\n]*
         DUMP_TOKEN("EQUAL\t=");
     // return EQUAL;
 }
+"<" {
+    if(dump_token) 
+        DUMP_TOKEN("LESS\t<");
+    // return LESS;
+}
+"<=" {
+    if(dump_token) 
+        DUMP_TOKEN("LESSEQUAL\t<=");
+    // return LESSEQUAL;
+}
+">" {
+    if(dump_token) 
+        DUMP_TOKEN("GREATER\t>");
+    // return GREATER;
+}
+">=" {
+    if(dump_token) 
+        DUMP_TOKEN("GREATEREQUAL\t>=");
+    // return GREATEREQUAL;
+}
 ":=" {
     if(dump_token) 
         DUMP_TOKEN("ASSIGN\t:=");
@@ -75,6 +95,26 @@ LINECOMMENT --[^\n]*
     if(dump_token) 
         DUMP_TOKEN("SEMICOLON\t;");
     // return SEMICOLON;
+}
+"(" {
+    if(dump_token) 
+        DUMP_TOKEN("LPAREN\t(");
+    // return LPAREN;
+}
+")" {
+    if(dump_token) 
+        DUMP_TOKEN("RPAREN\t)");
+    // return RPAREN;
+}
+"," {
+    if(dump_token) 
+        DUMP_TOKEN("COMMA\t,");
+    // return COMMA;
+}
+".." {
+    if(dump_token) 
+        DUMP_TOKEN("ELLIPISIS\t..");
+    // return COMMA;
 }
 "Integer" {
     if(dump_token) 
@@ -93,8 +133,8 @@ LINECOMMENT --[^\n]*
 }
 "is" {
     if(dump_token)
-        DUMP_TOKEN("RAGIN_SIGN\tis");
-    // return RAGIN_SIGN;
+        DUMP_TOKEN("IS\tis");
+    // return IS;
 }
 "begin" {
     if(dump_token)
