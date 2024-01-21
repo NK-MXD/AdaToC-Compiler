@@ -116,6 +116,26 @@ LINECOMMENT --[^\n]*
         DUMP_TOKEN("ELLIPISIS\t..");
     // return COMMA;
 }
+"if" {
+    if(dump_token) 
+        DUMP_TOKEN("IF\tif");
+    // return IF;
+}
+"elsif" {
+    if(dump_token) 
+        DUMP_TOKEN("ELSIF\telsif");
+    // return ELSIF;
+}
+"or" {
+    if(dump_token) 
+        DUMP_TOKEN("OR\tor");
+    // return OR;
+}
+"in" {
+    if(dump_token) 
+        DUMP_TOKEN("IN\tin");
+    // return IN;
+}
 "Integer" {
     if(dump_token) 
         DUMP_TOKEN("INTEGER\tInteger");
@@ -135,6 +155,11 @@ LINECOMMENT --[^\n]*
     if(dump_token)
         DUMP_TOKEN("IS\tis");
     // return IS;
+}
+"then" {
+    if(dump_token)
+        DUMP_TOKEN("THEN\tthen");
+    // return THEN;
 }
 "begin" {
     if(dump_token)
