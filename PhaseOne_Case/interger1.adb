@@ -1,5 +1,5 @@
-procedure example is
-   I : Integer := 1;
+procedure case14 is
+    I : Integer := 1;
 begin
    loop
       declare
@@ -13,4 +13,4 @@ begin
       I := I + 1;
       --  Name is undefined here
    end loop;
-end example;
+end case14;

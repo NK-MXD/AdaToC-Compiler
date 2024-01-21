@@ -86,6 +86,11 @@ LINECOMMENT --[^\n]*
         DUMP_TOKEN("ASSIGN\t:=");
     // return ASSIGN;
 }
+"=>" {
+    if(dump_token) 
+        DUMP_TOKEN("ARROW\t=>");
+    // return ARROW;
+}
 ":" {
     if(dump_token) 
         DUMP_TOKEN("COLON\t:");
@@ -116,6 +121,11 @@ LINECOMMENT --[^\n]*
         DUMP_TOKEN("ELLIPISIS\t..");
     // return COMMA;
 }
+"constant" {
+    if(dump_token) 
+        DUMP_TOKEN("CONSTANT\tconstant");
+    // return CONSTANT;
+}
 "if" {
     if(dump_token) 
         DUMP_TOKEN("IF\tif");
@@ -126,10 +136,50 @@ LINECOMMENT --[^\n]*
         DUMP_TOKEN("ELSIF\telsif");
     // return ELSIF;
 }
+"else" {
+    if(dump_token) 
+        DUMP_TOKEN("ELSE\telse");
+    // return ELSIF;
+}
+"for" {
+    if(dump_token) 
+        DUMP_TOKEN("FOR\tfor");
+    // return FOR;
+}
+"loop" {
+    if(dump_token) 
+        DUMP_TOKEN("LOOP\tloop");
+    // return LOOP;
+}
+"exit" {
+    if(dump_token) 
+        DUMP_TOKEN("EXIT\texit");
+    // return EXIT;
+}
+"case" {
+    if(dump_token) 
+        DUMP_TOKEN("CASE\tcase");
+    // return CASE;
+}
+"when" {
+    if(dump_token) 
+        DUMP_TOKEN("WHEN\twhen");
+    // return WHEN;
+}
+"others" {
+    if(dump_token) 
+        DUMP_TOKEN("OTHERS\tothers");
+    // return OTHERS;
+}
 "or" {
     if(dump_token) 
         DUMP_TOKEN("OR\tor");
     // return OR;
+}
+"reverse" {
+    if(dump_token) 
+        DUMP_TOKEN("REVERSE\treverse");
+    // return REVERSE;
 }
 "in" {
     if(dump_token) 
@@ -170,6 +220,16 @@ LINECOMMENT --[^\n]*
     if(dump_token)
         DUMP_TOKEN("END\tend");
     // return END;
+}
+"declare" {
+    if(dump_token)
+        DUMP_TOKEN("DECLARE\tdeclare");
+    // return DECLARE;
+}
+"null" {
+    if(dump_token)
+        DUMP_TOKEN("NULL\tnull");
+    // return NULL;
 }
 
 {DECIMIAL} {
