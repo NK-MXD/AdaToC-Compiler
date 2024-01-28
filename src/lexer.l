@@ -40,227 +40,227 @@ LINECOMMENT --[^\n]*
 "+" {
     if(dump_token) 
         DUMP_TOKEN("ADD\t+");
-    // return ADD;
+    return ADD;
 }
 "-" {
     if(dump_token) 
         DUMP_TOKEN("SUB\t-");
-    // return SUB;
+    return SUB;
 }
 "*" {
     if(dump_token) 
         DUMP_TOKEN("MUL\t*");
-    // return MUL;
+    return MUL;
 }
 "/" {
     if(dump_token) 
         DUMP_TOKEN("DIV\t/");
-    // return DIV;
+    return DIV;
 }
 "=" {
     if(dump_token) 
         DUMP_TOKEN("EQUAL\t=");
-    // return EQUAL;
+    return EQUAL;
 }
 "<" {
     if(dump_token) 
         DUMP_TOKEN("LESS\t<");
-    // return LESS;
+    return LESS;
 }
 "<=" {
     if(dump_token) 
         DUMP_TOKEN("LESSEQUAL\t<=");
-    // return LESSEQUAL;
+    return LESSEQUAL;
 }
 ">" {
     if(dump_token) 
         DUMP_TOKEN("GREATER\t>");
-    // return GREATER;
+    return GREATER;
 }
 ">=" {
     if(dump_token) 
         DUMP_TOKEN("GREATEREQUAL\t>=");
-    // return GREATEREQUAL;
+    return GREATEREQUAL;
 }
 ":=" {
     if(dump_token) 
         DUMP_TOKEN("ASSIGN\t:=");
-    // return ASSIGN;
+    return ASSIGN;
 }
 "=>" {
     if(dump_token) 
         DUMP_TOKEN("ARROW\t=>");
-    // return ARROW;
+    return ARROW;
 }
 ":" {
     if(dump_token) 
         DUMP_TOKEN("COLON\t:");
-    // return COLON;
+    return COLON;
 }
 ";" {
     if(dump_token) 
         DUMP_TOKEN("SEMICOLON\t;");
-    // return SEMICOLON;
+    return SEMICOLON;
 }
 "(" {
     if(dump_token) 
         DUMP_TOKEN("LPAREN\t(");
-    // return LPAREN;
+    return LPAREN;
 }
 ")" {
     if(dump_token) 
         DUMP_TOKEN("RPAREN\t)");
-    // return RPAREN;
+    return RPAREN;
 }
 "," {
     if(dump_token) 
         DUMP_TOKEN("COMMA\t,");
-    // return COMMA;
+    return COMMA;
 }
 "&" {
     if(dump_token) 
         DUMP_TOKEN("SINGLEAND\t&");
-    // return SINGLEAND;
+    return SINGLEAND;
 }
 "|" {
     if(dump_token) 
         DUMP_TOKEN("SINGLEOR\t|");
-    // return SINGLEOR;
+    return SINGLEOR;
 }
 "'" {
     if(dump_token) 
         DUMP_TOKEN("SINGLEQUOTESt\t'");
-    // return SINGLEQUOTES;
+    return SINGLEQUOTES;
 }
 ".." {
     if(dump_token) 
         DUMP_TOKEN("ELLIPISIS\t..");
-    // return COMMA;
+    return COMMA;
 }
 "constant" {
     if(dump_token) 
         DUMP_TOKEN("CONSTANT\tconstant");
-    // return CONSTANT;
+    return CONSTANT;
 }
 "if" {
     if(dump_token) 
         DUMP_TOKEN("IF\tif");
-    // return IF;
+    return IF;
 }
 "elsif" {
     if(dump_token) 
         DUMP_TOKEN("ELSIF\telsif");
-    // return ELSIF;
+    return ELSIF;
 }
 "else" {
     if(dump_token) 
         DUMP_TOKEN("ELSE\telse");
-    // return ELSIF;
+    return ELSIF;
 }
 "for" {
     if(dump_token) 
         DUMP_TOKEN("FOR\tfor");
-    // return FOR;
+    return FOR;
 }
 "loop" {
     if(dump_token) 
         DUMP_TOKEN("LOOP\tloop");
-    // return LOOP;
+    return LOOP;
 }
 "exit" {
     if(dump_token) 
         DUMP_TOKEN("EXIT\texit");
-    // return EXIT;
+    return EXIT;
 }
 "case" {
     if(dump_token) 
         DUMP_TOKEN("CASE\tcase");
-    // return CASE;
+    return CASE;
 }
 "when" {
     if(dump_token) 
         DUMP_TOKEN("WHEN\twhen");
-    // return WHEN;
+    return WHEN;
 }
 "others" {
     if(dump_token) 
         DUMP_TOKEN("OTHERS\tothers");
-    // return OTHERS;
+    return OTHERS;
 }
 "or" {
     if(dump_token) 
         DUMP_TOKEN("OR\tor");
-    // return OR;
+    return OR;
 }
 "reverse" {
     if(dump_token) 
         DUMP_TOKEN("REVERSE\treverse");
-    // return REVERSE;
+    return REVERSE;
 }
 "in" {
     if(dump_token) 
         DUMP_TOKEN("IN\tin");
-    // return IN;
+    return IN;
 }
 "String" {
     if(dump_token) 
         DUMP_TOKEN("String\tString");
-    // return STRING;
+    return STRING;
 }
 "Integer" {
     if(dump_token) 
         DUMP_TOKEN("INTEGER\tInteger");
-    // return INTEGER;
+    return INTEGER;
 }
 "Image" {
     if(dump_token) 
         DUMP_TOKEN("IMAGE\tImage");
-    // return IMAGE;
+    return IMAGE;
 }
 "Last" {
     if(dump_token) 
         DUMP_TOKEN("LAST\tLast");
-    // return LAST;
+    return LAST;
 }
 "Natural" {
     if(dump_token) 
         DUMP_TOKEN("NATURAL\tNatural");
-    // return NATURAL;
+    return NATURAL;
 }
 "procedure" {
     if(dump_token) 
         DUMP_TOKEN("PROCEDURE\tprocedure");
-    // return PROCEDURE;
+    return PROCEDURE;
 }
 "is" {
     if(dump_token)
         DUMP_TOKEN("IS\tis");
-    // return IS;
+    return IS;
 }
 "then" {
     if(dump_token)
         DUMP_TOKEN("THEN\tthen");
-    // return THEN;
+    return THEN;
 }
 "begin" {
     if(dump_token)
         DUMP_TOKEN("BEGIN\tbegin");
-    // return BEGIN;
+    return BEGIN;
 }
 "end" {
     if(dump_token)
         DUMP_TOKEN("END\tend");
-    // return END;
+    return END;
 }
 "declare" {
     if(dump_token)
         DUMP_TOKEN("DECLARE\tdeclare");
-    // return DECLARE;
+    return DECLARE;
 }
 "null" {
     if(dump_token)
         DUMP_TOKEN("NULL\tnull");
-    // return NULL;
+    return NULL;
 }
 
 
@@ -268,28 +268,28 @@ LINECOMMENT --[^\n]*
     char *token;
     token = new char[strlen(yytext) + 1];
     strcpy(token, yytext);
-    // yylval.StrType = token;
+    yylval.StrType = token;
     if(dump_token)
         DUMP_TOKEN(std::string("STRINGLTTERAL\t") + std::string(token));
-    // return SYRINGLITERAL;
+    return SYRINGLITERAL;
 }
 
 {DECIMIAL} {
     int num = atoi(yytext);
     if(dump_token)
         DUMP_TOKEN("DECIMIAL\t" + std::string(yytext));
-    // yylval.IntType = atoi(yytext);
-    // return DECIMIAL;
+    yylval.IntType = atoi(yytext);
+    return DECIMIAL;
 }
 
 {ID} {
     char *token;
     token = new char[strlen(yytext) + 1];
     strcpy(token, yytext);
-    // yylval.StrType = token;
+    yylval.StrType = token;
     if(dump_token)
         DUMP_TOKEN(std::string("ID\t") + std::string(token));
-    // return ID;
+    return ID;
 }
 
 <*>{EOL} {
