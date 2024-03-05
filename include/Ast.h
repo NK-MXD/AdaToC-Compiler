@@ -5,6 +5,7 @@
 #include<Type.h>
 
 class SymbolEntry;
+
 class Node
 {
 private:

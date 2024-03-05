@@ -37,7 +37,7 @@ OUTPUT_ADB2 = $(filter %.toks %.log %.ads %.ali %.o %.stderr %.stdout %.bexch %.
 OUTPUT_EXAMPLE1 = $(shell find $(EXAMPLE_PATH)/src -name "b__*.adb")
 OUTPUT_EXAMPLE2 = $(filter %.ads %.ali %.o %.stderr %.stdout %.bexch %.bin, $(wildcard $(EXAMPLE_PATH)/src/*))
 
-.phony:all app example run clean-run test_lex
+.phony:all app example run clean-run test-example
 
 all:app
 
@@ -110,7 +110,7 @@ test-all:app
 	[ $(TESTCASE_NUM) = $${success} ] && echo "\033[5;32mAll Accepted. Congratulations!\033[0m"
 	:
 
-test_lex:app
+test-example:app
 	$(BINARY) $(EXAMPLE_PATH)/src/example.adb -t
 
 run:

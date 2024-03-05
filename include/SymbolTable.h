@@ -42,7 +42,7 @@ private:
     int scope;
 
 public:
-    IdentifierSymbolEntry(Type* type, std::string name, int scope);
+    IdentifierSymbolEntry(std::string name, Type* type, int scope);
     virtual ~IdentifierSymbolEntry() {};
     std::string dump();
     int getScope() const { return scope; };
