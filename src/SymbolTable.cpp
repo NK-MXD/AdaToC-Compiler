@@ -21,7 +21,7 @@ std::string ConstantSymbolEntry<T>::dump()
     return buffer.str();
 }
 
-IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, int scope) : SymbolEntry(type, SymbolEntry::VARIABLE), name(name)
+IdentifierSymbolEntry::IdentifierSymbolEntry(std::string name, Type *type, int scope) : SymbolEntry(type, SymbolEntry::VARIABLE), name(name)
 {
     this->scope = scope;
 }

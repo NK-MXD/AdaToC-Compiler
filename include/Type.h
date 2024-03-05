@@ -74,11 +74,13 @@ private:
     static IntegerType commonInteger;
     static NaturalType commonNatural;
     static IntegerType commonBool;
+    static StringType commonString;
 
 public:
     static Type* integerType;
     static Type* naturalType;
     static Type* boolType;
+    static Type* stringType;
 };
 
 #endif

@@ -135,7 +135,7 @@ LINECOMMENT --[^\n]*
 ".." {
     if(dump_token) 
         DUMP_TOKEN("ELLIPISIS\t..");
-    return COMMA;
+    return ELLIPISIS;
 }
 "constant" {
     if(dump_token) 
@@ -155,7 +155,7 @@ LINECOMMENT --[^\n]*
 "else" {
     if(dump_token) 
         DUMP_TOKEN("ELSE\telse");
-    return ELSIF;
+    return ELSE;
 }
 "for" {
     if(dump_token) 
