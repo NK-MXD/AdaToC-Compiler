@@ -2,11 +2,13 @@
 #include <string.h>
 #include <unistd.h>
 #include "common.h"
+#include "Ast.h"
 
 extern FILE *yyin;
 extern FILE *yyout;
 
-int yylex();
+int yyparse();
+Ast ast;
 
 char outfile[256];
 bool dump_token = false;
@@ -21,6 +23,10 @@ int main(int argc, char *argv[])
         {
         case 'o':
             strcpy(outfile, optarg);
+            break;
+        case 'a':
+            strcpy(outfile, "a.ast");
+            dump_type = AST;
             break;
         case 't':
             strcpy(outfile, "a.toks");
@@ -48,6 +54,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: fail to open output file\n", outfile);
         exit(EXIT_FAILURE);
     }
-    yylex();
+    yyparse();
+    if(dump_type == AST)
+        ast.dump();
     return 0;
 }
