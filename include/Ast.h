@@ -80,6 +80,17 @@ public:
     void dump(int level);
 };
 
+class IfSectionStmt : public StmtNode
+{
+private:
+    ExprNode *cond;
+    StmtNode *thenStmt, *elsifStmt, *elseStmt;
+public:
+    IfSectionStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elsifStmt, StmtNode *elseStmt) : 
+        cond(cond), thenStmt(thenStmt), elsifStmt(elsifStmt), elseStmt(elseStmt){};
+    void dump(int level);
+};
+
 class IfStmt : public StmtNode
 {
 private:
@@ -87,17 +98,6 @@ private:
     StmtNode *thenStmt;
 public:
     IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenStmt){};
-    void dump(int level);
-};
-
-class IfElseStmt : public StmtNode
-{
-private:
-    ExprNode *cond;
-    StmtNode *thenStmt;
-    StmtNode *elseStmt;
-public:
-    IfElseStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elseStmt) : cond(cond), thenStmt(thenStmt), elseStmt(elseStmt) {};
     void dump(int level);
 };
 
