@@ -1,6 +1,6 @@
 #ifndef __ADA2C_SYMBOLTALBE_H__
-#define __ADA2C_SYMBOLTABLE_H__
-#include<Type.h>
+#define __ADA2C_SYMBOLTALBE_H__
+
 #include<map>
 
 class Type;

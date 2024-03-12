@@ -4,7 +4,7 @@
     #define YY_NO_UNPUT
     #define YY_NO_INPUT
     #define ONLY_FOR_LEX
-    // #include "parser.h"
+    #include "parser.h"
     #include <ostream>
     #include <fstream>
     #include <iostream>
@@ -244,8 +244,8 @@ LINECOMMENT --[^\n]*
 }
 "begin" {
     if(dump_token)
-        DUMP_TOKEN("BEGIN\tbegin");
-    return BEGIN;
+        DUMP_TOKEN("BEGINLITERAL\tbegin");
+    return BEGINLITERAL;
 }
 "end" {
     if(dump_token)
@@ -259,8 +259,8 @@ LINECOMMENT --[^\n]*
 }
 "null" {
     if(dump_token)
-        DUMP_TOKEN("NULL\tnull");
-    return NULL;
+        DUMP_TOKEN("NULLLITERAL\tnull");
+    return NULLLITERAL;
 }
 
 
@@ -271,7 +271,7 @@ LINECOMMENT --[^\n]*
     yylval.StrType = token;
     if(dump_token)
         DUMP_TOKEN(std::string("STRINGLTTERAL\t") + std::string(token));
-    return SYRINGLITERAL;
+    return STRINGLITERAL;
 }
 
 {DECIMIAL} {

@@ -44,8 +44,8 @@ void BinaryExpr::dump(int level)
 void Constant::dump(int level)
 {
     std::string type, value;
-    type = symbolEntry->getType()->toStr();
-    value = symbolEntry->toStr();
+    type = symbolEntry->getType()->dump();
+    value = symbolEntry->dump();
     fprintf(yyout, "%*cIntegerLiteral\tvalue: %s\ttype: %s\n", level, ' ',
             value.c_str(), type.c_str());
 }
@@ -54,8 +54,8 @@ void Id::dump(int level)
 {
     std::string name, type;
     int scope;
-    name = symbolEntry->toStr();
-    type = symbolEntry->getType()->toStr();
+    name = symbolEntry->dump();
+    type = symbolEntry->getType()->dump();
     scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getScope();
     fprintf(yyout, "%*cId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
             name.c_str(), scope, type.c_str());
@@ -86,14 +86,6 @@ void IfStmt::dump(int level)
     thenStmt->dump(level + 4);
 }
 
-void IfElseStmt::dump(int level)
-{
-    fprintf(yyout, "%*cIfElseStmt\n", level, ' ');
-    cond->dump(level + 4);
-    thenStmt->dump(level + 4);
-    elseStmt->dump(level + 4);
-}
-
 void ReturnStmt::dump(int level)
 {
     fprintf(yyout, "%*cReturnStmt\n", level, ' ');
@@ -110,8 +102,8 @@ void AssignStmt::dump(int level)
 void FunctionDef::dump(int level)
 {
     std::string name, type;
-    name = se->toStr();
-    type = se->getType()->toStr();
+    name = se->dump();
+    type = se->getType()->dump();
     fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
             name.c_str(), type.c_str());
     stmt->dump(level + 4);

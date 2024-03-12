@@ -16,14 +16,14 @@ CFLAGS = -O3 -g -Wall -std=c++17 $(INC)
 
 FLEX ?= $(SRC_PATH)/lexer.l
 LEXER ?= $(addsuffix .cpp, $(basename $(FLEX)))
-# BISON ?= $(SRC_PATH)/parser.y
-# PARSER ?= $(addsuffix .cpp, $(basename $(BISON)))
+BISON ?= $(SRC_PATH)/parser.y
+PARSER ?= $(addsuffix .cpp, $(basename $(BISON)))
 
 SRC += $(LEXER)
-# SRC += $(PARSER)
+SRC += $(PARSER)
 
 OBJ = $(SRC:$(SRC_PATH)/%.cpp=$(OBJ_PATH)/%.o)
-# PARSERH ?= $(INC_PATH)/$(addsuffix .h, $(notdir $(basename $(PARSER))))
+PARSERH ?= $(INC_PATH)/$(addsuffix .h, $(notdir $(basename $(PARSER))))
 
 EXAMPLECASE = $(shell find $(EXAMPLE_PATH) -name "*.adb")
 TESTCASE = $(shell find $(TEST_PATH) -name "*.adb" | xargs -i basename {})
@@ -44,8 +44,8 @@ all:app
 $(LEXER):$(FLEX)
 	@flex -o $@ $<
 
-# $(PARSER):$(BISON)
-	# @bison -o $@ $< --warnings=error=all --defines=$(PARSERH)
+$(PARSER):$(BISON)
+	@bison -o $@ $< --warnings=error=all --defines=$(PARSERH)
 
 $(OBJ_PATH)/%.o:$(SRC_PATH)/%.cpp 
 	@mkdir -p $(OBJ_PATH)
@@ -54,7 +54,7 @@ $(OBJ_PATH)/%.o:$(SRC_PATH)/%.cpp
 $(BINARY):$(OBJ)
 	@clang++ -O3 -g -o $@ $^
 
-app:$(LEXER) $(BINARY)
+app:$(LEXER) $(PARSER) $(BINARY)
 
 .ONESHELL:
 testadb:app
