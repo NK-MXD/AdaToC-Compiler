@@ -43,7 +43,7 @@
 %token SINGLEAND SINGLEOR SINGLEQUOTES ELLIPISIS
 %token CONSTANT IF ELSIF ELSE FOR LOOP EXIT CASE WHEN OTHERS OR REVERSE IN
 %token IMAGE LAST
-%token PROCEDURE IS THEN BEGIN END DECLARE NULL
+%token PROCEDURE IS THEN BEGINLITERAL END DECLARE NULLLITERAL
 
 %type<StmtType> RegionStmts RegionStmt ProceRegion Procedure ProDeclStmt VarDeclStmt VarDeclSpecifier IfSection IfStmt ElsifStmt ElsifStmts ElseStmt
 %type<StmtType> ProceStmts ProceStmt BeginRegion AssignStmt BlankStmt ProStmt DeclStmts DeclStmt
@@ -140,7 +140,7 @@ DeclParams
         $1->setNext($3);
     }
     | VarDeclSpecifier {
-        $$ = $1;
+        $$ = new DeclStmt($1);
     }
     ;
 
@@ -148,16 +148,15 @@ VarDeclSpecifier
     : ID COLON Type {
         SymbolEntry *se = new IdentifierSymbolEntry($1, $3, identifiers->getLevel());
         identifiers->install($1, se);
-        $$ = new DeclStmt(new Id(se));
-        delete []$1;
+        $$ = new Id(se);
     }
     ;
 
 BeginRegion
-    : BEGIN ProceStmts END{
+    : BEGINLITERAL ProceStmts END{
         $$ = $2;
     }
-    | BEGIN END { $$ = nullptr; }
+    | BEGINLITERAL END { $$ = nullptr; }
     ;
 
 DeclStmts
@@ -209,6 +208,9 @@ ProceStmt
     | ProStmt {
         $$ = $1;
     }
+    | IfSection {
+        $$ = $1;
+    }
     ;
 
 ProStmt
@@ -232,7 +234,7 @@ DefParams
 
 
 BlankStmt
-    : NULL SEMICOLON {
+    : NULLLITERAL SEMICOLON {
         $$ = nullptr;
     }
     ;
@@ -295,56 +297,6 @@ PrimaryExpr
         }
         ExprNode* expr = new ExprNode(se);
         $$ = expr;
-    }
-    ;
-
-Expr
-    :
-    AddExpr {$$ = $1;}
-    ;
-
-Cond
-    :
-    LOrExpr {$$ = $1;}
-    ;
-
-IfSection
-    : IfStmt END IF {
-        $$ = new IfSectionStmt($1);
-    }
-    | IfStmt ElsifStmts END IF {
-        $$ = new IfSectionStmt($1, nullptr, $2);
-    }
-    | IfStmt ElsifStmts ElseStmt END IF {
-        $$ = new IfSectionStmt($1, $2, $3);
-    }
-    | IfStmt ElseStmt END IF {
-        $$ = new IfSectionStmt($1, nullptr, $2);
-    }
-    ;
-
-IfStmt
-    : IF Cond THEN ProceStmts{
-        $$ = new IfStmt($2, $4);
-    }
-    ;
-
-ElsifStmt
-    : ELSIF Cond THEN ProceStmts{
-        $$ = new IfStmt($2, $4);
-    }
-    ;
-
-ElsifStmts
-    : ElsifStmt { $$ = $1; } 
-    | ElsifStmts ElsifStmt {
-        $$ = new SeqNode($1, $2);
-    }
-    ;
-
-ElseStmt
-    : ELSE ProceStmts{
-        $$ = new IfStmt($2);
     }
     ;
 
@@ -414,6 +366,56 @@ LOrExpr
     | LOrExpr SINGLEOR LAndExpr {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::OR, $1, $3);
+    }
+    ;
+
+Expr
+    :
+    AddExpr {$$ = $1;}
+    ;
+
+Cond
+    :
+    LOrExpr {$$ = $1;}
+    ;
+
+IfSection
+    : IfStmt END IF {
+        $$ = new IfSectionStmt($1);
+    }
+    | IfStmt ElsifStmts END IF {
+        $$ = new IfSectionStmt($1, nullptr, $2);
+    }
+    | IfStmt ElsifStmts ElseStmt END IF {
+        $$ = new IfSectionStmt($1, $2, $3);
+    }
+    | IfStmt ElseStmt END IF {
+        $$ = new IfSectionStmt($1, nullptr, $2);
+    }
+    ;
+
+IfStmt
+    : IF Cond THEN ProceStmts{
+        $$ = new IfStmt($2, $4);
+    }
+    ;
+
+ElsifStmt
+    : ELSIF Cond THEN ProceStmts{
+        $$ = new IfStmt($2, $4);
+    }
+    ;
+
+ElsifStmts
+    : ElsifStmt { $$ = $1; } 
+    | ElsifStmts ElsifStmt {
+        $$ = new SeqNode($1, $2);
+    }
+    ;
+
+ElseStmt
+    : ELSE ProceStmts{
+        $$ = new IfStmt($2);
     }
     ;
 

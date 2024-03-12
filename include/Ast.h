@@ -1,143 +1,145 @@
 #ifndef __ADA2C_AST_H__
 #define __ADA2C_AST_H__
 
-#include<SymbolTable.h>
-#include<Type.h>
+#include <SymbolTable.h>
+#include <Type.h>
 
 class SymbolEntry;
 
-class Node
-{
+class Node {
 private:
-    static int counter;
-    int seq;
+  static int counter;
+  int seq;
+
 public:
-    Node();
-    int getSeq() const {return seq;};
-    virtual void dump(int level) = 0;
+  Node();
+  int getSeq() const { return seq; };
+  virtual void dump(int level) = 0;
 };
 
-class ExprNode : public Node
-{
+class ExprNode : public Node {
 protected:
-    SymbolEntry *symbolEntry;
+  SymbolEntry *symbolEntry;
+
 public:
-    ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
+  ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
+  SymbolEntry *getSymbolEntry() { return symbolEntry; };
 };
 
-class BinaryExpr : public ExprNode
-{
+class BinaryExpr : public ExprNode {
 private:
-    int op;
-    ExprNode *expr1, *expr2;
+  int op;
+  ExprNode *expr1, *expr2;
+
 public:
-    enum {ADD, SUB, AND, OR, LESS};
-    BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
-    void dump(int level);
+  enum { ADD, SUB, AND, OR, LESS };
+  BinaryExpr(SymbolEntry *se, int op, ExprNode *expr1, ExprNode *expr2)
+      : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
+  void dump(int level);
 };
 
-class Constant : public ExprNode
-{
+class Constant : public ExprNode {
 public:
-    Constant(SymbolEntry *se) : ExprNode(se){};
-    void dump(int level);
+  Constant(SymbolEntry *se) : ExprNode(se){};
+  void dump(int level);
 };
 
-class Id : public ExprNode
-{
+class Id : public ExprNode {
 public:
-    Id(SymbolEntry *se) : ExprNode(se){};
-    void dump(int level);
+  Id(SymbolEntry *se) : ExprNode(se){};
+  void dump(int level);
 };
 
-class StmtNode : public Node
-{};
+class StmtNode : public Node {};
 
-class CompoundStmt : public StmtNode
-{
+class CompoundStmt : public StmtNode {
 private:
-    StmtNode *stmt;
+  StmtNode *stmt;
+
 public:
-    CompoundStmt(StmtNode *stmt) : stmt(stmt) {};
-    void dump(int level);
+  CompoundStmt(StmtNode *stmt) : stmt(stmt){};
+  void dump(int level);
 };
 
-class SeqNode : public StmtNode
-{
+class SeqNode : public StmtNode {
 private:
-    StmtNode *stmt1, *stmt2;
+  StmtNode *stmt1, *stmt2;
+
 public:
-    SeqNode(StmtNode *stmt1, StmtNode *stmt2) : stmt1(stmt1), stmt2(stmt2){};
-    void dump(int level);
+  SeqNode(StmtNode *stmt1, StmtNode *stmt2) : stmt1(stmt1), stmt2(stmt2){};
+  void dump(int level);
 };
 
-class DeclStmt : public StmtNode
-{
+class DeclStmt : public StmtNode {
 private:
-    Id *id;
+  Id *id;
+
 public:
-    DeclStmt(Id *id) : id(id){};
-    void dump(int level);
+  DeclStmt(Id *id) : id(id){};
+  Id *getId() { return id; };
+  void dump(int level);
 };
 
-class IfSectionStmt : public StmtNode
-{
+class IfSectionStmt : public StmtNode {
 private:
-    ExprNode *cond;
-    StmtNode *thenStmt, *elsifStmt, *elseStmt;
+  ExprNode *cond;
+  StmtNode *thenStmt, *elsifStmt, *elseStmt;
+
 public:
-    IfSectionStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elsifStmt, StmtNode *elseStmt) : 
-        cond(cond), thenStmt(thenStmt), elsifStmt(elsifStmt), elseStmt(elseStmt){};
-    void dump(int level);
+  IfSectionStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elsifStmt,
+                StmtNode *elseStmt)
+      : cond(cond), thenStmt(thenStmt), elsifStmt(elsifStmt),
+        elseStmt(elseStmt){};
+  void dump(int level);
 };
 
-class IfStmt : public StmtNode
-{
+class IfStmt : public StmtNode {
 private:
-    ExprNode *cond;
-    StmtNode *thenStmt;
+  ExprNode *cond;
+  StmtNode *thenStmt;
+
 public:
-    IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenStmt){};
-    void dump(int level);
+  IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenStmt){};
+  void dump(int level);
 };
 
-class ReturnStmt : public StmtNode
-{
+class ReturnStmt : public StmtNode {
 private:
-    ExprNode *retValue;
+  ExprNode *retValue;
+
 public:
-    ReturnStmt(ExprNode*retValue) : retValue(retValue) {};
-    void dump(int level);
+  ReturnStmt(ExprNode *retValue) : retValue(retValue){};
+  void dump(int level);
 };
 
-class AssignStmt : public StmtNode
-{
+class AssignStmt : public StmtNode {
 private:
-    ExprNode *lval;
-    ExprNode *expr;
+  ExprNode *lval;
+  ExprNode *expr;
+
 public:
-    AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
-    void dump(int level);
+  AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr){};
+  void dump(int level);
 };
 
-class FunctionDef : public StmtNode
-{
+class FunctionDef : public StmtNode {
 private:
-    SymbolEntry *se;
-    StmtNode *stmt;
+  SymbolEntry *se;
+  StmtNode *stmt;
+
 public:
-    FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
-    void dump(int level);
+  FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
+  void dump(int level);
 };
 
-class Ast
-{
+class Ast {
 private:
-    Node* root;
+  Node *root;
+
 public:
-    Ast() {root = nullptr;}
-    void setRoot(Node*n) {root = n;}
-    void dump();
+  Ast() { root = nullptr; }
+  void setRoot(Node *n) { root = n; }
+  void dump();
 };
 
 #endif
