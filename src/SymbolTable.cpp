@@ -1,69 +1,61 @@
-#include<SymbolTable.h>
-#include<sstream>
+#include <SymbolTable.h>
+#include <sstream>
 
-SymbolEntry::SymbolEntry(Type *type, int kind) 
-{
-    this->type = type;
-    this->kind = kind;
+SymbolEntry::SymbolEntry(Type *type, int kind) {
+  this->type = type;
+  this->kind = kind;
 }
 
-template <typename T>
-ConstantSymbolEntry<T>::ConstantSymbolEntry(Type *type, T value) : SymbolEntry(type, SymbolEntry::CONSTANT)
-{
-    this->value = value;
+ConstantSymbolEntry::ConstantSymbolEntry(Type *type, int value)
+    : SymbolEntry(type, SymbolEntry::CONSTANT) {
+  this->value = value;
 }
 
-template <typename T>
-std::string ConstantSymbolEntry<T>::dump()
-{
-    std::ostringstream buffer;
-    buffer << value;
-    return buffer.str();
+ConstantSymbolEntry::ConstantSymbolEntry(Type *type, std::string str)
+    : SymbolEntry(type, SymbolEntry::CONSTANT) {
+  this->str = str;
 }
 
-IdentifierSymbolEntry::IdentifierSymbolEntry(std::string name, Type *type, int scope) : SymbolEntry(type, SymbolEntry::VARIABLE), name(name)
-{
-    this->scope = scope;
+std::string ConstantSymbolEntry::dump() {
+  std::ostringstream buffer;
+  buffer << value;
+  return buffer.str();
 }
 
-std::string IdentifierSymbolEntry::dump()
-{
-    return name;
+IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, 
+                                             int scope)
+    : SymbolEntry(type, SymbolEntry::VARIABLE), name(name) {
+  this->scope = scope;
 }
 
-TemporarySymbolEntry::TemporarySymbolEntry(Type *type, int label) : SymbolEntry(type, SymbolEntry::TEMPORARY)
-{
-    this->label = label;
+std::string IdentifierSymbolEntry::dump() { return name; }
+
+TemporarySymbolEntry::TemporarySymbolEntry(Type *type, int label)
+    : SymbolEntry(type, SymbolEntry::TEMPORARY) {
+  this->label = label;
 }
 
-std::string TemporarySymbolEntry::dump()
-{
-    std::ostringstream buffer;
-    buffer << "t" << label;
-    return buffer.str();
+std::string TemporarySymbolEntry::dump() {
+  std::ostringstream buffer;
+  buffer << "t" << label;
+  return buffer.str();
 }
 
-SymbolTable::SymbolTable()
-{
-    prev = nullptr;
-    level = 0;
+SymbolTable::SymbolTable() {
+  prev = nullptr;
+  level = 0;
 }
 
-SymbolTable::SymbolTable(SymbolTable *prev)
-{
-    this->prev = prev;
-    this->level = prev->level + 1;
+SymbolTable::SymbolTable(SymbolTable *prev) {
+  this->prev = prev;
+  this->level = prev->level + 1;
 }
 
-SymbolEntry* SymbolTable::lookup(std::string name)
-{
-    return nullptr;
-}
+SymbolEntry *SymbolTable::lookup(std::string name) { return nullptr; }
 
 // install the entry into current symbol table.
-void SymbolTable::install(std::string name, SymbolEntry* entry)
-{
-    symbolTable[name] = entry;
+void SymbolTable::install(std::string name, SymbolEntry *entry) {
+  symbolTable[name] = entry;
 }
 
 int SymbolTable::counter = 0;

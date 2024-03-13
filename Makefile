@@ -111,7 +111,7 @@ test-all:app
 	:
 
 test-example:app
-	$(BINARY) $(EXAMPLE_PATH)/src/example.adb -t
+	$(BINARY) $(EXAMPLE_PATH)/src/example.adb -a
 
 run:
 	@gprbuild -p $(EXAMPLE_PATH)/default.gpr -Xver=opt

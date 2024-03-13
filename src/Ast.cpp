@@ -8,11 +8,31 @@ Node::Node()
     seq = counter++;
 }
 
+void Node::setNext(Node *node) {
+    Node *n = this;
+    while (n->getNext()) {
+        n = n->getNext();
+    }
+    if (n == this) {
+        this->next = node;
+    } else {
+        n->setNext(node);
+    }
+}
+
 void Ast::dump()
 {
     fprintf(yyout, "program\n");
     if(root != nullptr)
         root->dump(4);
+}
+
+void ExprNode::dump(int level) {
+    std::string name, type;
+    name = symbolEntry->dump();
+    type = symbolEntry->getType()->dump();
+    fprintf(yyout, "%*cconst string\ttype:%s\t%s\n", level, ' ', type.c_str(),
+            name.c_str());
 }
 
 void BinaryExpr::dump(int level)
@@ -59,6 +79,28 @@ void Id::dump(int level)
     scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getScope();
     fprintf(yyout, "%*cId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
             name.c_str(), scope, type.c_str());
+}
+
+void CallExpr::dump(int level) {
+    std::string name, type;
+    int scope;
+    if (symbolEntry) {
+        name = symbolEntry->dump();
+        type = symbolEntry->getType()->dump();
+        scope = dynamic_cast<IdentifierSymbolEntry *>(symbolEntry)->getScope();
+        fprintf(yyout, "%*cCallExpr\tfunction name: %s\tscope: %d\ttype: %s\n",
+                level, ' ', name.c_str(), scope, type.c_str());
+        Node *temp = param;
+        while (temp) {
+            temp->dump(level + 4);
+            temp = temp->getNext();
+        }
+    }
+}
+
+void ExprStmt::dump(int level) {
+    fprintf(yyout, "%*cExprStmt\n", level, ' ');
+    expr->dump(level + 4);
 }
 
 void CompoundStmt::dump(int level)

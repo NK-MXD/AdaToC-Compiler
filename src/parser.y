@@ -45,11 +45,11 @@
 %token IMAGE LAST
 %token PROCEDURE IS THEN BEGINLITERAL END DECLARE NULLLITERAL
 
-%type<StmtType> RegionStmts RegionStmt ProceRegion Procedure ProDeclStmt VarDeclStmt VarDeclSpecifier IfSection IfStmt ElsifStmt ElsifStmts ElseStmt
-%type<StmtType> ProceStmts ProceStmt BeginRegion AssignStmt BlankStmt ProStmt DeclStmts DeclStmt
-%type<StmtType> InitList DeclParamList DeclParams DefParams
-%type<ExprType> Cond Expr PrimaryExpr MulExpr AddExpr RelExpr LAndExpr LOrExpr
-%type<ExprType> LVal
+%type<StmtType> RegionStmts RegionStmt ProceRegion Procedure ProDeclStmt VarDeclStmt IfSection IfStmt ElsifStmt ElsifStmts ElseStmt
+%type<StmtType> ProceStmts ProceStmt BeginRegion AssignStmt BlankStmt DeclStmts DeclStmt
+%type<StmtType> DeclParamList DeclParams ExprStmt
+%type<ExprType> LVal Cond Expr PrimaryExpr MulExpr AddExpr RelExpr LAndExpr LOrExpr
+%type<ExprType> VarDeclSpecifier InitList DefParams UnaryExpr
 %type<type> Type
 
 %%
@@ -119,7 +119,7 @@ Procedure
         SymbolEntry *se;
         se = identifiers->lookup($2);
         assert(se != nullptr);
-        $$ = new FunctionDef(se, $6, $7);
+        $$ = new FunctionDef(se, dynamic_cast<DeclStmt*>($6), $7);
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();
         delete top;
@@ -140,13 +140,13 @@ DeclParams
         $1->setNext($3);
     }
     | VarDeclSpecifier {
-        $$ = new DeclStmt($1);
+        $$ = new DeclStmt(dynamic_cast<Id*>($1));
     }
     ;
 
 VarDeclSpecifier
     : ID COLON Type {
-        SymbolEntry *se = new IdentifierSymbolEntry($1, $3, identifiers->getLevel());
+        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, identifiers->getLevel());
         identifiers->install($1, se);
         $$ = new Id(se);
     }
@@ -198,6 +198,12 @@ InitList
     }
     ;
 
+ExprStmt
+    : Cond SEMICOLON {
+        $$ = new ExprStmt($1);
+    }
+    ;
+
 ProceStmt
     : BlankStmt {
         $$ = $1;
@@ -205,33 +211,13 @@ ProceStmt
     | AssignStmt {
         $$ = $1;
     }
-    | ProStmt {
-        $$ = $1;
-    }
     | IfSection {
         $$ = $1;
     }
-    ;
-
-ProStmt
-    : ID LPAREN DefParams LPAREN SEMICOLON {
-        SymbolEntry* se = identifiers->lookup($1);
-        if(se == nullptr) {
-            printTyCk("Fun: "  << (char*)$1 <<" is not defined.");
-        }
-        $$ = new CallExpr(se, $3);
-    }
-    ;
-
-DefParams
-    : Expr {
+    | ExprStmt {
         $$ = $1;
     }
-    | DefParams COMMA Expr {
-        $$ = new SeqNode($1, $3);
-    }
     ;
-
 
 BlankStmt
     : NULLLITERAL SEMICOLON {
@@ -240,7 +226,7 @@ BlankStmt
     ;
 
 AssignStmt
-    : ID InitList SEMICOLON {
+    : LVal InitList SEMICOLON {
         $$ = new AssignStmt($1, $2);
     }
     ;
@@ -261,7 +247,7 @@ LVal
     : ID {
         SymbolEntry* se = identifiers->lookup($1);
         if(se == nullptr){
-            fprintf("identifier " << (char*)$1 << " is not defined.");
+            printTyCk("identifier " << (char*)$1 << " is not defined.");
         }
         $$ = new Id(se);
         delete []$1;
@@ -269,19 +255,11 @@ LVal
     ;
 
 PrimaryExpr
-    : LPAREN Expr LPAREN {
+    : LPAREN Expr RPAREN {
         $$ = $2;
     }
     | LVal {
-        SymbolEntry *se;
-        se = identifiers->lookup($1);
-        if(se == nullptr) {
-            fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
-            delete [](char*)$1;
-            assert(se != nullptr);
-        }
-        $$ = new Id(se);
-        delete []$1;
+        $$ = $1;
     }
     | DECIMIAL {
         ConstantSymbolEntry *se = new ConstantSymbolEntry(TypeSystem::integerType, $1);
@@ -300,14 +278,26 @@ PrimaryExpr
     }
     ;
 
+UnaryExpr
+    : 
+    PrimaryExpr {$$ = $1;}
+    | ID LPAREN DefParams RPAREN { 
+        SymbolEntry* se = identifiers->lookup($1);
+        if(se == nullptr) {
+            printTyCk("Fun: "  << (char*)$1 <<" is not defined.");
+        }
+        $$ = new CallExpr(se, $3);
+    }
+    ;
+
 MulExpr
     :
-    PrimaryExpr {$$ = $1;}
-    | MulExpr MUL PrimaryExpr {
+    UnaryExpr {$$ = $1;}
+    | MulExpr MUL UnaryExpr {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
     }
-    | MulExpr DIV PrimaryExpr {
+    | MulExpr DIV UnaryExpr {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
     }
@@ -316,11 +306,11 @@ MulExpr
 AddExpr
     :
     MulExpr {$$ = $1;}
-    | MulExpr ADD PrimaryExpr {
+    | AddExpr ADD MulExpr {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
     }
-    | MulExpr SUB PrimaryExpr {
+    | AddExpr SUB MulExpr {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
     }
@@ -379,12 +369,22 @@ Cond
     LOrExpr {$$ = $1;}
     ;
 
+DefParams
+    : Cond {
+        $$ = $1;
+    }
+    | DefParams COMMA Cond {
+        $$ = $1;
+        $$->setNext($3);
+    }
+    ;
+
 IfSection
     : IfStmt END IF {
         $$ = new IfSectionStmt($1);
     }
     | IfStmt ElsifStmts END IF {
-        $$ = new IfSectionStmt($1, nullptr, $2);
+        $$ = new IfSectionStmt($1, $2, nullptr);
     }
     | IfStmt ElsifStmts ElseStmt END IF {
         $$ = new IfSectionStmt($1, $2, $3);
@@ -402,7 +402,7 @@ IfStmt
 
 ElsifStmt
     : ELSIF Cond THEN ProceStmts{
-        $$ = new IfStmt($2, $4);
+        $$ = new IfStmt($2, $4, true);
     }
     ;
 
