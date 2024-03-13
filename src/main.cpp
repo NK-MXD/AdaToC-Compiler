@@ -17,7 +17,7 @@ dump_type_t dump_type = ASM;
 int main(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "to:")) != -1)
+    while ((opt = getopt(argc, argv, "Sieato:O::")) != -1)
     {
         switch (opt)
         {

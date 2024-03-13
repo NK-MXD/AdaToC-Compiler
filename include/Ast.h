@@ -10,10 +10,13 @@ class Node {
 private:
   static int counter;
   int seq;
+  Node *next;
 
 public:
   Node();
   int getSeq() const { return seq; };
+  void setNext(Node *node);
+  Node *getNext() { return next; }
   virtual void dump(int level) = 0;
 };
 
@@ -24,6 +27,7 @@ protected:
 public:
   ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
   SymbolEntry *getSymbolEntry() { return symbolEntry; };
+  void dump(int level);
 };
 
 class BinaryExpr : public ExprNode {
@@ -32,7 +36,19 @@ private:
   ExprNode *expr1, *expr2;
 
 public:
-  enum { ADD, SUB, AND, OR, LESS };
+  enum {
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    AND,
+    OR,
+    EQUAL,
+    LESS,
+    LESSEQUAL,
+    GREATER,
+    GREATEREQUAL,
+  };
   BinaryExpr(SymbolEntry *se, int op, ExprNode *expr1, ExprNode *expr2)
       : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
   void dump(int level);
@@ -50,7 +66,27 @@ public:
   void dump(int level);
 };
 
+class CallExpr : public ExprNode {
+private:
+  ExprNode *param;
+
+public:
+  CallExpr(SymbolEntry *se, ExprNode *param = nullptr)
+      : ExprNode(se), param(param) {}
+  CallExpr(const CallExpr &c) = default;
+  void dump(int level);
+};
+
 class StmtNode : public Node {};
+
+class ExprStmt : public StmtNode {
+private:
+  ExprNode *expr;
+
+public:
+  ExprStmt(ExprNode *expr) : expr(expr){};
+  void dump(int level);
+};
 
 class CompoundStmt : public StmtNode {
 private:
@@ -82,24 +118,27 @@ public:
 
 class IfSectionStmt : public StmtNode {
 private:
-  ExprNode *cond;
-  StmtNode *thenStmt, *elsifStmt, *elseStmt;
+  StmtNode *ifStmt, *elsifStmt, *elseStmt;
 
 public:
-  IfSectionStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elsifStmt,
-                StmtNode *elseStmt)
-      : cond(cond), thenStmt(thenStmt), elsifStmt(elsifStmt),
-        elseStmt(elseStmt){};
-  void dump(int level);
+  IfSectionStmt(StmtNode *ifStmt, StmtNode *elsifStmt = nullptr,
+                StmtNode *elseStmt = nullptr)
+      : ifStmt(ifStmt), elsifStmt(elsifStmt), elseStmt(elseStmt){};
+  void dump(int level){};
 };
 
 class IfStmt : public StmtNode {
 private:
   ExprNode *cond;
   StmtNode *thenStmt;
+  bool isElsif, isElse;
 
 public:
-  IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenStmt){};
+  IfStmt(ExprNode *cond, StmtNode *thenStmt, bool isElsif = false)
+      : cond(cond), thenStmt(thenStmt), isElsif(isElsif) {};
+  IfStmt(StmtNode *thenStmt) : cond(nullptr), thenStmt(thenStmt) {
+    isElse = true;
+  };
   void dump(int level);
 };
 
@@ -125,10 +164,12 @@ public:
 class FunctionDef : public StmtNode {
 private:
   SymbolEntry *se;
+  DeclStmt *decl;
   StmtNode *stmt;
 
 public:
-  FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
+  FunctionDef(SymbolEntry *se, DeclStmt *decl, StmtNode *stmt)
+      : se(se), decl(decl), stmt(stmt){};
   void dump(int level);
 };
 
