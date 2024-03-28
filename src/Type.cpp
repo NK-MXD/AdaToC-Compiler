@@ -25,3 +25,7 @@ std::string NaturalType::dump() {
 std::string ProcedureType::dump() {
     return "Procedure";
 }
+
+std::string FunctionType::dump() {
+    return "Function";
+}

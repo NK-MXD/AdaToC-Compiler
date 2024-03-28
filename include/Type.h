@@ -10,7 +10,7 @@ private:
   int kind;
 
 protected:
-  enum { INTEGER, STRING, NATURAL, PROCEDURE };
+  enum { INTEGER, STRING, NATURAL, PROCEDURE, FUNCTION };
 
 public:
   Type(int _kind) : kind(_kind){};
@@ -20,6 +20,7 @@ public:
   bool isString() const { return kind == STRING; };
   bool isNatural() const { return kind == NATURAL; };
   bool isProcedure() const { return kind == PROCEDURE; };
+  bool isFunction() const { return kind == FUNCTION; };
 };
 
 class IntegerType : public Type {
@@ -59,8 +60,25 @@ public:
       : Type(Type::PROCEDURE), paramsType(paramsType){};
   ProcedureType(std::vector<Type *> paramsType,
                 std::vector<SymbolEntry *> paramIds)
-      : Type(Type::PROCEDURE), paramsType(paramsType), paramIds(paramIds) {};
+      : Type(Type::PROCEDURE), paramsType(paramsType), paramIds(paramIds){};
   std::string dump();
+};
+
+class FunctionType : public Type {
+private:
+  Type *returnType;
+  std::vector<Type *> paramsType;
+  std::vector<SymbolEntry *> paramIds;
+
+public:
+  FunctionType(Type *returnType, std::vector<Type *> paramsType)
+      : Type(Type::FUNCTION), returnType(returnType), paramsType(paramsType){};
+  FunctionType(Type *returnType, std::vector<Type *> paramsType,
+               std::vector<SymbolEntry *> paramIds)
+      : Type(Type::FUNCTION), returnType(returnType), paramsType(paramsType),
+        paramIds(paramIds){};
+  std::string dump();
+  Type *getRetType() { return returnType; };
 };
 
 class TypeSystem {

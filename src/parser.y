@@ -12,9 +12,9 @@
 
     #define DEBUG_SWITCH_TYPE_CHECK 1
     #if DEBUG_SWITCH_TYPE_CHECK
-    #define printTyCk(str) std::cerr<<"[error]:"<<str<<"\n";
+    #define DEBUG_YACC(str) std::cerr<<"[YACC INFO]:"<<str<<"\n";
     #else
-    #define printTyCk(str) //
+    #define DEBUG_YACC(str) //
     #endif
 
     int yylex();
@@ -34,25 +34,598 @@
     Type* type;
 }
 
-%start Program
+%start CompUnit
+%token TIC
+%token DOTDOT
+%token LTLT
+%token BOX
+%token LTEQ
+%token EXPON
+%token NE
+%token GTGT
+%token GE
+%token ASSIGN
+%token RIGHTSHAFT
+%token ABORT
+%token ABS
+%token ABSTRACT
+%token ACCEPT
+%token ACCESS
+%token ALIASED
+%token ALL
+%token AND
+%token ARRAY
+%token AT
+%token BEGiN
+%token BODY
+%token CASE
+%token CONSTANT
+%token DECLARE
+%token DELAY
+%token DELTA
+%token DIGITS
+%token DO
+%token ELSE
+%token ELSIF
+%token END
+%token ENTRY
+%token EXCEPTION
+%token EXIT
+%token FOR
+%token FUNCTION
+%token GENERIC
+%token GOTO
+%token IF
+%token IN
+%token IS
+%token LIMITED
+%token LOOP
+%token MOD
+%token NEW
+%token NOT
+%token NuLL
+%token OF
+%token OR
+%token OTHERS
+%token OUT
+%token PACKAGE
+%token PRAGMA
+%token PRIVATE
+%token PROCEDURE
+%token PROTECTED
+%token RAISE
+%token RANGE
+%token RECORD
+%token REM
+%token RENAMES
+%token REQUEUE
+%token RETURN
+%token REVERSE
+%token SELECT
+%token SEPARATE
+%token SUBTYPE
+%token TAGGED
+%token TASK
+%token TERMINATE
+%token THEN
+%token TYPE
+%token UNTIL
+%token USE
+%token WHEN
+%token WHILE
+%token WITH
+%token XOR
 %token <IntType> DECIMIAL
-%token <StrType> ID STRINGLITERAL
+%token <StrType> Identifier STRINGLITERAL
 %token INTEGER STRING NATURAL
-%token ADD SUB MUL DIV EQUAL LESS LESSEQUAL GREATER GREATEREQUAL ASSIGN
-%token ARROW COLON SEMICOLON LPAREN RPAREN COMMA
-%token SINGLEAND SINGLEOR SINGLEQUOTES ELLIPISIS
-%token CONSTANT IF ELSIF ELSE FOR LOOP EXIT CASE WHEN OTHERS OR REVERSE IN
-%token IMAGE LAST
-%token PROCEDURE IS THEN BEGINLITERAL END DECLARE NULLLITERAL
+%token COLON SEMICOLON LPAREN RPAREN COMMA
+%token SINGLEAND SINGLEOR DOTDOT
+
+
+%type<StmtType> Unit SubprogDecl SubprogBody SubprogSpec FormalPartOpt FormalPart Params Param InitOpt DeclPart DeclItemOrBody DeclItemOrBodys ObjectDecl SubprogDecl Decl ObjectDecl
+%type<type> Type
+%type<ExprType> Expression 
+
 
 %type<StmtType> RegionStmts RegionStmt ProceRegion Procedure ProDeclStmt VarDeclStmt IfSection IfStmt ElsifStmt ElsifStmts ElseStmt
 %type<StmtType> ProceStmts ProceStmt BeginRegion AssignStmt BlankStmt DeclStmts DeclStmt
 %type<StmtType> DeclParamList DeclParams ExprStmt
 %type<ExprType> LVal Cond Expr PrimaryExpr MulExpr AddExpr RelExpr LAndExpr LOrExpr
 %type<ExprType> VarDeclSpecifier InitList DefParams UnaryExpr
-%type<type> Type
 
 %%
+
+Progrom
+    : CompUnit {
+        ast.setRoot($1);
+    }
+    ;
+
+CompUnit
+    : Unit {
+        $$ = $1;
+    }
+    | CompUnit Unit {
+        $$ = new SeqNode($1, $2);
+    }
+    ;
+
+Unit
+    : SubprogDecl {
+        $$ = $1;
+    }
+	| SubprogBody {
+        $$ = $1;
+    }
+    ;
+
+SubprogDecl
+    : SubprogSpec SEMICOLON {
+        $$ = new ProcedureDecl($1);
+    }
+    ;
+
+SubprogSpec
+    : PROCEDURE Identifier FormalPartOpt {
+        DEBUG_YACC("Enter SubprogSpec");
+        // Define procedure type.
+        Type* proType;
+        ParamNode* param = nullptr;
+        if($3)
+          param = dynamic_cast<ParamNode*>($3);
+        std::vector<Type*> paramTypes;
+        std::vector<SymbolEntry*> paramIds;
+        while (param) {
+            SymbolEntry* paramSe = param->getParamSymbol();
+            paramTypes.push_back(paramSe->getType());
+            paramIds.push_back(paramSe);
+            param = dynamic_cast<ParamNode*>(param->getNext());
+        }
+        proType = new ProcedureType(paramTypes, paramIds);
+
+        // Register procedure name into symbol table.
+        SymbolEntry *se = new IdentifierSymbolEntry(proType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        
+        // Define SubprogSpec with ast node.
+        $$ = new ProcedureSpec(se, $3);
+        DEBUG_YACC("Leave SubprogSpec");
+    }
+    ;
+
+FormalPartOpt
+    : %empty { $$ = nullptr; }
+	| FormalPart {
+        $$ = $1;
+    }
+	;
+
+FormalPart
+    : LPAREN Params RPAREN {
+        $$ = $2;
+    }
+    ;
+
+Params
+    : Param {
+        $$ = $1;
+    }
+	| Params SEMICOLON Param {
+        $$ = $1;
+        $1->setNext($3);
+    }
+	;
+
+Param : Identifier COLON Type InitOpt {
+        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, IdentifierSymbolEntry::Param);
+        $$ = new ParamNode(se, $4);
+    }
+	;
+
+Type
+    : INTEGER {
+        $$ = TypeSystem::integerType;
+    }
+    | STRING {
+        $$ = TypeSystem::stringType;
+    }
+    | NATURAL {
+        $$ = TypeSystem::naturalType;
+    }
+    ;
+
+InitOpt : %empty { $$ = nullptr; }
+	| ASSIGN Expression {
+        $$ = new InitOptStmt($2);
+    }
+	;
+
+SubprogBody
+    : SubprogSpec IS {
+
+    } DeclPart BlockBody END IdOpt SEMICOLON {
+        
+    }
+	;
+
+DeclPart :%empty { $$ = nullptr; }
+	| DeclItemOrBodys {
+        $$ = $1;
+    }
+	;
+
+Decl
+    ObjectDecl {
+
+    }
+    | SubprogDecl {
+        
+    }
+    ;
+
+ObjectDecl
+    : Identifier COLON Type InitOpt SEMICOLON {
+
+    }
+    | Identifier COLON CONSTANT Type InitOpt SEMICOLON {
+
+    }
+	;
+
+DeclItemOrBodys
+    : DeclItemOrBody {
+        $$ = $1;
+    }
+	| DeclItemOrBodys DeclItemOrBody {
+        $$ = $1;
+        $1->setNext($2);
+    }
+	;
+
+DeclItemOrBody
+    : SubprogBody {
+
+    }
+	| Decl {
+
+    }
+	;
+
+BlockBody
+    : BEGIN Statements {
+
+    }
+	;
+
+Statements
+    : Statement {
+
+    }
+	| Statements Statement {
+
+    }
+	;
+
+Statement
+    : SimpleStmt {
+
+    }
+	| CompoundStmt {
+
+    }
+    ;
+
+SimpleStmt
+    : NullStmt {
+
+    }
+	| AssignStmt {
+
+    }
+	| ReturnStmt {
+
+    }
+	| ProcedureCall {
+
+    }
+	;
+
+CompoundStmt
+    : IfStmt {
+
+    }
+	| CaseStmt {
+
+    }
+	| LoopStmt {
+
+    }
+	| Block {
+
+    }
+	;
+
+NullStmt
+    : NuLL SEMICOLON {
+
+    }
+	;
+
+AssignStmt
+    : Identifier ASSIGN Expression SEMICOLON {
+
+    }
+	;
+
+ReturnStmt
+    : RETURN SEMICOLON {
+
+    }
+	| RETURN Expression SEMICOLON {
+
+    }
+	;
+
+ProcedureCall
+    : Identifier SEMICOLON {
+
+    }
+	;
+
+IfStmt
+    : IF CondClauses ElseOpt END IF SEMICOLON {
+
+    }
+	;
+
+CondClauses
+    : CondClause {
+
+    }
+	| CondClauses ELSIF CondClause {
+
+    }
+	;
+
+CondClause
+    : CondPart Statements {
+
+    }
+	;
+
+CondPart
+    : Condition THEN {
+
+    }
+	;
+
+Condition
+    : Expression {
+
+    }
+	;
+
+ElseOpt : %empty { $$ = nullptr; }
+	| ELSE Statements {
+
+    }
+	;
+
+CaseStmt
+    : CASE Expression IS END CASE SEMICOLON {
+
+    }
+	;
+
+LoopStmt
+    : LabelOpt Iteration BasicLoop IdOpt SEMICOLON {
+
+    }
+	;
+
+LabelOpt : %empty { $$ = nullptr; }
+	| Identifier COLON {
+
+    }
+	;
+
+Iteration : %empty { $$ = nullptr; }
+	| WHILE Condition {
+
+    }
+	| IterPart ReverseOpt DiscreteRange {
+
+    }
+	;
+
+IterPart
+    : FOR Identifier IN {
+
+    }
+	;
+
+ReverseOpt : %empty { $$ = nullptr; }
+	| REVERSE {
+
+    }
+	;
+
+BasicLoop
+    : LOOP Statements END LOOP {
+
+    }
+	;
+
+IdOpt : %empty { $$ = nullptr; }
+	| Identifier {
+
+    }
+	;
+
+DiscreteRange
+    : name RangeConstrOpt {
+
+    }
+	| Range {
+
+    }
+	;
+
+RangeConstrOpt : %empty { $$ = nullptr; }
+	| RANGE Range {
+
+    }
+	;
+
+Range
+    : SimpleExpression DOTDOT SimpleExpression {
+
+    }
+    ;
+
+Block
+    : LabelOpt BlockDecl BlockBody END IdOpt SEMICOLON {
+
+    }
+	;
+
+BlockDecl : %empty { $$ = nullptr; }
+	| DECLARE DeclPart {
+
+    }
+	;
+
+BlockBody
+    : BEGiN Statements {
+
+    }
+	;
+
+Expression
+    : Relation {
+
+    }
+	| Expression Logical Relation {
+
+    }
+	| Expression ShortCircuit Relation {
+
+    }
+	;
+
+Logical
+    : AND
+	| OR
+	| XOR
+	;
+
+ShortCircuit
+    : AND THEN
+	| OR ELSE
+	;
+
+Relation
+    : SimpleExpression
+	| SimpleExpression Relational SimpleExpression
+	| SimpleExpression Membership range
+	| SimpleExpression Membership name
+	;
+
+Relational
+    : '='
+	| NE
+	| '<'
+	| LT_EQ
+	| '>'
+	| GE
+	;
+
+Membership
+    : IN
+	| NOT IN
+	;
+
+SimpleExpression
+    : Unary Term {
+
+    }
+	| Term {
+
+    }
+	| SimpleExpression Adding Term {
+
+    }
+	;
+
+Unary
+    : '+'
+	| '-'
+	;
+
+Adding
+    : '+'
+	| '-'
+	| '&'
+	;
+
+Term
+    : Factor
+	| Term Multiplying Factor
+	;
+
+Multiplying
+    : '*'
+	| '/'
+	| MOD
+	| REM
+	;
+
+Factor
+    : Primary
+	| NOT Primary
+	| ABS Primary
+	| Primary EXPON Primary
+	;
+
+Primary
+    : Literal {
+
+    }
+	| Identifier {
+
+    }
+	| ParenthesizedPrimary {
+
+    }
+	;
+
+ParenthesizedPrimary
+    : LPAREN expression RPAREN {
+
+    }
+	;
+
+Literal
+    : DECIMIAL {
+
+    }
+	| STRINGLITERAL {
+
+    }
+	| NuLL {
+        $$ = nullptr;
+    }
+	;
+
+
+
+
+
+
+
+
+
+
 
 Program
     : RegionStmts {
@@ -85,7 +658,7 @@ ProceRegion
     ;
 
 ProDeclStmt
-    : PROCEDURE ID DeclParamList SEMICOLON {
+    : PROCEDURE Identifier DeclParamList SEMICOLON {
         Type *proType;
         DeclStmt* temp = dynamic_cast<DeclStmt*>($3);
         std::vector<Type*> paramTypes;
@@ -101,7 +674,7 @@ ProDeclStmt
     ;
 
 Procedure
-    : PROCEDURE ID DeclParamList {
+    : PROCEDURE Identifier DeclParamList IS DeclStmts BeginRegion Identifier SEMICOLON {
         Type *proType;
         DeclStmt* temp = dynamic_cast<DeclStmt*>($3);
         std::vector<Type*> paramTypes;
@@ -115,15 +688,33 @@ Procedure
         SymbolEntry *se = new IdentifierSymbolEntry(proType, $2, identifiers->getLevel());
         identifiers->install($2, se);
         identifiers = new SymbolTable(identifiers);
-    } IS DeclStmts BeginRegion ID SEMICOLON {
-        SymbolEntry *se;
-        se = identifiers->lookup($2);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, dynamic_cast<DeclStmt*>($6), $7);
+        $$ = new ProcedureDef(se, dynamic_cast<DeclStmt*>($3), $6);
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();
         delete top;
         delete []$2;
+    }
+    | PROCEDURE Identifier DeclParamList IS BeginRegion Identifier SEMICOLON {
+        printLog("enter");
+        Type *proType;
+        DeclStmt* temp = dynamic_cast<DeclStmt*>($3);
+        std::vector<Type*> paramTypes;
+        std::vector<SymbolEntry*> paramIds;
+        while (temp) {
+            paramTypes.push_back(temp->getId()->getSymbolEntry()->getType());
+            paramIds.push_back(temp->getId()->getSymbolEntry());
+            temp = dynamic_cast<DeclStmt*>(temp->getNext());
+        }
+        proType = new ProcedureType(paramTypes, paramIds);
+        SymbolEntry *se = new IdentifierSymbolEntry(proType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+        $$ = new ProcedureDef(se, dynamic_cast<DeclStmt*>($3), $5);
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+        delete []$2;
+        printLog("leave");
     }
     ;
 
@@ -145,7 +736,7 @@ DeclParams
     ;
 
 VarDeclSpecifier
-    : ID COLON Type {
+    : Identifier COLON Type {
         SymbolEntry *se = new IdentifierSymbolEntry($3, $1, identifiers->getLevel());
         identifiers->install($1, se);
         $$ = new Id(se);
@@ -244,10 +835,10 @@ Type
     ;
 
 LVal
-    : ID {
+    : Identifier {
         SymbolEntry* se = identifiers->lookup($1);
         if(se == nullptr){
-            printTyCk("identifier " << (char*)$1 << " is not defined.");
+            printLog("identifier " << (char*)$1 << " is not defined.");
         }
         $$ = new Id(se);
         delete []$1;
@@ -281,10 +872,10 @@ PrimaryExpr
 UnaryExpr
     : 
     PrimaryExpr {$$ = $1;}
-    | ID LPAREN DefParams RPAREN { 
+    | Identifier LPAREN DefParams RPAREN { 
         SymbolEntry* se = identifiers->lookup($1);
         if(se == nullptr) {
-            printTyCk("Fun: "  << (char*)$1 <<" is not defined.");
+            printLog("Fun: "  << (char*)$1 <<" is not defined.");
         }
         $$ = new CallExpr(se, $3);
     }

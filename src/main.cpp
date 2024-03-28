@@ -3,21 +3,23 @@
 #include <unistd.h>
 #include "common.h"
 #include "Ast.h"
+#include "CppUnit.h"
 
 extern FILE *yyin;
 extern FILE *yyout;
 
 int yyparse();
 Ast ast;
+CppUnit unit;
 
-char outfile[256];
+char outfile[256] = "a.out";
 bool dump_token = false;
-dump_type_t dump_type = ASM;
+dump_type_t dump_type = CPP;
 
 int main(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "Sieato:O::")) != -1)
+    while ((opt = getopt(argc, argv, "acto:")) != -1)
     {
         switch (opt)
         {
@@ -32,6 +34,10 @@ int main(int argc, char *argv[])
             strcpy(outfile, "a.toks");
             dump_type = TOKENS;
             dump_token = true;
+            break;
+        case 'c':
+            strcpy(outfile, "a.cpp");
+            dump_type = CPP;
             break;
         default:
             fprintf(stderr, "Usage: %s [-o outfile] infile\n", argv[0]);
@@ -57,5 +63,8 @@ int main(int argc, char *argv[])
     yyparse();
     if(dump_type == AST)
         ast.dump();
+    // ast.genCppCode(&unit);
+    // if(dump_type == CPP)
+    //     unit.output();
     return 0;
 }
