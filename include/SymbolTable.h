@@ -41,9 +41,10 @@ private:
   enum { GLOBAL, PARAM, LOCAL };
   std::string name;
   int scope;
+  bool isConst;
 
 public:
-  IdentifierSymbolEntry(Type *type, std::string name, int scope);
+  IdentifierSymbolEntry(Type *type, std::string name, int scope, bool isConst = false);
   virtual ~IdentifierSymbolEntry(){};
   std::string dump();
   int getScope() const { return scope; };

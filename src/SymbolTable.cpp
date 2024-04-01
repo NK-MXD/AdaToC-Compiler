@@ -23,8 +23,8 @@ std::string ConstantSymbolEntry::dump() {
 }
 
 IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, 
-                                             int scope)
-    : SymbolEntry(type, SymbolEntry::VARIABLE), name(name) {
+                                             int scope, bool isConst)
+    : SymbolEntry(type, SymbolEntry::VARIABLE), name(name), isConst(isConst) {
   this->scope = scope;
 }
 

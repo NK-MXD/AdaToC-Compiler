@@ -122,9 +122,9 @@
 %token SINGLEAND SINGLEOR DOTDOT
 
 
-%type<StmtType> Unit SubprogDecl SubprogBody SubprogSpec FormalPartOpt FormalPart Params Param InitOpt DeclPart DeclItemOrBody DeclItemOrBodys ObjectDecl SubprogDecl Decl ObjectDecl
+%type<StmtType> Unit SubprogDecl SubprogBody SubprogSpec FormalPartOpt FormalPart Params Param InitOpt DeclPart DeclItemOrBody DeclItemOrBodys ObjectDecl Decl BlockBody Statements Statement SimpleStmt CompoundStmt NullStmt AssignStmt ReturnStmt ProcedureCall IfStmt CaseStmt LoopStmt Block CondClause CondClauses ElseOpt Range RangeConstrOpt DiscreteRange DiscreteWithRange Choice Choices Alternative Alternatives BasicLoop BlockBody BlockDecl Block 
 %type<type> Type
-%type<ExprType> Expression 
+%type<ExprType> Expression Condition CondPart IdOpt WhenOpt
 
 
 %type<StmtType> RegionStmts RegionStmt ProceRegion Procedure ProDeclStmt VarDeclStmt IfSection IfStmt ElsifStmt ElsifStmts ElseStmt
@@ -242,9 +242,14 @@ InitOpt : %empty { $$ = nullptr; }
 
 SubprogBody
     : SubprogSpec IS {
-
+        // Enter into new scope.
+        identifiers = new SymbolTable(identifiers);
     } DeclPart BlockBody END IdOpt SEMICOLON {
-        
+        $$ = new ProcedureDef($1, $4, $5);
+        // Leave the scope.
+        SymbolTable* ScopeTable = identifiers;
+        identifiers = identifiers->getPrev();
+        delete ScopeTable;
     }
 	;
 
@@ -256,19 +261,23 @@ DeclPart :%empty { $$ = nullptr; }
 
 Decl
     ObjectDecl {
-
+        $$ = new DeclStmt($1);
     }
     | SubprogDecl {
-        
+        $$ = new DeclStmt($1);
     }
     ;
 
 ObjectDecl
     : Identifier COLON Type InitOpt SEMICOLON {
-
+        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        $$ = new ObjectDeclStmt(se, $4);
     }
     | Identifier COLON CONSTANT Type InitOpt SEMICOLON {
-
+        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, identifiers->getLevel(), true);
+        identifiers->install($1, se);
+        $$ = new ObjectDeclStmt(se, $5);
     }
 	;
 
@@ -284,220 +293,297 @@ DeclItemOrBodys
 
 DeclItemOrBody
     : SubprogBody {
-
+        $$ = new DeclItemOrBodyStmt($1);
     }
 	| Decl {
-
+        $$ = new DeclItemOrBodyStmt($1);
     }
 	;
 
 BlockBody
     : BEGIN Statements {
-
+        $$ = $2;
     }
 	;
 
 Statements
     : Statement {
-
+        $$ = $1;
     }
 	| Statements Statement {
-
+        $$ = $1;
+        $1->setNext($2);
     }
 	;
 
 Statement
     : SimpleStmt {
-
+        $$ = new Stmt($1);
     }
 	| CompoundStmt {
-
+        $$ = new Stmt($1);
     }
     ;
 
 SimpleStmt
     : NullStmt {
-
+        $$ = $1;
     }
 	| AssignStmt {
-
+        $$ = $1;
     }
 	| ReturnStmt {
-
+        $$ = $1;
     }
 	| ProcedureCall {
-
+        $$ = $1;
+    }
+    | ExitStmt {
+        $$ = $1;
     }
 	;
 
 CompoundStmt
     : IfStmt {
-
+        $$ = $1;
     }
 	| CaseStmt {
-
+        $$ = $1;
     }
 	| LoopStmt {
-
+        $$ = $1;
     }
 	| Block {
-
+        $$ = $1;
     }
 	;
 
 NullStmt
     : NuLL SEMICOLON {
-
+        $$ = nullptr;
     }
 	;
 
 AssignStmt
     : Identifier ASSIGN Expression SEMICOLON {
-
+        SymbolEntry *se = identifiers->lookup($1);
+        $$ = new AssignStmt(se, $3);
     }
 	;
 
 ReturnStmt
     : RETURN SEMICOLON {
-
+        $$ = new ReturnStmt(nullptr);
     }
 	| RETURN Expression SEMICOLON {
-
+        $$ = new ReturnStmt($2);
     }
 	;
 
 ProcedureCall
     : Identifier SEMICOLON {
+        SymbolEntry* se = identifiers->lookup($1);
+        $$ = new CallStmt(se);
+    }
+	;
 
+ExitStmt
+    : EXIT IdOpt WhenOpt SEMICOLON {
+        $$ = new ExitStmt($2, $3);
+    }
+	;
+
+WhenOpt
+    : %empty { $$ = nullptr; }
+	| WHEN Condition {
+        $$ = $2;
     }
 	;
 
 IfStmt
     : IF CondClauses ElseOpt END IF SEMICOLON {
-
+        $$ = new IfStmt($2, $3);
     }
 	;
 
 CondClauses
     : CondClause {
-
+        $$ = $1;
     }
 	| CondClauses ELSIF CondClause {
-
+        $$ = $1;
+        $1->setNext($2);
     }
 	;
 
 CondClause
     : CondPart Statements {
-
+        $$ = new CondClause($1, $2);
     }
 	;
 
 CondPart
     : Condition THEN {
-
+        $$ = $1;
     }
 	;
 
 Condition
     : Expression {
-
+        $$ = $1; 
     }
 	;
 
 ElseOpt : %empty { $$ = nullptr; }
 	| ELSE Statements {
-
+        $$ = $2;
     }
 	;
 
 CaseStmt
-    : CASE Expression IS END CASE SEMICOLON {
+    : CASE Expression IS Alternatives END CASE SEMICOLON {
+        $$ = new CaseStmt($2, $4);
+    }
+	;
 
+Alternatives
+    : %empty { $$ = nullptr; }
+	| Alternatives Alternative {
+        if($1) {
+            $$ = $1;
+            $1->setNext($2);
+        } else {
+            $$ = $2;
+        }
+    }
+	;
+
+Alternative
+    : WHEN Choices RIGHTSHAFT Statements {
+        $$ = new Alternative($2, $4);
+    }
+	;
+
+Choices
+    : Choice {
+        $$ = $1;
+    }
+	| Choices SINGLEOR Choice {
+        $$ = $1;
+        $1->setNext($3);
+    }
+	;
+
+Choice
+    : Expression {
+        $$ = new Choice($1);
+    }
+	| DiscreteWithRange {
+        $$ = new Choice($1);
+    }
+	| OTHERS {
+        $$ = new Choice(true);
+    }
+	;
+
+DiscreteWithRange
+    : identifier RANGE Range {
+        SymbolEntry* se = identifiers->lookup($1);
+        $$ = new DiscreteRange($1, $3);
+    }
+	| Range {
+        $$ = new DiscreteRange($1);
     }
 	;
 
 LoopStmt
     : LabelOpt Iteration BasicLoop IdOpt SEMICOLON {
-
+        $$ = new LoopStmt($1, $2, $3, $4);
     }
 	;
 
 LabelOpt : %empty { $$ = nullptr; }
 	| Identifier COLON {
-
+        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        $$ = new LabelOpt();
     }
 	;
 
 Iteration : %empty { $$ = nullptr; }
 	| WHILE Condition {
-
+        $$ = new Iteration($2);
     }
 	| IterPart ReverseOpt DiscreteRange {
-
+        $$ = new Iteration($1, $2, $3);
     }
 	;
 
 IterPart
     : FOR Identifier IN {
-
+        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new IterPart(se);
     }
 	;
 
 ReverseOpt : %empty { $$ = nullptr; }
 	| REVERSE {
-
+        $$ = new SignNode(SignNode::REVERSE);
     }
 	;
 
 BasicLoop
     : LOOP Statements END LOOP {
-
+        $$ = new BasicLoopStmt($2);
     }
 	;
 
-IdOpt : %empty { $$ = nullptr; }
+IdOpt
+	: %empty { $$ = nullptr; }
 	| Identifier {
-
+        SymbolEntry* se = identifiers->lookup($1);
+        $$ = new Id(se);
     }
 	;
 
 DiscreteRange
-    : name RangeConstrOpt {
-
+    : identifier RangeConstrOpt {
+        SymbolEntry* se = identifiers->lookup($1);
+        $$ = new DiscreteRange($1, $2);
     }
 	| Range {
-
+        $$ = new DiscreteRange($1);
     }
 	;
 
 RangeConstrOpt : %empty { $$ = nullptr; }
 	| RANGE Range {
-
+        $$ = $2;
     }
 	;
 
 Range
     : SimpleExpression DOTDOT SimpleExpression {
-
+        $$ = new Range($1, $3);
     }
     ;
 
 Block
     : LabelOpt BlockDecl BlockBody END IdOpt SEMICOLON {
-
+        $$ = new Block($1, $2, $3);
     }
 	;
 
 BlockDecl : %empty { $$ = nullptr; }
 	| DECLARE DeclPart {
-
+        $$ = $2;
     }
 	;
 
 BlockBody
     : BEGiN Statements {
-
+        $$ = $2;
     }
 	;
 
@@ -514,9 +600,15 @@ Expression
 	;
 
 Logical
-    : AND
-	| OR
-	| XOR
+    : AND {
+
+    }
+	| OR {
+
+    }
+	| XOR {
+
+    }
 	;
 
 ShortCircuit
@@ -610,7 +702,7 @@ Literal
 
     }
 	| STRINGLITERAL {
-
+        
     }
 	| NuLL {
         $$ = nullptr;
