@@ -31,19 +31,23 @@
     int IntType;
     StmtNode* StmtType;
     ExprNode* ExprType;
+    OpSignNode* SignType;
     Type* type;
 }
 
-%start CompUnit
+%start Program
 %token TIC
 %token DOTDOT
 %token LTLT
 %token BOX
 %token LTEQ
+%token GTEQ
 %token EXPON
 %token NE
 %token GTGT
 %token GE
+%token LE
+%token EQ
 %token ASSIGN
 %token RIGHTSHAFT
 %token ABORT
@@ -80,9 +84,13 @@
 %token IS
 %token LIMITED
 %token LOOP
+%token MUL
+%token DIV
 %token MOD
 %token NEW
 %token NOT
+%token SUB
+%token ADD
 %token NuLL
 %token OF
 %token OR
@@ -119,23 +127,16 @@
 %token <StrType> Identifier STRINGLITERAL
 %token INTEGER STRING NATURAL
 %token COLON SEMICOLON LPAREN RPAREN COMMA
-%token SINGLEAND SINGLEOR DOTDOT
+%token SINGLEAND SINGLEOR
 
-
-%type<StmtType> Unit SubprogDecl SubprogBody SubprogSpec FormalPartOpt FormalPart Params Param InitOpt DeclPart DeclItemOrBody DeclItemOrBodys ObjectDecl Decl BlockBody Statements Statement SimpleStmt CompoundStmt NullStmt AssignStmt ReturnStmt ProcedureCall IfStmt CaseStmt LoopStmt Block CondClause CondClauses ElseOpt Range RangeConstrOpt DiscreteRange DiscreteWithRange Choice Choices Alternative Alternatives BasicLoop BlockBody BlockDecl Block 
+%type<StmtType> CompUnit Unit SubprogDecl SubprogBody SubprogSpec FormalPartOpt FormalPart Params Param InitOpt DeclPart DeclItemOrBody DeclItemOrBodys ObjectDecl Decl Statements Statement SimpleStmt CompoundStmt NullStmt AssignStmt ReturnStmt ProcedureCall ExitStmt IfStmt CaseStmt LoopStmt Iteration IterPart LabelOpt Block CondClause CondClauses ElseOpt Range RangeConstrOpt DiscreteRange DiscreteWithRange Choice Choices Alternative Alternatives BasicLoop BlockBody BlockDecl
 %type<type> Type
-%type<ExprType> Expression Condition CondPart IdOpt WhenOpt
-
-
-%type<StmtType> RegionStmts RegionStmt ProceRegion Procedure ProDeclStmt VarDeclStmt IfSection IfStmt ElsifStmt ElsifStmts ElseStmt
-%type<StmtType> ProceStmts ProceStmt BeginRegion AssignStmt BlankStmt DeclStmts DeclStmt
-%type<StmtType> DeclParamList DeclParams ExprStmt
-%type<ExprType> LVal Cond Expr PrimaryExpr MulExpr AddExpr RelExpr LAndExpr LOrExpr
-%type<ExprType> VarDeclSpecifier InitList DefParams UnaryExpr
+%type<ExprType> Expression Condition CondPart IdOpt WhenOpt Literal ParenthesizedPrimary Primary Factor Term SimpleExpression Relation  
+%type<SignType> ReverseOpt Multiplying Adding Unary Membership Relational ShortCircuit Logical
 
 %%
 
-Progrom
+Program
     : CompUnit {
         ast.setRoot($1);
     }
@@ -161,7 +162,7 @@ Unit
 
 SubprogDecl
     : SubprogSpec SEMICOLON {
-        $$ = new ProcedureDecl($1);
+        $$ = new ProcedureDecl(dynamic_cast<SubprogDecl*>($1));
     }
     ;
 
@@ -179,7 +180,7 @@ SubprogSpec
             SymbolEntry* paramSe = param->getParamSymbol();
             paramTypes.push_back(paramSe->getType());
             paramIds.push_back(paramSe);
-            param = dynamic_cast<ParamNode*>(param->getNext());
+            param = param->getNext();
         }
         proType = new ProcedureType(paramTypes, paramIds);
 
@@ -188,7 +189,7 @@ SubprogSpec
         identifiers->install($2, se);
         
         // Define SubprogSpec with ast node.
-        $$ = new ProcedureSpec(se, $3);
+        $$ = new ProcedureSpec(se, param);
         DEBUG_YACC("Leave SubprogSpec");
     }
     ;
@@ -218,7 +219,7 @@ Params
 
 Param : Identifier COLON Type InitOpt {
         SymbolEntry *se = new IdentifierSymbolEntry($3, $1, IdentifierSymbolEntry::Param);
-        $$ = new ParamNode(se, $4);
+        $$ = new ParamNode(se, dynamic_cast<InitOptStmt>($4));
     }
 	;
 
@@ -245,7 +246,7 @@ SubprogBody
         // Enter into new scope.
         identifiers = new SymbolTable(identifiers);
     } DeclPart BlockBody END IdOpt SEMICOLON {
-        $$ = new ProcedureDef($1, $4, $5);
+        $$ = new ProcedureDef(dynamic_cast<SubprogSpec*>($1), dynamic_cast<DeclItemOrBodyStmt*>($4), $5);
         // Leave the scope.
         SymbolTable* ScopeTable = identifiers;
         identifiers = identifiers->getPrev();
@@ -260,11 +261,12 @@ DeclPart :%empty { $$ = nullptr; }
 	;
 
 Decl
+    :
     ObjectDecl {
-        $$ = new DeclStmt($1);
+        $$ = new DeclStmt(dynamic_cast<ObjectDeclStmt*>($1));
     }
     | SubprogDecl {
-        $$ = new DeclStmt($1);
+        $$ = new DeclStmt(dynamic_cast<SubprogDecl*>($1));
     }
     ;
 
@@ -272,12 +274,12 @@ ObjectDecl
     : Identifier COLON Type InitOpt SEMICOLON {
         SymbolEntry *se = new IdentifierSymbolEntry($3, $1, identifiers->getLevel());
         identifiers->install($1, se);
-        $$ = new ObjectDeclStmt(se, $4);
+        $$ = new ObjectDeclStmt(se, dynamic_cast<InitOptStmt*>($4));
     }
     | Identifier COLON CONSTANT Type InitOpt SEMICOLON {
-        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, identifiers->getLevel(), true);
+        SymbolEntry *se = new IdentifierSymbolEntry($4, $1, identifiers->getLevel(), true);
         identifiers->install($1, se);
-        $$ = new ObjectDeclStmt(se, $5);
+        $$ = new ObjectDeclStmt(se, dynamic_cast<InitOptStmt*>($5));
     }
 	;
 
@@ -293,16 +295,10 @@ DeclItemOrBodys
 
 DeclItemOrBody
     : SubprogBody {
-        $$ = new DeclItemOrBodyStmt($1);
+        $$ = new DeclItemOrBodyStmt(dynamic_cast<ProcedureDef*>($1));
     }
 	| Decl {
-        $$ = new DeclItemOrBodyStmt($1);
-    }
-	;
-
-BlockBody
-    : BEGIN Statements {
-        $$ = $2;
+        $$ = new DeclItemOrBodyStmt(dynamic_cast<DeclStmt*>($1));
     }
 	;
 
@@ -383,13 +379,16 @@ ReturnStmt
 ProcedureCall
     : Identifier SEMICOLON {
         SymbolEntry* se = identifiers->lookup($1);
+        if(!se || !se->getType()->isProcedure()) {
+            std::cerr << "Can't not get Procedure type SymbolEntry!\n";
+        }
         $$ = new CallStmt(se);
     }
 	;
 
 ExitStmt
     : EXIT IdOpt WhenOpt SEMICOLON {
-        $$ = new ExitStmt($2, $3);
+        $$ = new ExitStmt($3);
     }
 	;
 
@@ -402,7 +401,7 @@ WhenOpt
 
 IfStmt
     : IF CondClauses ElseOpt END IF SEMICOLON {
-        $$ = new IfStmt($2, $3);
+        $$ = new IfStmt(dynamic_cast<CondClause*>($2), dynamic_cast<Stmt*>($3));
     }
 	;
 
@@ -412,13 +411,13 @@ CondClauses
     }
 	| CondClauses ELSIF CondClause {
         $$ = $1;
-        $1->setNext($2);
+        $1->setNext($3);
     }
 	;
 
 CondClause
     : CondPart Statements {
-        $$ = new CondClause($1, $2);
+        $$ = new CondClause($1, dynamic_cast<Stmt*>($2));
     }
 	;
 
@@ -442,7 +441,7 @@ ElseOpt : %empty { $$ = nullptr; }
 
 CaseStmt
     : CASE Expression IS Alternatives END CASE SEMICOLON {
-        $$ = new CaseStmt($2, $4);
+        $$ = new CaseStmt($2, dynamic_cast<Alternative*>($4));
     }
 	;
 
@@ -460,7 +459,7 @@ Alternatives
 
 Alternative
     : WHEN Choices RIGHTSHAFT Statements {
-        $$ = new Alternative($2, $4);
+        $$ = new Alternative(dynamic_cast<Choice*>($2), dynamic_cast<Stmt*>($4));
     }
 	;
 
@@ -479,7 +478,7 @@ Choice
         $$ = new Choice($1);
     }
 	| DiscreteWithRange {
-        $$ = new Choice($1);
+        $$ = new Choice(dynamic_cast<DiscreteRange*>($1));
     }
 	| OTHERS {
         $$ = new Choice(true);
@@ -487,18 +486,19 @@ Choice
 	;
 
 DiscreteWithRange
-    : identifier RANGE Range {
-        SymbolEntry* se = identifiers->lookup($1);
-        $$ = new DiscreteRange($1, $3);
+    : Identifier RANGE Range {
+        Type* type = dynamic_cast<Range*>($3)->getType();
+        SymbolEntry* se = new IdentifierSymbolEntry(type, $1);
+        $$ = new DiscreteRange($1, dynamic_cast<Range*>($3));
     }
 	| Range {
-        $$ = new DiscreteRange($1);
+        $$ = new DiscreteRange(dynamic_cast<Range*>($1));
     }
 	;
 
 LoopStmt
     : LabelOpt Iteration BasicLoop IdOpt SEMICOLON {
-        $$ = new LoopStmt($1, $2, $3, $4);
+        $$ = new LoopStmt(dynamic_cast<LabelOpt*>($1), dynamic_cast<Iteration*>($2), dynamic_cast<BasicLoopStmt*>($3));
     }
 	;
 
@@ -506,7 +506,7 @@ LabelOpt : %empty { $$ = nullptr; }
 	| Identifier COLON {
         SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, $1, identifiers->getLevel());
         identifiers->install($1, se);
-        $$ = new LabelOpt();
+        $$ = new LabelOpt(se);
     }
 	;
 
@@ -515,7 +515,7 @@ Iteration : %empty { $$ = nullptr; }
         $$ = new Iteration($2);
     }
 	| IterPart ReverseOpt DiscreteRange {
-        $$ = new Iteration($1, $2, $3);
+        $$ = new Iteration(dynamic_cast<IterPart*>($1), $2, dynamic_cast<DiscreteRange*>($3));
     }
 	;
 
@@ -529,13 +529,13 @@ IterPart
 
 ReverseOpt : %empty { $$ = nullptr; }
 	| REVERSE {
-        $$ = new SignNode(SignNode::REVERSE);
+        $$ = new OpSignNode(OpSignNode::REVERSE);
     }
 	;
 
 BasicLoop
     : LOOP Statements END LOOP {
-        $$ = new BasicLoopStmt($2);
+        $$ = new BasicLoopStmt(dynamic_cast<Stmt*>($2));
     }
 	;
 
@@ -548,12 +548,13 @@ IdOpt
 	;
 
 DiscreteRange
-    : identifier RangeConstrOpt {
-        SymbolEntry* se = identifiers->lookup($1);
-        $$ = new DiscreteRange($1, $2);
+    : Identifier RangeConstrOpt {
+        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new DiscreteRange($1, dynamic_cast<Range*>($2));
     }
 	| Range {
-        $$ = new DiscreteRange($1);
+        $$ = new DiscreteRange(dynamic_cast<Range*>($1));
     }
 	;
 
@@ -571,7 +572,7 @@ Range
 
 Block
     : LabelOpt BlockDecl BlockBody END IdOpt SEMICOLON {
-        $$ = new Block($1, $2, $3);
+        $$ = new Block(dynamic_cast<LabelOpt*>($1), dynamic_cast<DeclItemOrBody*>($2), dynamic_cast<Stmt*>($3));
     }
 	;
 
@@ -589,519 +590,186 @@ BlockBody
 
 Expression
     : Relation {
-
+        $$ = $1;
     }
 	| Expression Logical Relation {
-
+        $$ = new BinaryExpr($1, $3, $2);
     }
 	| Expression ShortCircuit Relation {
-
+        $$ = new BinaryExpr($1, $3, $2);
     }
 	;
 
 Logical
     : AND {
-
+        $$ = new OpSignNode(OpSignNode::AND);
     }
 	| OR {
-
+        $$ = new OpSignNode(OpSignNode::OR);
     }
 	| XOR {
-
+        $$ = new OpSignNode(OpSignNode::XOR);
     }
 	;
 
 ShortCircuit
-    : AND THEN
-	| OR ELSE
+    : AND THEN {
+        $$ = new OpSignNode(OpSignNode::ANDTHEN);
+    }
+	| OR ELSE {
+        $$ = new OpSignNode(OpSignNode::ORELSE);
+    }
 	;
 
 Relation
-    : SimpleExpression
-	| SimpleExpression Relational SimpleExpression
-	| SimpleExpression Membership range
-	| SimpleExpression Membership name
+    : SimpleExpression {
+        $$ = $1;
+    }
+	| SimpleExpression Relational SimpleExpression {
+        $$ = new BinaryExpr($1, $3, $2);
+    }
+	| SimpleExpression Membership Range {
+        $$ = new BinaryExpr($1, dynamic_cast<Range*>($3), $2);
+    }
+	| SimpleExpression Membership Identifier {
+        $$ = new BinaryExpr($1, $3, $2);
+    }
 	;
 
 Relational
-    : '='
-	| NE
-	| '<'
-	| LT_EQ
-	| '>'
-	| GE
+    : EQ {
+        $$ = new OpSignNode(OpSignNode::EQ);
+    }
+	| NE {
+        $$ = new OpSignNode(OpSignNode::NE);
+    }
+	| LE {
+        $$ = new OpSignNode(OpSignNode::LE);
+    }
+	| LTEQ {
+        $$ = new OpSignNode(OpSignNode::LTEQ);
+    }
+	| GE {
+        $$ = new OpSignNode(OpSignNode::GE);
+    }
+ 	| GTEQ {
+        $$ = new OpSignNode(OpSignNode::GTEQ);
+    }
 	;
 
 Membership
-    : IN
-	| NOT IN
+    : IN {
+        $$ = new OpSignNode(OpSignNode::IN);
+    }
+	| NOT IN {
+        $$ = new OpSignNode(OpSignNode::NOTIN);
+    }
 	;
 
 SimpleExpression
     : Unary Term {
-
+        $$ = new BinaryExpr($2, $1);
     }
 	| Term {
-
+        $$ = $1;
     }
 	| SimpleExpression Adding Term {
-
+        $$ = new BinaryExpr($1, $3, $2);
     }
 	;
 
 Unary
-    : '+'
-	| '-'
+    : ADD {
+        $$ = new OpSignNode(OpSignNode::ADD);
+    }
+	| SUB {
+        $$ = new OpSignNode(OpSignNode::SUB);
+    }
 	;
 
 Adding
-    : '+'
-	| '-'
-	| '&'
+    : ADD {
+        $$ = new OpSignNode(OpSignNode::ADD);
+    }
+	| SUB {
+        $$ = new OpSignNode(OpSignNode::SUB);
+    }
+	| SINGLEAND {
+        $$ = new OpSignNode(OpSignNode::SINGLEAND);
+    }
 	;
 
 Term
-    : Factor
-	| Term Multiplying Factor
+    : Factor {
+        $$ = $1;
+    }
+	| Term Multiplying Factor {
+        $$ = new BinaryExpr($1, $3, $2);
+    }
 	;
 
 Multiplying
-    : '*'
-	| '/'
-	| MOD
-	| REM
+    : MUL {
+        $$ = new OpSignNode(OpSignNode::MUL);
+    }
+	| DIV {
+        $$ = new OpSignNode(OpSignNode::DIV);
+    }
+	| MOD {
+        $$ = new OpSignNode(OpSignNode::MOD);
+    }
+	| REM {
+        $$ = new OpSignNode(OpSignNode::REM);
+    }
 	;
 
 Factor
-    : Primary
-	| NOT Primary
-	| ABS Primary
-	| Primary EXPON Primary
+    : Primary {
+        $$ = $1;
+    }
+	| NOT Primary {
+        $$ = new FactorExpr($2, FactorExpr::NOT);
+    }
+	| ABS Primary {
+        $$ = new FactorExpr($2, FactorExpr::ABS);
+    }
+	| Primary EXPON Primary {
+        $$ = new BinaryExpr($1, $3, new OpSignNode(OpSignNode::EXPON));
+    }
 	;
 
 Primary
     : Literal {
-
+        $$ = $1;
     }
 	| Identifier {
-
+        SymbolEntry* se = identifiers->lookup($1);
+        $$ = new Id(se);
     }
 	| ParenthesizedPrimary {
-
+        $$ = $1;
     }
 	;
 
 ParenthesizedPrimary
-    : LPAREN expression RPAREN {
-
+    : LPAREN Expression RPAREN {
+        $$ = $2;
     }
 	;
 
 Literal
     : DECIMIAL {
-
+        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::IntegerType, $1);
+        $$ = new Constant(se);
     }
 	| STRINGLITERAL {
-        
+        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::StringType, $1);
+        $$ = new Constant(se);
     }
 	| NuLL {
         $$ = nullptr;
     }
 	;
-
-
-
-
-
-
-
-
-
-
-
-Program
-    : RegionStmts {
-        ast.setRoot($1);
-    }
-    ;
-
-RegionStmts
-    : RegionStmt {
-        $$ = $1;
-    }
-    | RegionStmts RegionStmt {
-        $$ = new SeqNode($1, $2);
-    }
-    ;
-
-RegionStmt
-    : ProceRegion {
-        $$ = $1;
-    }
-    ;
-
-ProceRegion
-    : ProDeclStmt {
-        $$ = $1;
-    }
-    | Procedure {
-        $$ = $1;
-    }
-    ;
-
-ProDeclStmt
-    : PROCEDURE Identifier DeclParamList SEMICOLON {
-        Type *proType;
-        DeclStmt* temp = dynamic_cast<DeclStmt*>($3);
-        std::vector<Type*> paramTypes;
-        while (temp) {
-            paramTypes.push_back(temp->getId()->getSymbolEntry()->getType());
-            temp = dynamic_cast<DeclStmt*>(temp->getNext());
-        }
-        proType = new ProcedureType(paramTypes);
-        SymbolEntry *se = new IdentifierSymbolEntry(proType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
-    }
-    ;
-
-Procedure
-    : PROCEDURE Identifier DeclParamList IS DeclStmts BeginRegion Identifier SEMICOLON {
-        Type *proType;
-        DeclStmt* temp = dynamic_cast<DeclStmt*>($3);
-        std::vector<Type*> paramTypes;
-        std::vector<SymbolEntry*> paramIds;
-        while (temp) {
-            paramTypes.push_back(temp->getId()->getSymbolEntry()->getType());
-            paramIds.push_back(temp->getId()->getSymbolEntry());
-            temp = dynamic_cast<DeclStmt*>(temp->getNext());
-        }
-        proType = new ProcedureType(paramTypes, paramIds);
-        SymbolEntry *se = new IdentifierSymbolEntry(proType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
-        $$ = new ProcedureDef(se, dynamic_cast<DeclStmt*>($3), $6);
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-        delete []$2;
-    }
-    | PROCEDURE Identifier DeclParamList IS BeginRegion Identifier SEMICOLON {
-        printLog("enter");
-        Type *proType;
-        DeclStmt* temp = dynamic_cast<DeclStmt*>($3);
-        std::vector<Type*> paramTypes;
-        std::vector<SymbolEntry*> paramIds;
-        while (temp) {
-            paramTypes.push_back(temp->getId()->getSymbolEntry()->getType());
-            paramIds.push_back(temp->getId()->getSymbolEntry());
-            temp = dynamic_cast<DeclStmt*>(temp->getNext());
-        }
-        proType = new ProcedureType(paramTypes, paramIds);
-        SymbolEntry *se = new IdentifierSymbolEntry(proType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
-        $$ = new ProcedureDef(se, dynamic_cast<DeclStmt*>($3), $5);
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-        delete []$2;
-        printLog("leave");
-    }
-    ;
-
-DeclParamList
-    : LPAREN DeclParams RPAREN {
-        $$ = $2;
-    }
-    | %empty {$$ = nullptr;}
-    ;
-
-DeclParams
-    : DeclParams SEMICOLON VarDeclSpecifier {
-        $$ = $1;
-        $1->setNext($3);
-    }
-    | VarDeclSpecifier {
-        $$ = new DeclStmt(dynamic_cast<Id*>($1));
-    }
-    ;
-
-VarDeclSpecifier
-    : Identifier COLON Type {
-        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, identifiers->getLevel());
-        identifiers->install($1, se);
-        $$ = new Id(se);
-    }
-    ;
-
-BeginRegion
-    : BEGINLITERAL ProceStmts END{
-        $$ = $2;
-    }
-    | BEGINLITERAL END { $$ = nullptr; }
-    ;
-
-DeclStmts
-    : DeclStmt {
-        $$ = $1;
-    }
-    | DeclStmts DeclStmt {
-        $$ = new SeqNode($1, $2);
-    }
-    ;
-
-ProceStmts
-    : ProceStmt {
-        $$ = $1;
-    }
-    | ProceStmts ProceStmt {
-        $$ = new SeqNode($1, $2);
-    }
-    ;
-
-DeclStmt
-    : ProceRegion {
-        $$ = $1;
-    }
-    | VarDeclStmt { 
-        $$ = $1; 
-    }
-    ;
-
-VarDeclStmt
-    : VarDeclSpecifier InitList SEMICOLON{
-        $$ = new AssignStmt($1, $2);
-    }
-    ;
-
-InitList
-    : ASSIGN Expr {
-        $$ = $2; 
-    }
-    ;
-
-ExprStmt
-    : Cond SEMICOLON {
-        $$ = new ExprStmt($1);
-    }
-    ;
-
-ProceStmt
-    : BlankStmt {
-        $$ = $1;
-    }
-    | AssignStmt {
-        $$ = $1;
-    }
-    | IfSection {
-        $$ = $1;
-    }
-    | ExprStmt {
-        $$ = $1;
-    }
-    ;
-
-BlankStmt
-    : NULLLITERAL SEMICOLON {
-        $$ = nullptr;
-    }
-    ;
-
-AssignStmt
-    : LVal InitList SEMICOLON {
-        $$ = new AssignStmt($1, $2);
-    }
-    ;
-
-Type
-    : INTEGER {
-        $$ = TypeSystem::integerType;
-    }
-    | STRING {
-        $$ = TypeSystem::stringType;
-    }
-    | NATURAL {
-        $$ = TypeSystem::naturalType;
-    }
-    ;
-
-LVal
-    : Identifier {
-        SymbolEntry* se = identifiers->lookup($1);
-        if(se == nullptr){
-            printLog("identifier " << (char*)$1 << " is not defined.");
-        }
-        $$ = new Id(se);
-        delete []$1;
-    }
-    ;
-
-PrimaryExpr
-    : LPAREN Expr RPAREN {
-        $$ = $2;
-    }
-    | LVal {
-        $$ = $1;
-    }
-    | DECIMIAL {
-        ConstantSymbolEntry *se = new ConstantSymbolEntry(TypeSystem::integerType, $1);
-        $$ = new Constant(se);
-    }
-    | STRINGLITERAL {
-        SymbolEntry* se;
-        se = globals->lookup(std::string($1));
-        if (se == nullptr) {
-            Type* type = new StringType(strlen($1));
-            se = new ConstantSymbolEntry(type, std::string($1));
-            globals->install(std::string($1), se);
-        }
-        ExprNode* expr = new ExprNode(se);
-        $$ = expr;
-    }
-    ;
-
-UnaryExpr
-    : 
-    PrimaryExpr {$$ = $1;}
-    | Identifier LPAREN DefParams RPAREN { 
-        SymbolEntry* se = identifiers->lookup($1);
-        if(se == nullptr) {
-            printLog("Fun: "  << (char*)$1 <<" is not defined.");
-        }
-        $$ = new CallExpr(se, $3);
-    }
-    ;
-
-MulExpr
-    :
-    UnaryExpr {$$ = $1;}
-    | MulExpr MUL UnaryExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
-    }
-    | MulExpr DIV UnaryExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
-    }
-    ;
-
-AddExpr
-    :
-    MulExpr {$$ = $1;}
-    | AddExpr ADD MulExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
-    }
-    | AddExpr SUB MulExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
-    }
-    ;
-
-RelExpr
-    :
-    AddExpr {$$ = $1;}
-    | RelExpr EQUAL AddExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::EQUAL, $1, $3);
-    }
-    | RelExpr LESS AddExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::LESS, $1, $3);
-    }
-    | RelExpr LESSEQUAL AddExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::LESSEQUAL, $1, $3);
-    }
-    | RelExpr GREATER AddExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::GREATER, $1, $3);
-    }
-    | RelExpr GREATEREQUAL AddExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::GREATEREQUAL, $1, $3);
-    }
-    ;
-
-LAndExpr
-    :
-    RelExpr {$$ = $1;}
-    | LAndExpr SINGLEAND RelExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::AND, $1, $3);
-    }
-    ;
-
-LOrExpr
-    :
-    LAndExpr {$$ = $1;}
-    | LOrExpr SINGLEOR LAndExpr {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::OR, $1, $3);
-    }
-    ;
-
-Expr
-    :
-    AddExpr {$$ = $1;}
-    ;
-
-Cond
-    :
-    LOrExpr {$$ = $1;}
-    ;
-
-DefParams
-    : Cond {
-        $$ = $1;
-    }
-    | DefParams COMMA Cond {
-        $$ = $1;
-        $$->setNext($3);
-    }
-    ;
-
-IfSection
-    : IfStmt END IF {
-        $$ = new IfSectionStmt($1);
-    }
-    | IfStmt ElsifStmts END IF {
-        $$ = new IfSectionStmt($1, $2, nullptr);
-    }
-    | IfStmt ElsifStmts ElseStmt END IF {
-        $$ = new IfSectionStmt($1, $2, $3);
-    }
-    | IfStmt ElseStmt END IF {
-        $$ = new IfSectionStmt($1, nullptr, $2);
-    }
-    ;
-
-IfStmt
-    : IF Cond THEN ProceStmts{
-        $$ = new IfStmt($2, $4);
-    }
-    ;
-
-ElsifStmt
-    : ELSIF Cond THEN ProceStmts{
-        $$ = new IfStmt($2, $4, true);
-    }
-    ;
-
-ElsifStmts
-    : ElsifStmt { $$ = $1; } 
-    | ElsifStmts ElsifStmt {
-        $$ = new SeqNode($1, $2);
-    }
-    ;
-
-ElseStmt
-    : ELSE ProceStmts{
-        $$ = new IfStmt($2);
-    }
-    ;
-
 %%
 
 int yyerror(char const* message)

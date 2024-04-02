@@ -78,9 +78,9 @@
 
     #define DEBUG_SWITCH_TYPE_CHECK 1
     #if DEBUG_SWITCH_TYPE_CHECK
-    #define printLog(str) std::cerr<<"[YACC INFO]:"<<str<<"\n";
+    #define DEBUG_YACC(str) std::cerr<<"[YACC INFO]:"<<str<<"\n";
     #else
-    #define printLog(str) //
+    #define DEBUG_YACC(str) //
     #endif
 
     int yylex();
@@ -144,54 +144,106 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    DECIMIAL = 258,
-    ID = 259,
-    STRINGLITERAL = 260,
-    INTEGER = 261,
-    STRING = 262,
-    NATURAL = 263,
-    ADD = 264,
-    SUB = 265,
-    MUL = 266,
-    DIV = 267,
-    EQUAL = 268,
-    LESS = 269,
-    LESSEQUAL = 270,
-    GREATER = 271,
-    GREATEREQUAL = 272,
-    ASSIGN = 273,
-    ARROW = 274,
-    COLON = 275,
-    SEMICOLON = 276,
-    LPAREN = 277,
-    RPAREN = 278,
-    COMMA = 279,
-    SINGLEAND = 280,
-    SINGLEOR = 281,
-    SINGLEQUOTES = 282,
-    ELLIPISIS = 283,
-    CONSTANT = 284,
-    IF = 285,
-    ELSIF = 286,
-    ELSE = 287,
-    FOR = 288,
-    LOOP = 289,
-    EXIT = 290,
-    CASE = 291,
-    WHEN = 292,
-    OTHERS = 293,
-    OR = 294,
-    REVERSE = 295,
-    IN = 296,
-    IMAGE = 297,
-    LAST = 298,
-    PROCEDURE = 299,
-    IS = 300,
-    THEN = 301,
-    BEGINLITERAL = 302,
-    END = 303,
-    DECLARE = 304,
-    NULLLITERAL = 305
+    TIC = 258,
+    DOTDOT = 259,
+    LTLT = 260,
+    BOX = 261,
+    LTEQ = 262,
+    GTEQ = 263,
+    EXPON = 264,
+    NE = 265,
+    GTGT = 266,
+    GE = 267,
+    LE = 268,
+    EQ = 269,
+    ASSIGN = 270,
+    RIGHTSHAFT = 271,
+    ABORT = 272,
+    ABS = 273,
+    ABSTRACT = 274,
+    ACCEPT = 275,
+    ACCESS = 276,
+    ALIASED = 277,
+    ALL = 278,
+    AND = 279,
+    ARRAY = 280,
+    AT = 281,
+    BEGiN = 282,
+    BODY = 283,
+    CASE = 284,
+    CONSTANT = 285,
+    DECLARE = 286,
+    DELAY = 287,
+    DELTA = 288,
+    DIGITS = 289,
+    DO = 290,
+    ELSE = 291,
+    ELSIF = 292,
+    END = 293,
+    ENTRY = 294,
+    EXCEPTION = 295,
+    EXIT = 296,
+    FOR = 297,
+    FUNCTION = 298,
+    GENERIC = 299,
+    GOTO = 300,
+    IF = 301,
+    IN = 302,
+    IS = 303,
+    LIMITED = 304,
+    LOOP = 305,
+    MUL = 306,
+    DIV = 307,
+    MOD = 308,
+    NEW = 309,
+    NOT = 310,
+    SUB = 311,
+    ADD = 312,
+    NuLL = 313,
+    OF = 314,
+    OR = 315,
+    OTHERS = 316,
+    OUT = 317,
+    PACKAGE = 318,
+    PRAGMA = 319,
+    PRIVATE = 320,
+    PROCEDURE = 321,
+    PROTECTED = 322,
+    RAISE = 323,
+    RANGE = 324,
+    RECORD = 325,
+    REM = 326,
+    RENAMES = 327,
+    REQUEUE = 328,
+    RETURN = 329,
+    REVERSE = 330,
+    SELECT = 331,
+    SEPARATE = 332,
+    SUBTYPE = 333,
+    TAGGED = 334,
+    TASK = 335,
+    TERMINATE = 336,
+    THEN = 337,
+    TYPE = 338,
+    UNTIL = 339,
+    USE = 340,
+    WHEN = 341,
+    WHILE = 342,
+    WITH = 343,
+    XOR = 344,
+    DECIMIAL = 345,
+    Identifier = 346,
+    STRINGLITERAL = 347,
+    INTEGER = 348,
+    STRING = 349,
+    NATURAL = 350,
+    COLON = 351,
+    SEMICOLON = 352,
+    LPAREN = 353,
+    RPAREN = 354,
+    COMMA = 355,
+    SINGLEAND = 356,
+    SINGLEOR = 357
   };
 #endif
 
@@ -205,9 +257,10 @@ union YYSTYPE
     int IntType;
     StmtNode* StmtType;
     ExprNode* ExprType;
+    OpSignNode* SignType;
     Type* type;
 
-#line 211 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 264 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -321,7 +374,7 @@ typedef int yytype_uint16;
 #define YYSIZEOF(X) YY_CAST (YYPTRDIFF_T, sizeof (X))
 
 /* Stored state numbers (used for stacks). */
-typedef yytype_int8 yy_state_t;
+typedef yytype_uint8 yy_state_t;
 
 /* State numbers in computations.  */
 typedef int yy_state_fast_t;
@@ -526,19 +579,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  9
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   127
+#define YYLAST   302
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  51
+#define YYNTOKENS  103
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  37
+#define YYNNTS  69
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  71
+#define YYNRULES  137
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  126
+#define YYNSTATES  216
 
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   305
+#define YYMAXUTOK   357
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -580,21 +633,32 @@ static const yytype_int8 yytranslate[] =
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
       35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
-      45,    46,    47,    48,    49,    50
+      45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
+      55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
+      65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
+      75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
+      85,    86,    87,    88,    89,    90,    91,    92,    93,    94,
+      95,    96,    97,    98,    99,   100,   101,   102
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    58,    58,    64,    67,    73,    79,    82,    88,   104,
-     124,   149,   152,   156,   160,   166,   174,   177,   181,   184,
-     190,   193,   199,   202,   208,   214,   220,   226,   229,   232,
-     235,   241,   247,   253,   256,   259,   265,   276,   279,   282,
-     286,   301,   302,   313,   314,   318,   326,   327,   331,   339,
-     340,   344,   348,   352,   356,   364,   365,   373,   374,   382,
-     387,   391,   394,   401,   404,   407,   410,   416,   422,   428,
-     429,   435
+       0,   140,   140,   146,   149,   155,   158,   164,   170,   198,
+     199,   205,   211,   214,   220,   227,   230,   233,   238,   239,
+     245,   245,   257,   258,   265,   268,   274,   279,   287,   290,
+     297,   300,   306,   309,   316,   319,   325,   328,   331,   334,
+     337,   343,   346,   349,   352,   358,   364,   371,   374,   380,
+     390,   396,   397,   403,   409,   412,   419,   425,   431,   436,
+     437,   443,   449,   450,   461,   467,   470,   477,   480,   483,
+     489,   494,   500,   505,   506,   513,   514,   517,   523,   530,
+     531,   537,   543,   544,   551,   556,   561,   562,   568,   574,
+     579,   580,   586,   592,   595,   598,   604,   607,   610,   616,
+     619,   625,   628,   631,   634,   640,   643,   646,   649,   652,
+     655,   661,   664,   670,   673,   676,   682,   685,   691,   694,
+     697,   703,   706,   712,   715,   718,   721,   727,   730,   733,
+     736,   742,   745,   749,   755,   761,   765,   769
 };
 #endif
 
@@ -603,21 +667,33 @@ static const yytype_int16 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "DECIMIAL", "ID", "STRINGLITERAL",
-  "INTEGER", "STRING", "NATURAL", "ADD", "SUB", "MUL", "DIV", "EQUAL",
-  "LESS", "LESSEQUAL", "GREATER", "GREATEREQUAL", "ASSIGN", "ARROW",
-  "COLON", "SEMICOLON", "LPAREN", "RPAREN", "COMMA", "SINGLEAND",
-  "SINGLEOR", "SINGLEQUOTES", "ELLIPISIS", "CONSTANT", "IF", "ELSIF",
-  "ELSE", "FOR", "LOOP", "EXIT", "CASE", "WHEN", "OTHERS", "OR", "REVERSE",
-  "IN", "IMAGE", "LAST", "PROCEDURE", "IS", "THEN", "BEGINLITERAL", "END",
-  "DECLARE", "NULLLITERAL", "$accept", "Program", "RegionStmts",
-  "RegionStmt", "ProceRegion", "ProDeclStmt", "Procedure", "DeclParamList",
-  "DeclParams", "VarDeclSpecifier", "BeginRegion", "DeclStmts",
-  "ProceStmts", "DeclStmt", "VarDeclStmt", "InitList", "ExprStmt",
-  "ProceStmt", "BlankStmt", "AssignStmt", "Type", "LVal", "PrimaryExpr",
-  "UnaryExpr", "MulExpr", "AddExpr", "RelExpr", "LAndExpr", "LOrExpr",
-  "Expr", "Cond", "DefParams", "IfSection", "IfStmt", "ElsifStmt",
-  "ElsifStmts", "ElseStmt", YY_NULLPTR
+  "$end", "error", "$undefined", "TIC", "DOTDOT", "LTLT", "BOX", "LTEQ",
+  "GTEQ", "EXPON", "NE", "GTGT", "GE", "LE", "EQ", "ASSIGN", "RIGHTSHAFT",
+  "ABORT", "ABS", "ABSTRACT", "ACCEPT", "ACCESS", "ALIASED", "ALL", "AND",
+  "ARRAY", "AT", "BEGiN", "BODY", "CASE", "CONSTANT", "DECLARE", "DELAY",
+  "DELTA", "DIGITS", "DO", "ELSE", "ELSIF", "END", "ENTRY", "EXCEPTION",
+  "EXIT", "FOR", "FUNCTION", "GENERIC", "GOTO", "IF", "IN", "IS",
+  "LIMITED", "LOOP", "MUL", "DIV", "MOD", "NEW", "NOT", "SUB", "ADD",
+  "NuLL", "OF", "OR", "OTHERS", "OUT", "PACKAGE", "PRAGMA", "PRIVATE",
+  "PROCEDURE", "PROTECTED", "RAISE", "RANGE", "RECORD", "REM", "RENAMES",
+  "REQUEUE", "RETURN", "REVERSE", "SELECT", "SEPARATE", "SUBTYPE",
+  "TAGGED", "TASK", "TERMINATE", "THEN", "TYPE", "UNTIL", "USE", "WHEN",
+  "WHILE", "WITH", "XOR", "DECIMIAL", "Identifier", "STRINGLITERAL",
+  "INTEGER", "STRING", "NATURAL", "COLON", "SEMICOLON", "LPAREN", "RPAREN",
+  "COMMA", "SINGLEAND", "SINGLEOR", "$accept", "Program", "CompUnit",
+  "Unit", "SubprogDecl", "SubprogSpec", "FormalPartOpt", "FormalPart",
+  "Params", "Param", "Type", "InitOpt", "SubprogBody", "$@1", "DeclPart",
+  "Decl", "ObjectDecl", "DeclItemOrBodys", "DeclItemOrBody", "Statements",
+  "Statement", "SimpleStmt", "CompoundStmt", "NullStmt", "AssignStmt",
+  "ReturnStmt", "ProcedureCall", "ExitStmt", "WhenOpt", "IfStmt",
+  "CondClauses", "CondClause", "CondPart", "Condition", "ElseOpt",
+  "CaseStmt", "Alternatives", "Alternative", "Choices", "Choice",
+  "DiscreteWithRange", "LoopStmt", "LabelOpt", "Iteration", "IterPart",
+  "ReverseOpt", "BasicLoop", "IdOpt", "DiscreteRange", "RangeConstrOpt",
+  "Range", "Block", "BlockDecl", "BlockBody", "Expression", "Logical",
+  "ShortCircuit", "Relation", "Relational", "Membership",
+  "SimpleExpression", "Unary", "Adding", "Term", "Multiplying", "Factor",
+  "Primary", "ParenthesizedPrimary", "Literal", YY_NULLPTR
 };
 #endif
 
@@ -631,157 +707,243 @@ static const yytype_int16 yytoknum[] =
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
      285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
      295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305
+     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
+     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
+     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
+     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
+     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
+     355,   356,   357
 };
 # endif
 
-#define YYPACT_NINF (-61)
+#define YYPACT_NINF (-106)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-1)
+#define YYTABLE_NINF (-133)
 
 #define yytable_value_is_error(Yyn) \
   0
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-static const yytype_int8 yypact[] =
+static const yytype_int16 yypact[] =
 {
-     -30,    23,    24,   -30,   -61,   -61,   -61,   -61,    10,   -61,
-     -61,    34,    -8,    26,    -3,   -61,   -61,     8,    57,    34,
-     -61,     0,   -61,    36,    45,     8,   -61,   -61,   -61,   -61,
-     -61,   -61,   -61,   -61,    38,   -61,    12,    12,   -61,    37,
-       3,   -61,   -61,   -61,   -61,    36,   -61,   -61,    31,    58,
-      76,    44,    47,    56,   -61,     9,    12,    59,    60,    74,
-     -61,    12,   -61,    58,    64,    49,   -61,   -61,   -61,    73,
-      12,    12,    12,    12,    12,    12,    12,    12,    12,    12,
-      12,   -61,    12,     6,    66,   -61,    13,    51,   -61,   -61,
-     -61,    79,   -61,    48,   -61,     6,   -61,   -61,   -61,    31,
-      31,    58,    58,    58,    58,    58,    76,    44,    55,     6,
-     -61,    72,   -61,    61,    80,   -61,   -61,    12,     6,     6,
-     -61,    81,   -61,   -61,     6,   -61
+     -35,   -46,   103,   -35,  -106,  -106,    -8,  -106,    16,  -106,
+    -106,  -106,  -106,    27,  -106,  -106,    10,    30,   -56,  -106,
+      39,  -106,  -106,    89,  -106,  -106,    10,  -106,   106,    27,
+    -106,    56,   211,    98,  -106,  -106,  -106,  -106,   126,  -106,
+     106,   126,    64,    67,    64,    71,    55,     2,   197,  -106,
+    -106,  -106,  -106,  -106,  -106,  -106,  -106,  -106,  -106,  -106,
+     -15,  -106,    67,    64,  -106,   126,    94,    85,    85,  -106,
+    -106,  -106,  -106,  -106,  -106,    64,   118,  -106,    22,   139,
+     108,  -106,   173,  -106,  -106,  -106,   107,    25,  -106,   211,
+     120,   -14,  -106,  -106,    20,    64,  -106,  -106,  -106,    10,
+     119,    64,   159,   136,    89,   115,   -14,   117,  -106,  -106,
+    -106,    -5,   134,  -106,   182,  -106,    64,    64,  -106,  -106,
+    -106,  -106,  -106,  -106,  -106,   170,  -106,  -106,  -106,    64,
+      82,   139,   108,  -106,  -106,  -106,  -106,   139,    85,    64,
+     122,   211,    64,   185,   167,  -106,  -106,   109,  -106,   189,
+    -106,   211,    67,  -106,   130,   208,  -106,  -106,  -106,  -106,
+     -18,  -106,  -106,  -106,  -106,   133,    14,  -106,     3,   108,
+    -106,  -106,  -106,  -106,   204,  -106,   201,  -106,  -106,   210,
+     152,   -22,  -106,  -106,    67,   224,    73,  -106,    64,   157,
+     209,  -106,    64,  -106,   164,   166,  -106,   195,   -10,  -106,
+    -106,  -106,   -14,     1,   133,  -106,  -106,  -106,  -106,  -106,
+      64,   211,    73,  -106,   186,  -106
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
      Performed when YYTABLE does not specify something else to do.  Zero
      means the default is an error.  */
-static const yytype_int8 yydefact[] =
+static const yytype_uint8 yydefact[] =
 {
-       0,     0,     0,     2,     3,     5,     6,     7,    12,     1,
-       4,     0,     0,     0,     0,    14,     8,     0,     0,     0,
-      11,     0,    22,     0,     0,     0,    18,    23,    33,    34,
-      35,    15,    13,    39,    36,    40,     0,     0,    17,     0,
-       0,    30,    20,    27,    28,    38,    41,    43,    46,    49,
-      55,    57,    60,     0,    29,     0,     0,     0,     0,     0,
-      19,     0,    38,    59,     0,     0,    31,    16,    21,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,    26,     0,     0,     0,    69,     0,     0,    25,    24,
-      10,     0,    61,     0,    37,     0,    32,    44,    45,    47,
-      48,    50,    51,    52,    53,    54,    56,    58,     0,    71,
-      63,     0,    70,     0,     0,     9,    42,     0,    67,     0,
-      64,     0,    66,    62,    68,    65
+       0,     0,     0,     2,     3,     5,     0,     6,     9,     1,
+       4,    20,     7,     0,     8,    10,    22,     0,     0,    12,
+       0,    25,    30,     0,    31,    24,    23,    28,     0,     0,
+      11,     0,    73,     0,    29,    15,    16,    17,    18,    13,
+       0,    18,     0,    82,     0,     0,     0,     0,    73,    32,
+      34,    35,    36,    37,    38,    39,    40,    41,    42,    43,
+      75,    44,    82,     0,    14,    18,     0,     0,     0,   117,
+     116,   137,   135,   132,   136,     0,     0,    93,   101,     0,
+     114,   121,   127,   133,   131,    83,    51,    59,    54,    73,
+       0,    58,    45,    47,     0,     0,    74,    49,    33,    22,
+       0,     0,     0,    79,     0,     0,    19,     0,    26,   129,
+     128,     0,    96,    62,    97,    98,     0,     0,   108,   110,
+     106,   109,   107,   105,   111,     0,   119,   118,   120,     0,
+       0,     0,   113,   123,   124,   125,   126,     0,     0,     0,
+       0,    73,     0,     0,    73,    57,    48,     0,    91,     0,
+      76,    73,    82,    80,     0,     0,    21,    27,   134,    99,
+       0,   100,    94,    95,   112,   102,   104,   103,     0,   115,
+     122,   130,    52,    50,    73,    55,     0,    46,    78,    73,
+       0,   132,    77,    85,    82,     0,     0,    63,     0,     0,
+       0,    72,     0,    84,     0,     0,    69,   132,     0,    65,
+      68,    71,    67,   101,    88,    53,    81,    87,    89,    61,
+       0,    73,     0,    70,    73,    66
 };
 
   /* YYPGOTO[NTERM-NUM].  */
-static const yytype_int8 yypgoto[] =
+static const yytype_int16 yypgoto[] =
 {
-     -61,   -61,   -61,   109,     4,   -61,   -61,   -61,   -61,    20,
-      88,   -61,   -60,    89,   -61,    70,   -61,   -39,   -61,   -61,
-     -61,   -21,   -61,     5,    11,    30,    39,    40,   -61,    63,
-     -35,   -61,   -61,   -61,    35,   -61,    41
+    -106,  -106,  -106,   262,   181,  -106,  -106,  -106,  -106,   237,
+      11,    -2,   192,  -106,   168,  -106,  -106,  -106,   244,   -87,
+     -47,  -106,  -106,  -106,  -106,  -106,  -106,  -106,  -106,  -106,
+    -106,   131,  -106,   -49,  -106,  -106,  -106,  -106,  -106,    62,
+    -106,  -106,  -106,  -106,  -106,  -106,  -106,   -59,  -106,  -106,
+    -104,  -106,  -106,   171,   -42,  -106,  -106,   -21,  -106,  -106,
+    -105,  -106,  -106,   -57,  -106,   142,   -30,  -106,  -106
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_int8 yydefgoto[] =
+static const yytype_int16 yydefgoto[] =
 {
-      -1,     2,     3,     4,     5,     6,     7,    12,    14,    23,
-      24,    25,    40,    26,    27,    57,    41,    42,    43,    44,
-      31,    62,    46,    47,    48,    49,    50,    51,    52,    64,
-      53,    93,    54,    55,    85,    86,    87
+      -1,     2,     3,     4,    21,     6,    14,    15,    18,    19,
+      38,    64,    22,    16,    23,    24,    25,    26,    27,    48,
+      49,    50,    51,    52,    53,    54,    55,    56,   140,    57,
+      87,    88,    89,    90,   143,    58,   160,   187,   198,   199,
+     200,    59,    60,   102,   103,   154,   152,    86,   182,   193,
+     201,    61,   104,    33,    91,   116,   117,    77,   129,   130,
+      78,    79,   131,    80,   137,    81,    82,    83,    84
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule whose
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
-static const yytype_int8 yytable[] =
+static const yytype_int16 yytable[] =
 {
-      45,    68,    65,    33,    34,    35,    33,    34,    35,    33,
-      34,    35,    13,    16,     1,    33,    34,    35,    19,    45,
-      20,    22,    36,   109,     9,    36,    92,     8,    36,    22,
-      37,    15,    11,    37,    36,   118,    37,    17,    13,    32,
-      82,    83,    70,    71,    82,    83,    18,   108,    38,    58,
-      39,    67,     1,    39,    56,    21,    39,    84,    66,   124,
-      61,   111,    45,    28,    29,    30,    63,    72,    73,    79,
-      68,   116,   117,    80,    45,    97,    98,    81,    91,    68,
-      89,    90,   123,    99,   100,    68,    63,    94,    45,    74,
-      75,    76,    77,    78,    96,    95,   110,    45,    45,   114,
-     115,   119,   120,    45,   101,   102,   103,   104,   105,   121,
-     122,   125,    10,    59,    60,    69,     0,     0,   106,    88,
-     107,   112,     0,     0,     0,     0,     0,   113
+      76,    98,   144,   105,    94,   188,   211,   188,   118,   119,
+     112,   120,   -90,   121,   122,   123,    99,    95,  -132,   112,
+     185,   106,   132,  -132,   165,   168,   167,   100,   -86,   118,
+     119,     1,   120,   111,   121,   122,   123,   109,   110,    66,
+      11,    29,    41,    30,   112,     8,   114,   192,   124,   168,
+     183,    65,   150,   147,   174,   114,   125,   126,   127,   126,
+     127,   141,   142,   107,   179,  -132,  -132,  -132,   186,   124,
+    -132,  -132,   101,    67,   169,   115,     1,   125,   126,   127,
+     114,   203,    67,   204,   115,  -132,    40,   168,   207,    12,
+     172,    67,   212,   180,   158,   162,   163,    98,    96,    97,
+      67,    20,   128,     9,   128,   168,   213,   203,   171,   115,
+      68,    69,    70,    71,    13,  -132,    32,   146,    17,    68,
+      69,    70,    71,   128,   214,   194,    28,    98,    68,    69,
+      70,    71,    98,   112,   196,    31,    62,    68,    69,    70,
+      71,    63,   112,    71,   202,    72,    73,    74,    67,    35,
+      36,    37,    93,    75,    72,    73,    74,    67,    85,   133,
+     134,   135,    75,    72,   197,    74,   113,    98,    92,   114,
+     202,    75,    72,   166,    74,    72,    73,    74,   114,   136,
+      75,     5,   138,    75,     5,    68,    69,    70,    71,   126,
+     127,   108,     7,   139,    68,     7,    42,    71,   115,    35,
+      36,    37,   145,   -56,   -56,   -56,   177,   115,    43,   151,
+     149,   153,   156,    44,   157,    42,   159,   164,   161,   173,
+      72,   181,    74,   176,   -64,    45,    42,    43,    75,    72,
+      73,    74,    44,    42,   128,   -92,   178,    75,    43,    42,
+      42,    46,   -60,    44,    45,    43,   184,   189,   190,   191,
+      44,    43,    43,   195,   205,    45,    44,    44,    47,   206,
+      46,   208,    45,   209,   210,    10,    39,   148,    45,    45,
+      34,    46,   -64,   175,   215,   155,     0,    47,    46,   170,
+       0,     0,     0,     0,    46,    46,     0,     0,    47,     0,
+       0,     0,     0,     0,     0,    47,     0,     0,     0,     0,
+       0,    47,    47
 };
 
-static const yytype_int8 yycheck[] =
+static const yytype_int16 yycheck[] =
 {
-      21,    40,    37,     3,     4,     5,     3,     4,     5,     3,
-       4,     5,     4,    21,    44,     3,     4,     5,    21,    40,
-      23,    17,    22,    83,     0,    22,    61,     4,    22,    25,
-      30,    11,    22,    30,    22,    95,    30,    45,     4,    19,
-      31,    32,    11,    12,    31,    32,    20,    82,    48,     4,
-      50,    48,    44,    50,    18,    47,    50,    48,    21,   119,
-      22,    48,    83,     6,     7,     8,    36,     9,    10,    25,
-     109,    23,    24,    26,    95,    70,    71,    21,     4,   118,
-      21,    21,   117,    72,    73,   124,    56,    23,   109,    13,
-      14,    15,    16,    17,    21,    46,    30,   118,   119,    48,
-      21,    46,    30,   124,    74,    75,    76,    77,    78,    48,
-      30,    30,     3,    25,    25,    45,    -1,    -1,    79,    56,
-      80,    86,    -1,    -1,    -1,    -1,    -1,    86
+      42,    48,    89,    62,    46,     4,    16,     4,     7,     8,
+      24,    10,    27,    12,    13,    14,    31,    15,     4,    24,
+      38,    63,    79,     9,   129,   130,   130,    42,    50,     7,
+       8,    66,    10,    75,    12,    13,    14,    67,    68,    41,
+      48,    97,    31,    99,    24,    91,    60,    69,    47,   154,
+     154,    40,   101,    95,   141,    60,    55,    56,    57,    56,
+      57,    36,    37,    65,   151,    51,    52,    53,    86,    47,
+      56,    57,    87,    18,   131,    89,    66,    55,    56,    57,
+      60,   186,    18,   188,    89,    71,    30,   192,   192,    97,
+     139,    18,   102,   152,    99,   116,   117,   144,    96,    97,
+      18,    91,   101,     0,   101,   210,   210,   212,   138,    89,
+      55,    56,    57,    58,    98,   101,    27,    97,    91,    55,
+      56,    57,    58,   101,   211,   184,    96,   174,    55,    56,
+      57,    58,   179,    24,    61,    96,    38,    55,    56,    57,
+      58,    15,    24,    58,   186,    90,    91,    92,    18,    93,
+      94,    95,    97,    98,    90,    91,    92,    18,    91,    51,
+      52,    53,    98,    90,    91,    92,    48,   214,    97,    60,
+     212,    98,    90,    91,    92,    90,    91,    92,    60,    71,
+      98,     0,     9,    98,     3,    55,    56,    57,    58,    56,
+      57,    97,     0,    86,    55,     3,    29,    58,    89,    93,
+      94,    95,    82,    36,    37,    38,    97,    89,    41,    50,
+      91,    75,    97,    46,    97,    29,    82,    47,    36,    97,
+      90,    91,    92,    38,    38,    58,    29,    41,    98,    90,
+      91,    92,    46,    29,   101,    38,    47,    98,    41,    29,
+      29,    74,    38,    46,    58,    41,    38,    46,    38,    97,
+      46,    41,    41,    29,    97,    58,    46,    46,    91,    50,
+      74,    97,    58,    97,    69,     3,    29,    99,    58,    58,
+      26,    74,    86,   142,   212,   104,    -1,    91,    74,   137,
+      -1,    -1,    -1,    -1,    74,    74,    -1,    -1,    91,    -1,
+      -1,    -1,    -1,    -1,    -1,    91,    -1,    -1,    -1,    -1,
+      -1,    91,    91
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
-static const yytype_int8 yystos[] =
+static const yytype_uint8 yystos[] =
 {
-       0,    44,    52,    53,    54,    55,    56,    57,     4,     0,
-      54,    22,    58,     4,    59,    60,    21,    45,    20,    21,
-      23,    47,    55,    60,    61,    62,    64,    65,     6,     7,
-       8,    71,    60,     3,     4,     5,    22,    30,    48,    50,
-      63,    67,    68,    69,    70,    72,    73,    74,    75,    76,
-      77,    78,    79,    81,    83,    84,    18,    66,     4,    61,
-      64,    22,    72,    76,    80,    81,    21,    48,    68,    66,
-      11,    12,     9,    10,    13,    14,    15,    16,    17,    25,
-      26,    21,    31,    32,    48,    85,    86,    87,    80,    21,
-      21,     4,    81,    82,    23,    46,    21,    74,    74,    75,
-      75,    76,    76,    76,    76,    76,    77,    78,    81,    63,
-      30,    48,    85,    87,    48,    21,    23,    24,    63,    46,
-      30,    48,    30,    81,    63,    30
+       0,    66,   104,   105,   106,   107,   108,   115,    91,     0,
+     106,    48,    97,    98,   109,   110,   116,    91,   111,   112,
+      91,   107,   115,   117,   118,   119,   120,   121,    96,    97,
+      99,    96,    27,   156,   121,    93,    94,    95,   113,   112,
+      30,   113,    29,    41,    46,    58,    74,    91,   122,   123,
+     124,   125,   126,   127,   128,   129,   130,   132,   138,   144,
+     145,   154,    38,    15,   114,   113,   114,    18,    55,    56,
+      57,    58,    90,    91,    92,    98,   157,   160,   163,   164,
+     166,   168,   169,   170,   171,    91,   150,   133,   134,   135,
+     136,   157,    97,    97,   157,    15,    96,    97,   123,    31,
+      42,    87,   146,   147,   155,   150,   157,   114,    97,   169,
+     169,   157,    24,    48,    60,    89,   158,   159,     7,     8,
+      10,    12,    13,    14,    47,    55,    56,    57,   101,   161,
+     162,   165,   166,    51,    52,    53,    71,   167,     9,    86,
+     131,    36,    37,   137,   122,    82,    97,   157,   117,    91,
+     136,    50,   149,    75,   148,   156,    97,    97,    99,    82,
+     139,    36,   160,   160,    47,   163,    91,   153,   163,   166,
+     168,   169,   136,    97,   122,   134,    38,    97,    47,   122,
+     150,    91,   151,   153,    38,    38,    86,   140,     4,    46,
+      38,    97,    69,   152,   150,    29,    61,    91,   141,   142,
+     143,   153,   157,   163,   163,    97,    50,   153,    97,    97,
+      69,    16,   102,   153,   122,   142
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
-static const yytype_int8 yyr1[] =
+static const yytype_uint8 yyr1[] =
 {
-       0,    51,    52,    53,    53,    54,    55,    55,    56,    57,
-      57,    58,    58,    59,    59,    60,    61,    61,    62,    62,
-      63,    63,    64,    64,    65,    66,    67,    68,    68,    68,
-      68,    69,    70,    71,    71,    71,    72,    73,    73,    73,
-      73,    74,    74,    75,    75,    75,    76,    76,    76,    77,
-      77,    77,    77,    77,    77,    78,    78,    79,    79,    80,
-      81,    82,    82,    83,    83,    83,    83,    84,    85,    86,
-      86,    87
+       0,   103,   104,   105,   105,   106,   106,   107,   108,   109,
+     109,   110,   111,   111,   112,   113,   113,   113,   114,   114,
+     116,   115,   117,   117,   118,   118,   119,   119,   120,   120,
+     121,   121,   122,   122,   123,   123,   124,   124,   124,   124,
+     124,   125,   125,   125,   125,   126,   127,   128,   128,   129,
+     130,   131,   131,   132,   133,   133,   134,   135,   136,   137,
+     137,   138,   139,   139,   140,   141,   141,   142,   142,   142,
+     143,   143,   144,   145,   145,   146,   146,   146,   147,   148,
+     148,   149,   150,   150,   151,   151,   152,   152,   153,   154,
+     155,   155,   156,   157,   157,   157,   158,   158,   158,   159,
+     159,   160,   160,   160,   160,   161,   161,   161,   161,   161,
+     161,   162,   162,   163,   163,   163,   164,   164,   165,   165,
+     165,   166,   166,   167,   167,   167,   167,   168,   168,   168,
+     168,   169,   169,   169,   170,   171,   171,   171
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     1,     2,     1,     1,     1,     4,     8,
-       7,     3,     0,     3,     1,     3,     3,     2,     1,     2,
-       1,     2,     1,     1,     3,     2,     2,     1,     1,     1,
-       1,     2,     3,     1,     1,     1,     1,     3,     1,     1,
-       1,     1,     4,     1,     3,     3,     1,     3,     3,     1,
-       3,     3,     3,     3,     3,     1,     3,     1,     3,     1,
-       1,     1,     3,     3,     4,     5,     4,     4,     4,     1,
-       2,     2
+       0,     2,     1,     1,     2,     1,     1,     2,     3,     0,
+       1,     3,     1,     3,     4,     1,     1,     1,     0,     2,
+       0,     8,     0,     1,     1,     1,     5,     6,     1,     2,
+       1,     1,     1,     2,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     2,     4,     2,     3,     2,
+       4,     0,     2,     6,     1,     3,     2,     2,     1,     0,
+       2,     7,     0,     2,     4,     1,     3,     1,     1,     1,
+       3,     1,     5,     0,     2,     0,     2,     3,     3,     0,
+       1,     4,     0,     1,     2,     1,     0,     2,     3,     6,
+       0,     2,     2,     1,     3,     3,     1,     1,     1,     2,
+       2,     1,     3,     3,     3,     1,     1,     1,     1,     1,
+       1,     1,     2,     2,     1,     3,     1,     1,     1,     1,
+       1,     1,     3,     1,     1,     1,     1,     1,     2,     2,
+       3,     1,     1,     1,     3,     1,     1,     1
 };
 
 
@@ -1477,624 +1639,1130 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 58 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                  {
+#line 140 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
         ast.setRoot((yyvsp[0].StmtType));
     }
-#line 1485 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1647 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 3:
-#line 64 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                 {
+#line 146 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+           {
         (yyval.StmtType) = (yyvsp[0].StmtType);
     }
-#line 1493 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1655 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 4:
-#line 67 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                             {
+#line 149 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                    {
         (yyval.StmtType) = new SeqNode((yyvsp[-1].StmtType), (yyvsp[0].StmtType));
     }
-#line 1501 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1663 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 5:
-#line 73 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+#line 155 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
                   {
         (yyval.StmtType) = (yyvsp[0].StmtType);
     }
-#line 1509 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1671 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 6:
-#line 79 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                  {
+#line 158 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                      {
         (yyval.StmtType) = (yyvsp[0].StmtType);
     }
-#line 1517 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1679 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 7:
-#line 82 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                {
-        (yyval.StmtType) = (yyvsp[0].StmtType);
+#line 164 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                            {
+        (yyval.StmtType) = new ProcedureDecl(dynamic_cast<SubprogDecl*>((yyvsp[-1].StmtType)));
     }
-#line 1525 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1687 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 8:
-#line 88 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                           {
-        Type *proType;
-        DeclStmt* temp = dynamic_cast<DeclStmt*>((yyvsp[-1].StmtType));
+#line 170 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                         {
+        DEBUG_YACC("Enter SubprogSpec");
+        // Define procedure type.
+        Type* proType;
+        ParamNode* param = nullptr;
+        if((yyvsp[0].StmtType))
+          param = dynamic_cast<ParamNode*>((yyvsp[0].StmtType));
         std::vector<Type*> paramTypes;
-        while (temp) {
-            paramTypes.push_back(temp->getId()->getSymbolEntry()->getType());
-            temp = dynamic_cast<DeclStmt*>(temp->getNext());
+        std::vector<SymbolEntry*> paramIds;
+        while (param) {
+            SymbolEntry* paramSe = param->getParamSymbol();
+            paramTypes.push_back(paramSe->getType());
+            paramIds.push_back(paramSe);
+            param = param->getNext();
         }
-        proType = new ProcedureType(paramTypes);
-        SymbolEntry *se = new IdentifierSymbolEntry(proType, (yyvsp[-2].StrType), identifiers->getLevel());
-        identifiers->install((yyvsp[-2].StrType), se);
-        identifiers = new SymbolTable(identifiers);
+        proType = new ProcedureType(paramTypes, paramIds);
+
+        // Register procedure name into symbol table.
+        SymbolEntry *se = new IdentifierSymbolEntry(proType, (yyvsp[-1].StrType), identifiers->getLevel());
+        identifiers->install((yyvsp[-1].StrType), se);
+        
+        // Define SubprogSpec with ast node.
+        (yyval.StmtType) = new ProcedureSpec(se, param);
+        DEBUG_YACC("Leave SubprogSpec");
     }
-#line 1543 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1717 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 9:
-#line 104 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                                                       {
-        Type *proType;
-        DeclStmt* temp = dynamic_cast<DeclStmt*>((yyvsp[-5].StmtType));
-        std::vector<Type*> paramTypes;
-        std::vector<SymbolEntry*> paramIds;
-        while (temp) {
-            paramTypes.push_back(temp->getId()->getSymbolEntry()->getType());
-            paramIds.push_back(temp->getId()->getSymbolEntry());
-            temp = dynamic_cast<DeclStmt*>(temp->getNext());
-        }
-        proType = new ProcedureType(paramTypes, paramIds);
-        SymbolEntry *se = new IdentifierSymbolEntry(proType, (yyvsp[-6].StrType), identifiers->getLevel());
-        identifiers->install((yyvsp[-6].StrType), se);
-        identifiers = new SymbolTable(identifiers);
-        (yyval.StmtType) = new ProcedureDef(se, dynamic_cast<DeclStmt*>((yyvsp[-5].StmtType)), (yyvsp[-2].StmtType));
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-        delete [](yyvsp[-6].StrType);
-    }
-#line 1568 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 198 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             { (yyval.StmtType) = nullptr; }
+#line 1723 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 10:
-#line 124 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                                             {
-        printLog("enter");
-        Type *proType;
-        DeclStmt* temp = dynamic_cast<DeclStmt*>((yyvsp[-4].StmtType));
-        std::vector<Type*> paramTypes;
-        std::vector<SymbolEntry*> paramIds;
-        while (temp) {
-            paramTypes.push_back(temp->getId()->getSymbolEntry()->getType());
-            paramIds.push_back(temp->getId()->getSymbolEntry());
-            temp = dynamic_cast<DeclStmt*>(temp->getNext());
-        }
-        proType = new ProcedureType(paramTypes, paramIds);
-        SymbolEntry *se = new IdentifierSymbolEntry(proType, (yyvsp[-5].StrType), identifiers->getLevel());
-        identifiers->install((yyvsp[-5].StrType), se);
-        identifiers = new SymbolTable(identifiers);
-        (yyval.StmtType) = new ProcedureDef(se, dynamic_cast<DeclStmt*>((yyvsp[-4].StmtType)), (yyvsp[-2].StmtType));
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-        delete [](yyvsp[-5].StrType);
-        printLog("leave");
+#line 199 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
     }
-#line 1595 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1731 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 11:
-#line 149 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                               {
+#line 205 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                           {
         (yyval.StmtType) = (yyvsp[-1].StmtType);
     }
-#line 1603 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1739 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 12:
-#line 152 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-             {(yyval.StmtType) = nullptr;}
-#line 1609 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 211 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+            {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 1747 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 13:
-#line 156 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                            {
+#line 214 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                 {
         (yyval.StmtType) = (yyvsp[-2].StmtType);
-        (yyvsp[-2].StmtType)->setNext((yyvsp[0].ExprType));
+        (yyvsp[-2].StmtType)->setNext((yyvsp[0].StmtType));
     }
-#line 1618 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1756 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 14:
-#line 160 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                       {
-        (yyval.StmtType) = new DeclStmt(dynamic_cast<Id*>((yyvsp[0].ExprType)));
+#line 220 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                      {
+        SymbolEntry *se = new IdentifierSymbolEntry((yyvsp[-1].type), (yyvsp[-3].StrType), IdentifierSymbolEntry::Param);
+        (yyval.StmtType) = new ParamNode(se, dynamic_cast<InitOptStmt>((yyvsp[0].StmtType)));
     }
-#line 1626 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1765 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 15:
-#line 166 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                    {
-        SymbolEntry *se = new IdentifierSymbolEntry((yyvsp[0].type), (yyvsp[-2].StrType), identifiers->getLevel());
-        identifiers->install((yyvsp[-2].StrType), se);
-        (yyval.ExprType) = new Id(se);
-    }
-#line 1636 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 16:
-#line 174 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                 {
-        (yyval.StmtType) = (yyvsp[-1].StmtType);
-    }
-#line 1644 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 17:
-#line 177 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                       { (yyval.StmtType) = nullptr; }
-#line 1650 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 18:
-#line 181 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-               {
-        (yyval.StmtType) = (yyvsp[0].StmtType);
-    }
-#line 1658 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 19:
-#line 184 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                         {
-        (yyval.StmtType) = new SeqNode((yyvsp[-1].StmtType), (yyvsp[0].StmtType));
-    }
-#line 1666 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 20:
-#line 190 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                {
-        (yyval.StmtType) = (yyvsp[0].StmtType);
-    }
-#line 1674 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 21:
-#line 193 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                           {
-        (yyval.StmtType) = new SeqNode((yyvsp[-1].StmtType), (yyvsp[0].StmtType));
-    }
-#line 1682 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 22:
-#line 199 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                  {
-        (yyval.StmtType) = (yyvsp[0].StmtType);
-    }
-#line 1690 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 23:
-#line 202 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                  { 
-        (yyval.StmtType) = (yyvsp[0].StmtType); 
-    }
-#line 1698 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 24:
-#line 208 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                         {
-        (yyval.StmtType) = new AssignStmt((yyvsp[-2].ExprType), (yyvsp[-1].ExprType));
-    }
-#line 1706 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 25:
-#line 214 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                  {
-        (yyval.ExprType) = (yyvsp[0].ExprType); 
-    }
-#line 1714 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 26:
-#line 220 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                     {
-        (yyval.StmtType) = new ExprStmt((yyvsp[-1].ExprType));
-    }
-#line 1722 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 27:
-#line 226 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                {
-        (yyval.StmtType) = (yyvsp[0].StmtType);
-    }
-#line 1730 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 28:
-#line 229 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                 {
-        (yyval.StmtType) = (yyvsp[0].StmtType);
-    }
-#line 1738 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 29:
-#line 232 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                {
-        (yyval.StmtType) = (yyvsp[0].StmtType);
-    }
-#line 1746 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 30:
-#line 235 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-               {
-        (yyval.StmtType) = (yyvsp[0].StmtType);
-    }
-#line 1754 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 31:
-#line 241 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                            {
-        (yyval.StmtType) = nullptr;
-    }
-#line 1762 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 32:
-#line 247 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                              {
-        (yyval.StmtType) = new AssignStmt((yyvsp[-2].ExprType), (yyvsp[-1].ExprType));
-    }
-#line 1770 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 33:
-#line 253 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+#line 227 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
               {
         (yyval.type) = TypeSystem::integerType;
     }
-#line 1778 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1773 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 34:
-#line 256 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+  case 16:
+#line 230 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
              {
         (yyval.type) = TypeSystem::stringType;
     }
-#line 1786 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1781 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 35:
-#line 259 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+  case 17:
+#line 233 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
               {
         (yyval.type) = TypeSystem::naturalType;
     }
-#line 1794 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1789 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 36:
+  case 18:
+#line 238 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 { (yyval.StmtType) = nullptr; }
+#line 1795 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 19:
+#line 239 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                            {
+        (yyval.StmtType) = new InitOptStmt((yyvsp[0].ExprType));
+    }
+#line 1803 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 20:
+#line 245 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        // Enter into new scope.
+        identifiers = new SymbolTable(identifiers);
+    }
+#line 1812 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 21:
+#line 248 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                             {
+        (yyval.StmtType) = new ProcedureDef(dynamic_cast<SubprogSpec*>((yyvsp[-7].StmtType)), dynamic_cast<DeclItemOrBodyStmt*>((yyvsp[-4].StmtType)), (yyvsp[-3].StmtType));
+        // Leave the scope.
+        SymbolTable* ScopeTable = identifiers;
+        identifiers = identifiers->getPrev();
+        delete ScopeTable;
+    }
+#line 1824 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 22:
+#line 257 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 { (yyval.StmtType) = nullptr; }
+#line 1830 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 23:
+#line 258 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                          {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 1838 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 24:
 #line 265 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-         {
-        SymbolEntry* se = identifiers->lookup((yyvsp[0].StrType));
-        if(se == nullptr){
-            printLog("identifier " << (char*)(yyvsp[0].StrType) << " is not defined.");
-        }
-        (yyval.ExprType) = new Id(se);
-        delete [](yyvsp[0].StrType);
-    }
-#line 1807 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 37:
-#line 276 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                         {
-        (yyval.ExprType) = (yyvsp[-1].ExprType);
-    }
-#line 1815 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 38:
-#line 279 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-           {
-        (yyval.ExprType) = (yyvsp[0].ExprType);
-    }
-#line 1823 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 39:
-#line 282 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
                {
-        ConstantSymbolEntry *se = new ConstantSymbolEntry(TypeSystem::integerType, (yyvsp[0].IntType));
-        (yyval.ExprType) = new Constant(se);
+        (yyval.StmtType) = new DeclStmt(dynamic_cast<ObjectDeclStmt*>((yyvsp[0].StmtType)));
     }
-#line 1832 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1846 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 40:
-#line 286 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                    {
-        SymbolEntry* se;
-        se = globals->lookup(std::string((yyvsp[0].StrType)));
-        if (se == nullptr) {
-            Type* type = new StringType(strlen((yyvsp[0].StrType)));
-            se = new ConstantSymbolEntry(type, std::string((yyvsp[0].StrType)));
-            globals->install(std::string((yyvsp[0].StrType)), se);
-        }
-        ExprNode* expr = new ExprNode(se);
-        (yyval.ExprType) = expr;
+  case 25:
+#line 268 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                  {
+        (yyval.StmtType) = new DeclStmt(dynamic_cast<SubprogDecl*>((yyvsp[0].StmtType)));
     }
-#line 1848 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 41:
-#line 301 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                {(yyval.ExprType) = (yyvsp[0].ExprType);}
 #line 1854 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 42:
-#line 302 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                 { 
-        SymbolEntry* se = identifiers->lookup((yyvsp[-3].StrType));
-        if(se == nullptr) {
-            printLog("Fun: "  << (char*)(yyvsp[-3].StrType) <<" is not defined.");
-        }
-        (yyval.ExprType) = new CallExpr(se, (yyvsp[-1].ExprType));
+  case 26:
+#line 274 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                              {
+        SymbolEntry *se = new IdentifierSymbolEntry((yyvsp[-2].type), (yyvsp[-4].StrType), identifiers->getLevel());
+        identifiers->install((yyvsp[-4].StrType), se);
+        (yyval.StmtType) = new ObjectDeclStmt(se, dynamic_cast<InitOptStmt*>((yyvsp[-1].StmtType)));
     }
-#line 1866 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1864 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 43:
-#line 313 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-              {(yyval.ExprType) = (yyvsp[0].ExprType);}
-#line 1872 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 44:
-#line 314 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                            {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::MUL, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 27:
+#line 279 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                                       {
+        SymbolEntry *se = new IdentifierSymbolEntry((yyvsp[-2].type), (yyvsp[-5].StrType), identifiers->getLevel(), true);
+        identifiers->install((yyvsp[-5].StrType), se);
+        (yyval.StmtType) = new ObjectDeclStmt(se, dynamic_cast<InitOptStmt*>((yyvsp[-1].StmtType)));
     }
-#line 1881 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1874 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 45:
-#line 318 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                            {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::DIV, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 28:
+#line 287 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
     }
-#line 1890 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1882 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 46:
-#line 326 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-            {(yyval.ExprType) = (yyvsp[0].ExprType);}
-#line 1896 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 47:
-#line 327 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                          {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::ADD, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 29:
+#line 290 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                         {
+        (yyval.StmtType) = (yyvsp[-1].StmtType);
+        (yyvsp[-1].StmtType)->setNext((yyvsp[0].StmtType));
     }
-#line 1905 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1891 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 48:
-#line 331 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                          {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::SUB, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 30:
+#line 297 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                  {
+        (yyval.StmtType) = new DeclItemOrBodyStmt(dynamic_cast<ProcedureDef*>((yyvsp[0].StmtType)));
     }
-#line 1914 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1899 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 49:
-#line 339 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-            {(yyval.ExprType) = (yyvsp[0].ExprType);}
-#line 1920 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
-    break;
-
-  case 50:
-#line 340 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                            {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::EQUAL, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 31:
+#line 300 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.StmtType) = new DeclItemOrBodyStmt(dynamic_cast<DeclStmt*>((yyvsp[0].StmtType)));
     }
-#line 1929 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1907 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 51:
-#line 344 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                           {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::LESS, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 32:
+#line 306 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
     }
-#line 1938 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1915 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 52:
-#line 348 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::LESSEQUAL, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 33:
+#line 309 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                               {
+        (yyval.StmtType) = (yyvsp[-1].StmtType);
+        (yyvsp[-1].StmtType)->setNext((yyvsp[0].StmtType));
     }
-#line 1947 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1924 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 53:
-#line 352 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                              {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::GREATER, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 34:
+#line 316 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 {
+        (yyval.StmtType) = new Stmt((yyvsp[0].StmtType));
+    }
+#line 1932 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 35:
+#line 319 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                       {
+        (yyval.StmtType) = new Stmt((yyvsp[0].StmtType));
+    }
+#line 1940 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 36:
+#line 325 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 1948 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 37:
+#line 328 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
     }
 #line 1956 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 54:
-#line 356 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                   {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::GREATEREQUAL, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 38:
+#line 331 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
     }
-#line 1965 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 1964 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 55:
-#line 364 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-            {(yyval.ExprType) = (yyvsp[0].ExprType);}
-#line 1971 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+  case 39:
+#line 334 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                        {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 1972 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
-  case 56:
-#line 365 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                 {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::AND, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+  case 40:
+#line 337 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
     }
 #line 1980 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
+  case 41:
+#line 343 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 1988 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 42:
+#line 346 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                   {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 1996 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 43:
+#line 349 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                   {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 2004 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 44:
+#line 352 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 2012 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 45:
+#line 358 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        (yyval.StmtType) = nullptr;
+    }
+#line 2020 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 46:
+#line 364 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                             {
+        SymbolEntry *se = identifiers->lookup((yyvsp[-3].StrType));
+        (yyval.StmtType) = new AssignStmt(se, (yyvsp[-1].ExprType));
+    }
+#line 2029 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 47:
+#line 371 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                       {
+        (yyval.StmtType) = new ReturnStmt(nullptr);
+    }
+#line 2037 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 48:
+#line 374 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                      {
+        (yyval.StmtType) = new ReturnStmt((yyvsp[-1].ExprType));
+    }
+#line 2045 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 49:
+#line 380 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                           {
+        SymbolEntry* se = identifiers->lookup((yyvsp[-1].StrType));
+        if(!se || !se->getType()->isProcedure()) {
+            std::cerr << "Can't not get Procedure type SymbolEntry!\n";
+        }
+        (yyval.StmtType) = new CallStmt(se);
+    }
+#line 2057 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 50:
+#line 390 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                   {
+        (yyval.StmtType) = new ExitStmt((yyvsp[-1].ExprType));
+    }
+#line 2065 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 51:
+#line 396 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             { (yyval.ExprType) = nullptr; }
+#line 2071 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 52:
+#line 397 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                         {
+        (yyval.ExprType) = (yyvsp[0].ExprType);
+    }
+#line 2079 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 53:
+#line 403 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                              {
+        (yyval.StmtType) = new IfStmt(dynamic_cast<CondClause*>((yyvsp[-4].StmtType)), dynamic_cast<Stmt*>((yyvsp[-3].StmtType)));
+    }
+#line 2087 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 54:
+#line 409 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 2095 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 55:
+#line 412 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                       {
+        (yyval.StmtType) = (yyvsp[-2].StmtType);
+        (yyvsp[-2].StmtType)->setNext((yyvsp[0].StmtType));
+    }
+#line 2104 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 56:
+#line 419 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                          {
+        (yyval.StmtType) = new CondClause((yyvsp[-1].ExprType), dynamic_cast<Stmt*>((yyvsp[0].StmtType)));
+    }
+#line 2112 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
   case 57:
-#line 373 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-             {(yyval.ExprType) = (yyvsp[0].ExprType);}
-#line 1986 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 425 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        (yyval.ExprType) = (yyvsp[-1].ExprType);
+    }
+#line 2120 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 58:
-#line 374 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::integerType, SymbolTable::getLabel());
-        (yyval.ExprType) = new BinaryExpr(se, BinaryExpr::OR, (yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+#line 431 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 {
+        (yyval.ExprType) = (yyvsp[0].ExprType); 
     }
-#line 1995 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2128 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 59:
-#line 382 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-            {(yyval.ExprType) = (yyvsp[0].ExprType);}
-#line 2001 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 436 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 { (yyval.StmtType) = nullptr; }
+#line 2134 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 60:
-#line 387 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-            {(yyval.ExprType) = (yyvsp[0].ExprType);}
-#line 2007 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 437 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                          {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 2142 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 61:
-#line 391 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-           {
-        (yyval.ExprType) = (yyvsp[0].ExprType);
+#line 443 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                                         {
+        (yyval.StmtType) = new CaseStmt((yyvsp[-5].ExprType), dynamic_cast<Alternative*>((yyvsp[-3].StmtType)));
     }
-#line 2015 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2150 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 62:
-#line 394 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                           {
-        (yyval.ExprType) = (yyvsp[-2].ExprType);
-        (yyval.ExprType)->setNext((yyvsp[0].ExprType));
-    }
-#line 2024 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 449 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             { (yyval.StmtType) = nullptr; }
+#line 2156 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 63:
-#line 401 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                    {
-        (yyval.StmtType) = new IfSectionStmt((yyvsp[-2].StmtType));
+#line 450 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                   {
+        if((yyvsp[-1].StmtType)) {
+            (yyval.StmtType) = (yyvsp[-1].StmtType);
+            (yyvsp[-1].StmtType)->setNext((yyvsp[0].StmtType));
+        } else {
+            (yyval.StmtType) = (yyvsp[0].StmtType);
+        }
     }
-#line 2032 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2169 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 64:
-#line 404 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                               {
-        (yyval.StmtType) = new IfSectionStmt((yyvsp[-3].StmtType), (yyvsp[-2].StmtType), nullptr);
+#line 461 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                         {
+        (yyval.StmtType) = new Alternative(dynamic_cast<Choice*>((yyvsp[-2].StmtType)), dynamic_cast<Stmt*>((yyvsp[0].StmtType)));
     }
-#line 2040 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2177 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 65:
-#line 407 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                        {
-        (yyval.StmtType) = new IfSectionStmt((yyvsp[-4].StmtType), (yyvsp[-3].StmtType), (yyvsp[-2].StmtType));
+#line 467 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
     }
-#line 2048 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2185 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 66:
-#line 410 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                             {
-        (yyval.StmtType) = new IfSectionStmt((yyvsp[-3].StmtType), nullptr, (yyvsp[-2].StmtType));
+#line 470 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                  {
+        (yyval.StmtType) = (yyvsp[-2].StmtType);
+        (yyvsp[-2].StmtType)->setNext((yyvsp[0].StmtType));
     }
-#line 2056 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2194 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 67:
-#line 416 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                             {
-        (yyval.StmtType) = new IfStmt((yyvsp[-2].ExprType), (yyvsp[0].StmtType));
+#line 477 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 {
+        (yyval.StmtType) = new Choice((yyvsp[0].ExprType));
     }
-#line 2064 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2202 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 68:
-#line 422 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                                {
-        (yyval.StmtType) = new IfStmt((yyvsp[-2].ExprType), (yyvsp[0].StmtType), true);
+#line 480 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                            {
+        (yyval.StmtType) = new Choice(dynamic_cast<DiscreteRange*>((yyvsp[0].StmtType)));
     }
-#line 2072 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2210 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 69:
-#line 428 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                { (yyval.StmtType) = (yyvsp[0].StmtType); }
-#line 2078 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 483 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 {
+        (yyval.StmtType) = new Choice(true);
+    }
+#line 2218 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 70:
-#line 429 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                           {
-        (yyval.StmtType) = new SeqNode((yyvsp[-1].StmtType), (yyvsp[0].StmtType));
+#line 489 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                             {
+        Type* type = dynamic_cast<Range*>((yyvsp[0].StmtType))->getType();
+        SymbolEntry* se = new IdentifierSymbolEntry(type, (yyvsp[-2].StrType));
+        (yyval.StmtType) = new DiscreteRange((yyvsp[-2].StrType), dynamic_cast<Range*>((yyvsp[0].StmtType)));
     }
-#line 2086 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2228 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
   case 71:
-#line 435 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
-                     {
-        (yyval.StmtType) = new IfStmt((yyvsp[0].StmtType));
+#line 494 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                {
+        (yyval.StmtType) = new DiscreteRange(dynamic_cast<Range*>((yyvsp[0].StmtType)));
     }
-#line 2094 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2236 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 72:
+#line 500 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                                   {
+        (yyval.StmtType) = new LoopStmt(dynamic_cast<LabelOpt*>((yyvsp[-4].StmtType)), dynamic_cast<Iteration*>((yyvsp[-3].StmtType)), dynamic_cast<BasicLoopStmt*>((yyvsp[-2].StmtType)));
+    }
+#line 2244 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 73:
+#line 505 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                  { (yyval.StmtType) = nullptr; }
+#line 2250 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 74:
+#line 506 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                           {
+        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, (yyvsp[-1].StrType), identifiers->getLevel());
+        identifiers->install((yyvsp[-1].StrType), se);
+        (yyval.StmtType) = new LabelOpt(se);
+    }
+#line 2260 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 75:
+#line 513 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                   { (yyval.StmtType) = nullptr; }
+#line 2266 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 76:
+#line 514 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                          {
+        (yyval.StmtType) = new Iteration((yyvsp[0].ExprType));
+    }
+#line 2274 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 77:
+#line 517 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                            {
+        (yyval.StmtType) = new Iteration(dynamic_cast<IterPart*>((yyvsp[-2].StmtType)), (yyvsp[-1].SignType), dynamic_cast<DiscreteRange*>((yyvsp[0].StmtType)));
+    }
+#line 2282 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 78:
+#line 523 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                        {
+        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, (yyvsp[-1].StrType), identifiers->getLevel());
+        identifiers->install((yyvsp[-1].StrType), se);
+        (yyval.StmtType) = new IterPart(se);
+    }
+#line 2292 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 79:
+#line 530 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                    { (yyval.SignType) = nullptr; }
+#line 2298 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 80:
+#line 531 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                  {
+        (yyval.SignType) = new OpSignNode(OpSignNode::REVERSE);
+    }
+#line 2306 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 81:
+#line 537 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                               {
+        (yyval.StmtType) = new BasicLoopStmt(dynamic_cast<Stmt*>((yyvsp[-2].StmtType)));
+    }
+#line 2314 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 82:
+#line 543 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 { (yyval.ExprType) = nullptr; }
+#line 2320 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 83:
+#line 544 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        SymbolEntry* se = identifiers->lookup((yyvsp[0].StrType));
+        (yyval.ExprType) = new Id(se);
+    }
+#line 2329 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 84:
+#line 551 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                {
+        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, (yyvsp[0].StmtType), identifiers->getLevel());
+        identifiers->install((yyvsp[0].StmtType), se);
+        (yyval.StmtType) = new DiscreteRange((yyvsp[-1].StrType), dynamic_cast<Range*>((yyvsp[0].StmtType)));
+    }
+#line 2339 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 85:
+#line 556 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                {
+        (yyval.StmtType) = new DiscreteRange(dynamic_cast<Range*>((yyvsp[0].StmtType)));
+    }
+#line 2347 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 86:
+#line 561 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                        { (yyval.StmtType) = nullptr; }
+#line 2353 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 87:
+#line 562 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                      {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 2361 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 88:
+#line 568 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                               {
+        (yyval.StmtType) = new Range((yyvsp[-2].ExprType), (yyvsp[0].ExprType));
+    }
+#line 2369 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 89:
+#line 574 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                                       {
+        (yyval.StmtType) = new Block(dynamic_cast<LabelOpt*>((yyvsp[-5].StmtType)), dynamic_cast<DeclItemOrBody*>((yyvsp[-4].StmtType)), dynamic_cast<Stmt*>((yyvsp[-3].StmtType)));
+    }
+#line 2377 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 90:
+#line 579 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                   { (yyval.StmtType) = nullptr; }
+#line 2383 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 91:
+#line 580 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                           {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 2391 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 92:
+#line 586 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                       {
+        (yyval.StmtType) = (yyvsp[0].StmtType);
+    }
+#line 2399 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 93:
+#line 592 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.ExprType) = (yyvsp[0].ExprType);
+    }
+#line 2407 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 94:
+#line 595 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                      {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[-2].ExprType), (yyvsp[0].ExprType), (yyvsp[-1].SignType));
+    }
+#line 2415 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 95:
+#line 598 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                           {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[-2].ExprType), (yyvsp[0].ExprType), (yyvsp[-1].SignType));
+    }
+#line 2423 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 96:
+#line 604 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+          {
+        (yyval.SignType) = new OpSignNode(OpSignNode::AND);
+    }
+#line 2431 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 97:
+#line 607 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             {
+        (yyval.SignType) = new OpSignNode(OpSignNode::OR);
+    }
+#line 2439 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 98:
+#line 610 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+              {
+        (yyval.SignType) = new OpSignNode(OpSignNode::XOR);
+    }
+#line 2447 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 99:
+#line 616 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.SignType) = new OpSignNode(OpSignNode::ANDTHEN);
+    }
+#line 2455 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 100:
+#line 619 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                  {
+        (yyval.SignType) = new OpSignNode(OpSignNode::ORELSE);
+    }
+#line 2463 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 101:
+#line 625 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                       {
+        (yyval.ExprType) = (yyvsp[0].ExprType);
+    }
+#line 2471 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 102:
+#line 628 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                                       {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[-2].ExprType), (yyvsp[0].ExprType), (yyvsp[-1].SignType));
+    }
+#line 2479 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 103:
+#line 631 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                            {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[-2].ExprType), dynamic_cast<Range*>((yyvsp[0].StmtType)), (yyvsp[-1].SignType));
+    }
+#line 2487 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 104:
+#line 634 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                                 {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[-2].ExprType), (yyvsp[0].StrType), (yyvsp[-1].SignType));
+    }
+#line 2495 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 105:
+#line 640 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+         {
+        (yyval.SignType) = new OpSignNode(OpSignNode::EQ);
+    }
+#line 2503 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 106:
+#line 643 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             {
+        (yyval.SignType) = new OpSignNode(OpSignNode::NE);
+    }
+#line 2511 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 107:
+#line 646 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             {
+        (yyval.SignType) = new OpSignNode(OpSignNode::LE);
+    }
+#line 2519 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 108:
+#line 649 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.SignType) = new OpSignNode(OpSignNode::LTEQ);
+    }
+#line 2527 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 109:
+#line 652 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             {
+        (yyval.SignType) = new OpSignNode(OpSignNode::GE);
+    }
+#line 2535 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 110:
+#line 655 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.SignType) = new OpSignNode(OpSignNode::GTEQ);
+    }
+#line 2543 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 111:
+#line 661 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+         {
+        (yyval.SignType) = new OpSignNode(OpSignNode::IN);
+    }
+#line 2551 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 112:
+#line 664 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 {
+        (yyval.SignType) = new OpSignNode(OpSignNode::NOTIN);
+    }
+#line 2559 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 113:
+#line 670 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                 {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[0].ExprType), (yyvsp[-1].SignType));
+    }
+#line 2567 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 114:
+#line 673 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.ExprType) = (yyvsp[0].ExprType);
+    }
+#line 2575 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 115:
+#line 676 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                       {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[-2].ExprType), (yyvsp[0].ExprType), (yyvsp[-1].SignType));
+    }
+#line 2583 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 116:
+#line 682 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+          {
+        (yyval.SignType) = new OpSignNode(OpSignNode::ADD);
+    }
+#line 2591 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 117:
+#line 685 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+              {
+        (yyval.SignType) = new OpSignNode(OpSignNode::SUB);
+    }
+#line 2599 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 118:
+#line 691 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+          {
+        (yyval.SignType) = new OpSignNode(OpSignNode::ADD);
+    }
+#line 2607 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 119:
+#line 694 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+              {
+        (yyval.SignType) = new OpSignNode(OpSignNode::SUB);
+    }
+#line 2615 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 120:
+#line 697 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                    {
+        (yyval.SignType) = new OpSignNode(OpSignNode::SINGLEAND);
+    }
+#line 2623 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 121:
+#line 703 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+             {
+        (yyval.ExprType) = (yyvsp[0].ExprType);
+    }
+#line 2631 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 122:
+#line 706 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                  {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[-2].ExprType), (yyvsp[0].ExprType), (yyvsp[-1].SignType));
+    }
+#line 2639 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 123:
+#line 712 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+          {
+        (yyval.SignType) = new OpSignNode(OpSignNode::MUL);
+    }
+#line 2647 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 124:
+#line 715 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+              {
+        (yyval.SignType) = new OpSignNode(OpSignNode::DIV);
+    }
+#line 2655 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 125:
+#line 718 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+              {
+        (yyval.SignType) = new OpSignNode(OpSignNode::MOD);
+    }
+#line 2663 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 126:
+#line 721 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+              {
+        (yyval.SignType) = new OpSignNode(OpSignNode::REM);
+    }
+#line 2671 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 127:
+#line 727 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+              {
+        (yyval.ExprType) = (yyvsp[0].ExprType);
+    }
+#line 2679 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 128:
+#line 730 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                      {
+        (yyval.ExprType) = new FactorExpr((yyvsp[0].ExprType), FactorExpr::NOT);
+    }
+#line 2687 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 129:
+#line 733 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                      {
+        (yyval.ExprType) = new FactorExpr((yyvsp[0].ExprType), FactorExpr::ABS);
+    }
+#line 2695 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 130:
+#line 736 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                                {
+        (yyval.ExprType) = new BinaryExpr((yyvsp[-2].ExprType), (yyvsp[0].ExprType), new OpSignNode(OpSignNode::EXPON));
+    }
+#line 2703 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 131:
+#line 742 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+              {
+        (yyval.ExprType) = (yyvsp[0].ExprType);
+    }
+#line 2711 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 132:
+#line 745 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                     {
+        SymbolEntry* se = identifiers->lookup((yyvsp[0].StrType));
+        (yyval.ExprType) = new Id(se);
+    }
+#line 2720 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 133:
+#line 749 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                               {
+        (yyval.ExprType) = (yyvsp[0].ExprType);
+    }
+#line 2728 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 134:
+#line 755 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                               {
+        (yyval.ExprType) = (yyvsp[-1].ExprType);
+    }
+#line 2736 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 135:
+#line 761 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::IntegerType, (yyvsp[0].IntType));
+        (yyval.ExprType) = new Constant(se);
+    }
+#line 2745 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 136:
+#line 765 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+                        {
+        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::StringType, (yyvsp[0].StrType));
+        (yyval.ExprType) = new Constant(se);
+    }
+#line 2754 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+    break;
+
+  case 137:
+#line 769 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+               {
+        (yyval.ExprType) = nullptr;
+    }
+#line 2762 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
 
 
-#line 2098 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
+#line 2766 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
 
       default: break;
     }
@@ -2326,7 +2994,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 440 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+#line 773 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
 
 
 int yyerror(char const* message)

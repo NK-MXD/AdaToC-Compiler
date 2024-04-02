@@ -146,8 +146,8 @@ LINECOMMENT --.*\n
 }
 "=" {
     if(dump_token) 
-        DUMP_TOKEN("EQUAL\t=");
-    return EQUAL;
+        DUMP_TOKEN("EQ\t=");
+    return EQ;
 }
 "<<" {
     if(dump_token) 
@@ -270,7 +270,7 @@ LINECOMMENT --.*\n
         max = guess - 1;
       } else {
         if(dump_token)
-            DUMP_TOKEN(std::string(key_tab[guess].keyword_value) + std::string("\t") + std::string(token));
+            DUMP_TOKEN(std::string(key_tab[guess].keyword) + std::string("\t") + std::string(token));
         return key_tab[guess].keyword_value;
       }
     }

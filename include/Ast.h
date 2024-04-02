@@ -35,86 +35,131 @@ public:
   virtual void genCppCode() = 0;
 };
 
-class ExprNode : public Node {
-protected:
-  SymbolEntry *symbolEntry;
+class OpSignNode : public Node {
+private:
+  int kind;
 
 public:
-  ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
-  SymbolEntry *getSymbolEntry() { return symbolEntry; };
+  enum {
+    REVERSE,
+    MUL,
+    DIV,
+    MOD,
+    REM,
+    ADD,
+    SUB,
+    SINGLEAND,
+    IN,
+    NOTIN,
+    EQ,
+    NE,
+    LE,
+    LTEQ,
+    GE,
+    GTEQ,
+    ANDTHEN,
+    ORELSE,
+    AND,
+    OR,
+    XOR,
+    EXPON,
+  };
+  OpSignNode(int _kind) : kind(_kind){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class ExprNode : public Node {
+public:
+  virtual Type *getType() = 0;
+};
+
+class StmtNode : public Node {};
+
+class Range : public StmtNode {
+private:
+  ExprNode *lowerbound;
+  ExprNode *upperbound;
+
+public:
+  Range(ExprNode *_lowerbound, ExprNode *_upperbound)
+      : lowerbound(_lowerbound), upperbound(_upperbound){};
+  Type *getType() { return lowerbound->getType(); }
+  void dump(int level);
+  void genCppCode();
+};
+
+class Id : public ExprNode {
+private:
+  SymbolEntry *se;
+
+public:
+  Id(SymbolEntry *_se) : se(_se){};
+  Type *getType() {
+    return se->getType();
+  }
+  void dump(int level);
+  void genCppCode();
+};
+
+class Constant : public ExprNode {
+private:
+  SymbolEntry *se;
+
+public:
+  Constant(SymbolEntry *_se) : se(_se){};
+  Type *getType() {
+    return se->getType();
+  }
+  void dump(int level);
+  void genCppCode();
+};
+
+class FactorExpr : public ExprNode {
+private:
+  int op;
+  ExprNode *expr;
+
+public:
+  enum {
+    NOT,
+    ABS,
+    EXPON,
+  };
+  FactorExpr(ExprNode *_expr, int _op) : expr(_expr), op(_op){};
+  Type *getType() {
+    return expr->getType();
+  }
   void dump(int level);
   void genCppCode();
 };
 
 class BinaryExpr : public ExprNode {
 private:
-  int op;
+  OpSignNode *sign;
   ExprNode *expr1, *expr2;
+  Range *range;
+  SymbolEntry *se;
+  bool isUnary = false;
+  bool isMember = false;
 
 public:
-  enum {
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    AND,
-    OR,
-    EQUAL,
-    LESS,
-    LESSEQUAL,
-    GREATER,
-    GREATEREQUAL,
+  BinaryExpr(ExprNode *_expr1, ExprNode *_expr2, OpSignNode *_sign)
+      : expr1(_expr1), expr2(_expr2), sign(_sign){};
+  BinaryExpr(ExprNode *_expr1, OpSignNode *_sign) : expr1(_expr1), sign(_sign) {
+    isUnary = true;
   };
-  BinaryExpr(SymbolEntry *se, int op, ExprNode *expr1, ExprNode *expr2)
-      : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
-  void dump(int level);
-  void genCppCode();
-};
-
-class Constant : public ExprNode {
-public:
-  Constant(SymbolEntry *se) : ExprNode(se){};
-  void dump(int level);
-  void genCppCode();
-};
-
-class Id : public ExprNode {
-public:
-  Id(SymbolEntry *se) : ExprNode(se){};
-  void dump(int level);
-  void genCppCode();
-};
-
-class CallExpr : public ExprNode {
-private:
-  ExprNode *param;
-
-public:
-  CallExpr(SymbolEntry *se, ExprNode *param = nullptr)
-      : ExprNode(se), param(param) {}
-  CallExpr(const CallExpr &c) = default;
-  void dump(int level);
-  void genCppCode();
-};
-
-class StmtNode : public Node {};
-
-class ExprStmt : public StmtNode {
-private:
-  ExprNode *expr;
-
-public:
-  ExprStmt(ExprNode *expr) : expr(expr){};
-  void dump(int level);
-  void genCppCode();
-};
-
-class CompoundStmt : public StmtNode {
-private:
-  StmtNode *stmt;
-
-public:
-  CompoundStmt(StmtNode *stmt) : stmt(stmt){};
+  BinaryExpr(ExprNode *_expr1, Range *_range, OpSignNode *_sign)
+      : expr1(_expr1), range(_range), sign(_sign) {
+    isMember = true;
+  };
+  BinaryExpr(ExprNode *_expr1, SymbolEntry *_se, OpSignNode *_sign)
+      : expr1(_expr1), se(_se), sign(_sign) {
+    isMember = true;
+  };
+  Type *getType() {
+    return expr1->getType();
+  }
   void dump(int level);
   void genCppCode();
 };
@@ -124,69 +169,7 @@ private:
   StmtNode *stmt1, *stmt2;
 
 public:
-  SeqNode(StmtNode *stmt1, StmtNode *stmt2) : stmt1(stmt1), stmt2(stmt2){};
-  void dump(int level);
-  void genCppCode();
-};
-
-class DeclStmt : public StmtNode {
-private:
-  Id *id;
-
-public:
-  DeclStmt(Id *id) : id(id){};
-  Id *getId() { return id; };
-  void dump(int level);
-  void genCppCode();
-};
-
-class IfSectionStmt : public StmtNode {
-private:
-  StmtNode *ifStmt, *elsifStmt, *elseStmt;
-
-public:
-  IfSectionStmt(StmtNode *ifStmt, StmtNode *elsifStmt = nullptr,
-                StmtNode *elseStmt = nullptr)
-      : ifStmt(ifStmt), elsifStmt(elsifStmt), elseStmt(elseStmt){};
-  void dump(int level){};
-  void genCppCode(){};
-};
-
-class IfStmt : public StmtNode {
-private:
-  ExprNode *cond;
-  StmtNode *thenStmt;
-  bool isElsif, isElse;
-
-public:
-  IfStmt(ExprNode *cond, StmtNode *thenStmt, bool isElsif = false)
-      : cond(cond), thenStmt(thenStmt), isElsif(isElsif){};
-  IfStmt(StmtNode *thenStmt) : cond(nullptr), thenStmt(thenStmt) {
-    isElse = true;
-  };
-  void dump(int level);
-  void genCppCode();
-};
-
-class ReturnStmt : public StmtNode {
-private:
-  ExprNode *retValue;
-
-public:
-  ReturnStmt(ExprNode *retValue) : retValue(retValue){};
-  void dump(int level);
-  void genCppCode();
-};
-
-class FunctionDef : public StmtNode {
-private:
-  SymbolEntry *se;
-  DeclStmt *decl;
-  StmtNode *stmt;
-
-public:
-  FunctionDef(SymbolEntry *se, DeclStmt *decl, StmtNode *stmt)
-      : se(se), decl(decl), stmt(stmt){};
+  SeqNode(StmtNode *_stmt1, StmtNode *_stmt2) : stmt1(_stmt1), stmt2(_stmt2){};
   void dump(int level);
   void genCppCode();
 };
@@ -196,7 +179,7 @@ private:
   ExprNode *expr;
 
 public:
-  InitOptStmt(ExprNode *expr) : expr(expr){};
+  InitOptStmt(ExprNode *_expr) : expr(_expr){};
   void dump(int level);
   void genCppCode();
 };
@@ -260,6 +243,8 @@ public:
   void dump(int level);
   void genCppCode();
 };
+
+class ProcedureDef;
 
 class DeclItemOrBodyStmt : public StmtNode {
 private:
@@ -352,17 +337,6 @@ public:
   void genCppCode();
 };
 
-class Range : public StmtNode {
-private:
-  ExprNode *lowerbound;
-  ExprNode *upperbound;
-
-public:
-  Range(ExprNode *_lowerbound, ExprNode *_upperbound)
-      : lowerbound(_lowerbound), upperbound(_upperbound){};
-  void dump(int level);
-  void genCppCode();
-};
 
 class DiscreteRange : public StmtNode {
 private:
@@ -414,20 +388,12 @@ public:
   void genCppCode();
 };
 
-class Id : public ExprNode {
-public:
-  Id(SymbolEntry *se) : ExprNode(se){};
-  void dump(int level);
-  void genCppCode();
-};
-
 class ExitStmt : public StmtNode {
 private:
-  Id *id;
   ExprNode *cond;
 
 public:
-  ExitStmt(Id *_id, ExprNode *_cond) : id(_id), cond(_cond){};
+  ExitStmt(ExprNode *_cond) : cond(_cond){};
   void dump(int level);
   void genCppCode();
 };
@@ -438,19 +404,6 @@ private:
 
 public:
   BasicLoopStmt(Stmt *_stmts) : stmts(_stmts){};
-  void dump(int level);
-  void genCppCode();
-};
-
-class SignNode : public Node {
-private:
-  int kind;
-
-public:
-  enum {
-    REVERSE,
-  };
-  SignNode(int _kind) : kind(_kind){};
   void dump(int level);
   void genCppCode();
 };
@@ -468,14 +421,14 @@ public:
 class Iteration : public StmtNode {
 private:
   IterPart *iter;
-  SignNode *sign;
+  OpSignNode *sign;
   DiscreteRange *range;
 
   ExprNode *cond;
 
 public:
   Iteration(ExprNode *_cond) : cond(_cond){};
-  Iteration(IterPart *_iter, SignNode *_sign, DiscreteRange *_range)
+  Iteration(IterPart *_iter, OpSignNode *_sign, DiscreteRange *_range)
       : iter(_iter), sign(_sign), range(_range){};
   void dump(int level);
   void genCppCode();
@@ -496,11 +449,10 @@ private:
   LabelOpt *label;
   Iteration *iter;
   BasicLoopStmt *loop;
-  Id *id;
 
 public:
-  LoopStmt(LabelOpt *_label, Iteration *_iter, BasicLoopStmt *_loop, Id *_id;)
-      : label(_label), iter(_iter), loop(_loop), id(_id){};
+  LoopStmt(LabelOpt *_label, Iteration *_iter, BasicLoopStmt *_loop)
+      : label(_label), iter(_iter), loop(_loop) {};
   void dump(int level);
   void genCppCode();
 };
