@@ -38,10 +38,12 @@ public:
 
 class IdentifierSymbolEntry : public SymbolEntry {
 private:
-  enum { GLOBAL, PARAM, LOCAL };
   std::string name;
   int scope;
   bool isConst;
+
+public:
+  enum { GLOBAL, PARAM, LOCAL };
 
 public:
   IdentifierSymbolEntry(Type *type, std::string name, int scope, bool isConst = false);

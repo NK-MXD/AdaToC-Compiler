@@ -162,7 +162,7 @@ Unit
 
 SubprogDecl
     : SubprogSpec SEMICOLON {
-        $$ = new ProcedureDecl(dynamic_cast<SubprogDecl*>($1));
+        $$ = new ProcedureDecl(dynamic_cast<ProcedureSpec*>($1));
     }
     ;
 
@@ -180,7 +180,7 @@ SubprogSpec
             SymbolEntry* paramSe = param->getParamSymbol();
             paramTypes.push_back(paramSe->getType());
             paramIds.push_back(paramSe);
-            param = param->getNext();
+            param = dynamic_cast<ParamNode*>(param->getNext());
         }
         proType = new ProcedureType(paramTypes, paramIds);
 
@@ -218,8 +218,8 @@ Params
 	;
 
 Param : Identifier COLON Type InitOpt {
-        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, IdentifierSymbolEntry::Param);
-        $$ = new ParamNode(se, dynamic_cast<InitOptStmt>($4));
+        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, IdentifierSymbolEntry::PARAM);
+        $$ = new ParamNode(se, dynamic_cast<InitOptStmt*>($4));
     }
 	;
 
@@ -246,7 +246,7 @@ SubprogBody
         // Enter into new scope.
         identifiers = new SymbolTable(identifiers);
     } DeclPart BlockBody END IdOpt SEMICOLON {
-        $$ = new ProcedureDef(dynamic_cast<SubprogSpec*>($1), dynamic_cast<DeclItemOrBodyStmt*>($4), $5);
+        $$ = new ProcedureDef(dynamic_cast<ProcedureSpec*>($1), dynamic_cast<DeclItemOrBodyStmt*>($4), dynamic_cast<Stmt*>($5));
         // Leave the scope.
         SymbolTable* ScopeTable = identifiers;
         identifiers = identifiers->getPrev();

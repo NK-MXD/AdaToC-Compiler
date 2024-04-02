@@ -1681,7 +1681,7 @@ yyreduce:
   case 7:
 #line 164 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
                             {
-        (yyval.StmtType) = new ProcedureDecl(dynamic_cast<SubprogDecl*>((yyvsp[-1].StmtType)));
+        (yyval.StmtType) = new ProcedureDecl(dynamic_cast<ProcedureSpec*>((yyvsp[-1].StmtType)));
     }
 #line 1687 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
@@ -1701,7 +1701,7 @@ yyreduce:
             SymbolEntry* paramSe = param->getParamSymbol();
             paramTypes.push_back(paramSe->getType());
             paramIds.push_back(paramSe);
-            param = param->getNext();
+            param = dynamic_cast<ParamNode*>(param->getNext());
         }
         proType = new ProcedureType(paramTypes, paramIds);
 
@@ -1758,8 +1758,8 @@ yyreduce:
   case 14:
 #line 220 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
                                       {
-        SymbolEntry *se = new IdentifierSymbolEntry((yyvsp[-1].type), (yyvsp[-3].StrType), IdentifierSymbolEntry::Param);
-        (yyval.StmtType) = new ParamNode(se, dynamic_cast<InitOptStmt>((yyvsp[0].StmtType)));
+        SymbolEntry *se = new IdentifierSymbolEntry((yyvsp[-1].type), (yyvsp[-3].StrType), IdentifierSymbolEntry::PARAM);
+        (yyval.StmtType) = new ParamNode(se, dynamic_cast<InitOptStmt*>((yyvsp[0].StmtType)));
     }
 #line 1765 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.cpp"
     break;
@@ -1814,7 +1814,7 @@ yyreduce:
   case 21:
 #line 248 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
                                              {
-        (yyval.StmtType) = new ProcedureDef(dynamic_cast<SubprogSpec*>((yyvsp[-7].StmtType)), dynamic_cast<DeclItemOrBodyStmt*>((yyvsp[-4].StmtType)), (yyvsp[-3].StmtType));
+        (yyval.StmtType) = new ProcedureDef(dynamic_cast<ProcedureSpec*>((yyvsp[-7].StmtType)), dynamic_cast<DeclItemOrBodyStmt*>((yyvsp[-4].StmtType)), (yyvsp[-3].StmtType));
         // Leave the scope.
         SymbolTable* ScopeTable = identifiers;
         identifiers = identifiers->getPrev();
