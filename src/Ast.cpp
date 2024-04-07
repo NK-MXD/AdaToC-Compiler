@@ -1,152 +1,491 @@
-#include <Ast.h>
+#include "Ast.h"
+#include "CppBuilder.h"
+#include "CppUnit.h"
+#include "Procedure.h"
+
+#define DEBUG_SWITCH_AST_LOG 1
+#if DEBUG_SWITCH_AST_LOG
+#define printAstLog(str) std::cerr << "[AST INFO]:" << str << "\n";
+#else
+#define printAstLog(str) //
+#endif
 
 extern FILE *yyout;
 int Node::counter = 0;
+CppBuilder *Node::builder = nullptr;
 
-Node::Node()
-{
-    seq = counter++;
-}
+Node::Node() { seq = counter++; }
 
 void Node::setNext(Node *node) {
-    Node *n = this;
-    while (n->getNext()) {
-        n = n->getNext();
-    }
-    if (n == this) {
-        this->next = node;
+  Node *n = this;
+  while (n->getNext()) {
+    n = n->getNext();
+  }
+  if (n == this) {
+    this->next = node;
+  } else {
+    n->setNext(node);
+  }
+}
+
+void Ast::dump() {
+  printAstLog("Program dump");
+  fprintf(yyout, "program\n");
+  if (root != nullptr)
+    root->dump(4);
+}
+
+void OpSignNode::dump(int level) {
+  std::string opSignName;
+  switch (kind) {
+  case OpSignNode::REVERSE:
+    opSignName = "reverse";
+    break;
+  case OpSignNode::MUL:
+    opSignName = "*";
+    break;
+  case OpSignNode::DIV:
+    opSignName = "/";
+    break;
+  case OpSignNode::MOD:
+    opSignName = "mod";
+    break;
+  case OpSignNode::REM:
+    opSignName = "rem";
+    break;
+  case OpSignNode::ADD:
+    opSignName = "+";
+    break;
+  case OpSignNode::SUB:
+    opSignName = "-";
+    break;
+  case OpSignNode::SINGLEAND:
+    opSignName = "&";
+    break;
+  case OpSignNode::IN:
+    opSignName = "in";
+    break;
+  case OpSignNode::NOTIN:
+    opSignName = "not in";
+    break;
+  case OpSignNode::EQ:
+    opSignName = "=";
+    break;
+  case OpSignNode::NE:
+    opSignName = "/=";
+    break;
+  case OpSignNode::LE:
+    opSignName = "<";
+    break;
+  case OpSignNode::LTEQ:
+    opSignName = "<=";
+    break;
+  case OpSignNode::GE:
+    opSignName = ">";
+    break;
+  case OpSignNode::GTEQ:
+    opSignName = ">=";
+    break;
+  case OpSignNode::ANDTHEN:
+    opSignName = "and then";
+    break;
+  case OpSignNode::ORELSE:
+    opSignName = "or else";
+    break;
+  case OpSignNode::AND:
+    opSignName = "and";
+    break;
+  case OpSignNode::OR:
+    opSignName = "or";
+    break;
+  case OpSignNode::XOR:
+    opSignName = "xor";
+    break;
+  default:
+    break;
+  }
+  fprintf(yyout, "%*cOpSign: %s\n", level, ' ', opSignName.c_str());
+}
+
+void OpSignNode::genCppCode() {}
+
+void Ast::genCppCode(CppUnit *unit) {
+  //   CppBuilder *builder = new CppBuilder(unit);
+  //   Node::setCppBuilder(builder);
+  //   root->genCppCode();
+}
+
+void Id::dump(int level) {
+  fprintf(yyout, "%*cId\n", level, ' ');
+  if (name) {
+    name->dump(level + 4);
+    if (expr) {
+      ExprNode* temp = expr;
+      while(temp) {
+        temp->dump(level + 4);
+        temp = dynamic_cast<ExprNode*>(temp->getNext());
+      }
     } else {
-        n->setNext(node);
+      fprintf(yyout, "%*cAttributeId: %s\n", level + 4, ' ', attr.c_str());
     }
-}
-
-void Ast::dump()
-{
-    fprintf(yyout, "program\n");
-    if(root != nullptr)
-        root->dump(4);
-}
-
-void ExprNode::dump(int level) {
-    std::string name, type;
-    name = symbolEntry->dump();
-    type = symbolEntry->getType()->dump();
-    fprintf(yyout, "%*cconst string\ttype:%s\t%s\n", level, ' ', type.c_str(),
-            name.c_str());
-}
-
-void BinaryExpr::dump(int level)
-{
-    std::string op_str;
-    switch(op)
-    {
-        case ADD:
-            op_str = "add";
-            break;
-        case SUB:
-            op_str = "sub";
-            break;
-        case AND:
-            op_str = "and";
-            break;
-        case OR:
-            op_str = "or";
-            break;
-        case LESS:
-            op_str = "less";
-            break;
-    }
-    fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
-    expr1->dump(level + 4);
-    expr2->dump(level + 4);
-}
-
-void Constant::dump(int level)
-{
-    std::string type, value;
-    type = symbolEntry->getType()->dump();
-    value = symbolEntry->dump();
-    fprintf(yyout, "%*cIntegerLiteral\tvalue: %s\ttype: %s\n", level, ' ',
-            value.c_str(), type.c_str());
-}
-
-void Id::dump(int level)
-{
+  } else {
     std::string name, type;
     int scope;
-    name = symbolEntry->dump();
-    type = symbolEntry->getType()->dump();
-    scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getScope();
-    fprintf(yyout, "%*cId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
+    name = se->dump();
+    type = se->getType()->dump();
+    scope = dynamic_cast<IdentifierSymbolEntry *>(se)->getScope();
+    fprintf(yyout, "%*cname: %s\tscope: %d\ttype: %s\n", level, ' ',
             name.c_str(), scope, type.c_str());
+  }
 }
 
-void CallExpr::dump(int level) {
-    std::string name, type;
-    int scope;
-    if (symbolEntry) {
-        name = symbolEntry->dump();
-        type = symbolEntry->getType()->dump();
-        scope = dynamic_cast<IdentifierSymbolEntry *>(symbolEntry)->getScope();
-        fprintf(yyout, "%*cCallExpr\tfunction name: %s\tscope: %d\ttype: %s\n",
-                level, ' ', name.c_str(), scope, type.c_str());
-        Node *temp = param;
-        while (temp) {
-            temp->dump(level + 4);
-            temp = temp->getNext();
-        }
-    }
+void Id::genCppCode() {}
+
+void Constant::dump(int level) {
+  printAstLog("Literal dump");
+  std::string type, value;
+  type = se->getType()->dump();
+  value = se->dump();
+  fprintf(yyout, "%*cLiteral\ttype: %s\tvalue: %s\n", level, ' ', type.c_str(),
+          value.c_str());
 }
 
-void ExprStmt::dump(int level) {
-    fprintf(yyout, "%*cExprStmt\n", level, ' ');
-    expr->dump(level + 4);
+void Constant::genCppCode() {}
+
+void FactorExpr::dump(int level) {
+  std::string opName;
+  switch (op) {
+  case FactorExpr::NOT:
+    opName = "not";
+    break;
+  case FactorExpr::ABS:
+    opName = "abs";
+    break;
+  case FactorExpr::EXPON:
+    opName = "expon";
+    break;
+  default:
+    break;
+  }
+  fprintf(yyout, "%*cFactorExpr\top: %s\n", level, ' ', opName.c_str());
+  expr->dump(level + 4);
 }
 
-void CompoundStmt::dump(int level)
-{
-    fprintf(yyout, "%*cCompoundStmt\n", level, ' ');
-    stmt->dump(level + 4);
+void FactorExpr::genCppCode() {}
+
+void BinaryExpr::dump(int level) {
+  fprintf(yyout, "%*cBinaryExpr\n", level, ' ');
+  sign->dump(level + 4);
+  expr1->dump(level + 4);
+  if (isUnary) {
+    return;
+  } else if (isMember) {
+    if (range)
+      range->dump(level + 4);
+    if (se)
+      se->dump();
+  } else {
+    expr2->dump(level + 4);
+  }
 }
 
-void SeqNode::dump(int level)
-{
-    stmt1->dump(level);
-    stmt2->dump(level);
+void BinaryExpr::genCppCode() {}
+
+void SeqNode::dump(int level) {
+  stmt1->dump(level);
+  stmt2->dump(level);
 }
 
-void DeclStmt::dump(int level)
-{
-    fprintf(yyout, "%*cDeclStmt\n", level, ' ');
-    id->dump(level + 4);
+void SeqNode::genCppCode() {
+  stmt1->genCppCode();
+  stmt2->genCppCode();
 }
 
-void IfStmt::dump(int level)
-{
-    fprintf(yyout, "%*cIfStmt\n", level, ' ');
-    cond->dump(level + 4);
-    thenStmt->dump(level + 4);
+void DefId::dump(int level) {
+  std::string name, type;
+  name = id->dump();
+  type = id->getType()->dump();
+  fprintf(yyout, "%*cDefId\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
+          type.c_str());
+  if (this->getNext())
+    this->getNext()->dump(level);
 }
 
-void ReturnStmt::dump(int level)
-{
-    fprintf(yyout, "%*cReturnStmt\n", level, ' ');
+void DefId::genCppCode() {}
+
+void InitOptStmt::dump(int level) {
+  fprintf(yyout, "%*cInitOptStmt\n", level, ' ');
+  expr->dump(level + 4);
+}
+
+void InitOptStmt::genCppCode() {}
+
+void ParamNode::dump(int level) {
+  std::string name, type;
+  name = se->dump();
+  type = se->getType()->dump();
+  fprintf(yyout, "%*cParam\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
+          type.c_str());
+  if (init)
+    init->dump(level + 4);
+  if (this->getNext())
+    this->getNext()->dump(level);
+}
+
+void ParamNode::genCppCode() {}
+
+void ProcedureSpec::dump(int level) {
+  printAstLog("ProcedureSpec dump");
+  std::string name, type;
+  name = se->dump();
+  type = se->getType()->dump();
+  fprintf(yyout, "%*cProcedure\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
+          type.c_str());
+  if (params)
+    params->dump(level + 4);
+}
+
+void ProcedureSpec::genCppCode() {}
+
+void ProcedureDecl::dump(int level) {
+  fprintf(yyout, "%*cProcedureDecl\n", level, ' ');
+  spec->dump(level + 4);
+}
+
+void ProcedureDecl::genCppCode() {}
+
+void ObjectDeclStmt::dump(int level) {
+  printAstLog("ObjectDeclStmt dump");
+  fprintf(yyout, "%*cObjectDeclStmt\n", level, ' ');
+  id->dump(level + 4);
+  if (init)
+    init->dump(level + 4);
+}
+
+void ObjectDeclStmt::genCppCode() {}
+
+void DeclStmt::dump(int level) {
+  fprintf(yyout, "%*cDeclStmt\n", level, ' ');
+  if (objectDecl)
+    objectDecl->dump(level + 4);
+  if (procedureDecl)
+    procedureDecl->dump(level + 4);
+}
+
+void DeclStmt::genCppCode() {}
+
+void DeclItemOrBodyStmt::dump(int level) {
+  fprintf(yyout, "%*cDeclItemOrBodyStmt\n", level, ' ');
+  if (decl)
+    decl->dump(level + 4);
+  if (prof)
+    prof->dump(level + 4);
+  if (this->getNext())
+    this->getNext()->dump(level);
+}
+
+void DeclItemOrBodyStmt::genCppCode() {}
+
+void NullStmt::dump(int level) { fprintf(yyout, "%*cNullStmt\n", level, ' '); }
+
+void NullStmt::genCppCode() {}
+
+void AssignStmt::dump(int level) {
+  printAstLog("AssignStmt dump");
+  std::string name, type;
+  name = se->dump();
+  type = se->getType()->dump();
+  fprintf(yyout, "%*cAssignStmt\tname: %s\ttype: %s\n", level, ' ',
+          name.c_str(), type.c_str());
+  expr->dump(level + 4);
+}
+
+void AssignStmt::genCppCode() {}
+
+void ReturnStmt::dump(int level) {
+  fprintf(yyout, "%*cReturnStmt\n", level, ' ');
+  if (retValue)
     retValue->dump(level + 4);
+  else
+    fprintf(yyout, "%*cvoid\n", level + 4, ' ');
 }
 
-void AssignStmt::dump(int level)
-{
-    fprintf(yyout, "%*cAssignStmt\n", level, ' ');
-    lval->dump(level + 4);
-    expr->dump(level + 4);
+void ReturnStmt::genCppCode() {}
+
+void CallStmt::dump(int level) {
+  std::string name, type;
+  name = se->dump();
+  type = se->getType()->dump();
+  fprintf(yyout, "%*cCallStmt\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
+          type.c_str());
 }
 
-void FunctionDef::dump(int level)
-{
+void CallStmt::genCppCode() {}
+
+void Stmt::dump(int level) {
+  fprintf(yyout, "%*cStmt\n", level, ' ');
+  if (stmt)
+    stmt->dump(level + 4);
+  if (stmt->getNext())
+    stmt->getNext()->dump(level + 4);
+}
+
+void Stmt::genCppCode() {}
+
+void ProcedureDef::dump(int level) {
+  printAstLog("ProcedureDef dump");
+  fprintf(yyout, "%*cProcedureDef\n", level, ' ');
+  spec->dump(level + 4);
+  if (items)
+    items->dump(level + 4);
+  if (stmts)
+    stmts->dump(level + 4);
+}
+
+void ProcedureDef::genCppCode() {}
+
+void CondClause::dump(int level) {
+  fprintf(yyout, "%*cCondClause\n", level, ' ');
+  cond->dump(level + 4);
+  stmts->dump(level + 4);
+  if (this->getNext())
+    this->getNext()->dump(level);
+}
+
+void CondClause::genCppCode() {}
+
+void IfStmt::dump(int level) {
+  fprintf(yyout, "%*cIfStmt\n", level, ' ');
+  clause->dump(level + 4);
+  if (elsestmt)
+    elsestmt->dump(level + 4);
+}
+
+void IfStmt::genCppCode() {}
+
+void Range::dump(int level) {
+  fprintf(yyout, "%*cRange\n", level, ' ');
+  lowerbound->dump(level + 4);
+  upperbound->dump(level + 4);
+}
+
+void Range::genCppCode() {}
+
+void DiscreteRange::dump(int level) {
+  if (se) {
     std::string name, type;
     name = se->dump();
     type = se->getType()->dump();
-    fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
+    fprintf(yyout, "%*cDiscreteRange\tname: %s\ttype: %s\n", level, ' ',
             name.c_str(), type.c_str());
-    stmt->dump(level + 4);
+    if (range)
+      range->dump(level + 4);
+  } else {
+    fprintf(yyout, "%*cDiscreteRange\n", level, ' ');
+    range->dump(level + 4);
+  }
 }
+
+void DiscreteRange::genCppCode() {}
+
+void Choice::dump(int level) {
+  fprintf(yyout, "%*cChoice\n", level, ' ');
+  if (expr)
+    expr->dump(level + 4);
+  if (discret)
+    discret->dump(level + 4);
+  if (others) {
+    fprintf(yyout, "%*cothers\n", level + 4, ' ');
+  }
+  if (this->getNext()) {
+    fprintf(yyout, "%*cOR\n", level, ' ');
+    this->getNext()->dump(level);
+  }
+}
+
+void Choice::genCppCode() {}
+
+void Alternative::dump(int level) {
+  fprintf(yyout, "%*cAlternative\n", level, ' ');
+  choices->dump(level + 4);
+  stmts->dump(level + 4);
+  if (this->getNext())
+    this->getNext()->dump(level);
+}
+
+void Alternative::genCppCode() {}
+
+void CaseStmt::dump(int level) {
+  fprintf(yyout, "%*cCaseStmt\n", level, ' ');
+  expr->dump(level + 4);
+  if (alter)
+    alter->dump(level + 4);
+}
+
+void CaseStmt::genCppCode() {}
+
+void ExitStmt::dump(int level) {
+  fprintf(yyout, "%*cExitStmt\n", level, ' ');
+  if (cond)
+    cond->dump(level + 4);
+}
+
+void ExitStmt::genCppCode() {}
+
+void BasicLoopStmt::dump(int level) {
+  fprintf(yyout, "%*cBasicLoopStmt\n", level, ' ');
+  stmts->dump(level + 4);
+}
+
+void BasicLoopStmt::genCppCode() {}
+
+void IterPart::dump(int level) {
+  std::string name;
+  name = se->dump();
+  fprintf(yyout, "%*cIterPart\tname: %s\n", level, ' ', name.c_str());
+}
+
+void IterPart::genCppCode() {}
+
+void Iteration::dump(int level) {
+  fprintf(yyout, "%*cIteration\n", level, ' ');
+  if (cond) {
+    cond->dump(level + 4);
+  } else {
+    iter->dump(level + 4);
+    if (sign)
+      sign->dump(level + 4);
+    range->dump(level + 4);
+  }
+}
+
+void Iteration::genCppCode() {}
+
+void LabelOpt::dump(int level) {
+  std::string name;
+  name = se->dump();
+  fprintf(yyout, "%*cIterPart\tname: %s\n", level, ' ', name.c_str());
+}
+
+void LabelOpt::genCppCode() {}
+
+void LoopStmt::dump(int level) {
+  fprintf(yyout, "%*cLoopStmt\n", level, ' ');
+  if (label)
+    label->dump(level + 4);
+  if (iter)
+    iter->dump(level + 4);
+  loop->dump(level + 4);
+}
+
+void LoopStmt::genCppCode() {}
+
+void Block::dump(int level) {
+  fprintf(yyout, "%*cBlockStmt\n", level, ' ');
+  if (label)
+    label->dump(level + 4);
+  decl->dump(level + 4);
+  stmts->dump(level + 4);
+}
+
+void Block::genCppCode() {}

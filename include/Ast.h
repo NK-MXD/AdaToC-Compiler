@@ -1,10 +1,20 @@
 #ifndef __ADA2C_AST_H__
 #define __ADA2C_AST_H__
 
+#include "CppUnit.h"
 #include <SymbolTable.h>
 #include <Type.h>
+#include <iostream>
+using namespace std;
 
 class SymbolEntry;
+class CppUnit;
+class Function;
+class Procedure;
+class CppBuilder;
+
+// Split up Ada grammar to some Grammar Node
+// The Nodes are following Ada grammar.
 
 class Node {
 private:
@@ -12,89 +22,148 @@ private:
   int seq;
   Node *next;
 
+protected:
+  static CppBuilder *builder;
+
 public:
   Node();
   int getSeq() const { return seq; };
   void setNext(Node *node);
   Node *getNext() { return next; }
+  static void setCppBuilder(CppBuilder *cb) { builder = cb; };
   virtual void dump(int level) = 0;
+  virtual void genCppCode() = 0;
 };
 
-class ExprNode : public Node {
-protected:
-  SymbolEntry *symbolEntry;
-
-public:
-  ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
-  SymbolEntry *getSymbolEntry() { return symbolEntry; };
-  void dump(int level);
-};
-
-class BinaryExpr : public ExprNode {
+class OpSignNode : public Node {
 private:
-  int op;
-  ExprNode *expr1, *expr2;
+  int kind;
 
 public:
   enum {
-    ADD,
-    SUB,
+    REVERSE,
     MUL,
     DIV,
+    MOD,
+    REM,
+    ADD,
+    SUB,
+    SINGLEAND,
+    IN,
+    NOTIN,
+    EQ,
+    NE,
+    LE,
+    LTEQ,
+    GE,
+    GTEQ,
+    ANDTHEN,
+    ORELSE,
     AND,
     OR,
-    EQUAL,
-    LESS,
-    LESSEQUAL,
-    GREATER,
-    GREATEREQUAL,
+    XOR,
+    EXPON,
   };
-  BinaryExpr(SymbolEntry *se, int op, ExprNode *expr1, ExprNode *expr2)
-      : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
+  OpSignNode(int _kind) : kind(_kind){};
   void dump(int level);
+  void genCppCode();
 };
 
-class Constant : public ExprNode {
+class ExprNode : public Node {
 public:
-  Constant(SymbolEntry *se) : ExprNode(se){};
-  void dump(int level);
-};
-
-class Id : public ExprNode {
-public:
-  Id(SymbolEntry *se) : ExprNode(se){};
-  void dump(int level);
-};
-
-class CallExpr : public ExprNode {
-private:
-  ExprNode *param;
-
-public:
-  CallExpr(SymbolEntry *se, ExprNode *param = nullptr)
-      : ExprNode(se), param(param) {}
-  CallExpr(const CallExpr &c) = default;
-  void dump(int level);
+  virtual Type *getType() = 0;
 };
 
 class StmtNode : public Node {};
 
-class ExprStmt : public StmtNode {
+class Range : public StmtNode {
 private:
-  ExprNode *expr;
+  ExprNode *lowerbound;
+  ExprNode *upperbound;
 
 public:
-  ExprStmt(ExprNode *expr) : expr(expr){};
+  Range(ExprNode *_lowerbound, ExprNode *_upperbound)
+      : lowerbound(_lowerbound), upperbound(_upperbound){};
+  Type *getType() { return lowerbound->getType(); }
   void dump(int level);
+  void genCppCode();
 };
 
-class CompoundStmt : public StmtNode {
+class Id : public ExprNode {
 private:
-  StmtNode *stmt;
+  SymbolEntry *se;
+  Id *name;
+  ExprNode *expr;
+  std::string attr;
 
 public:
-  CompoundStmt(StmtNode *stmt) : stmt(stmt){};
+  Id(SymbolEntry *_se) : se(_se){};
+  Id(Id *_name, ExprNode *_expr) : name(_name), expr(_expr){};
+  Id(Id *_name, std::string _attr) : name(_name), attr(_attr){};
+  Type *getType() {
+    if (se)
+      return se->getType();
+    else
+      return name->getType();
+  }
   void dump(int level);
+  void genCppCode();
+};
+
+class Constant : public ExprNode {
+private:
+  SymbolEntry *se;
+
+public:
+  Constant(SymbolEntry *_se) : se(_se){};
+  Type *getType() { return se->getType(); }
+  void dump(int level);
+  void genCppCode();
+};
+
+class FactorExpr : public ExprNode {
+private:
+  ExprNode *expr;
+  int op;
+
+public:
+  enum {
+    NOT,
+    ABS,
+    EXPON,
+  };
+  FactorExpr(ExprNode *_expr, int _op) : expr(_expr), op(_op){};
+  Type *getType() { return expr->getType(); }
+  void dump(int level);
+  void genCppCode();
+};
+
+class BinaryExpr : public ExprNode {
+private:
+  ExprNode *expr1, *expr2;
+  Range *range;
+  SymbolEntry *se;
+  OpSignNode *sign;
+  bool isUnary = false;
+  bool isMember = false;
+
+public:
+  BinaryExpr(ExprNode *_expr1, ExprNode *_expr2, OpSignNode *_sign)
+      : expr1(_expr1), expr2(_expr2), sign(_sign){};
+  BinaryExpr(ExprNode *_expr1, OpSignNode *_sign) : expr1(_expr1), sign(_sign) {
+    isUnary = true;
+  };
+  BinaryExpr(ExprNode *_expr1, Range *_range, OpSignNode *_sign)
+      : expr1(_expr1), range(_range), sign(_sign) {
+    isMember = true;
+  };
+  BinaryExpr(ExprNode *_expr1, SymbolEntry *_se, OpSignNode *_sign)
+      : expr1(_expr1), se(_se), sign(_sign) {
+    isMember = true;
+  };
+  Type *getType() { return expr1->getType(); }
+  void dump(int level);
+  void genCppCode();
 };
 
 class SeqNode : public StmtNode {
@@ -102,44 +171,123 @@ private:
   StmtNode *stmt1, *stmt2;
 
 public:
-  SeqNode(StmtNode *stmt1, StmtNode *stmt2) : stmt1(stmt1), stmt2(stmt2){};
+  SeqNode(StmtNode *_stmt1, StmtNode *_stmt2) : stmt1(_stmt1), stmt2(_stmt2){};
   void dump(int level);
+  void genCppCode();
+};
+
+class DefId : public StmtNode {
+private:
+  IdentifierSymbolEntry *id;
+
+public:
+  DefId(IdentifierSymbolEntry *_id) : id(_id){};
+  IdentifierSymbolEntry *getSymbolEntry() { return id; }
+  void setType(Type *_type) { id->setType(_type); }
+  void setConst() { id->setConst(); }
+  void dump(int level);
+  void genCppCode();
+};
+
+class InitOptStmt : public StmtNode {
+private:
+  ExprNode *expr;
+
+public:
+  InitOptStmt(ExprNode *_expr) : expr(_expr){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class ParamNode : public StmtNode {
+private:
+  SymbolEntry *se;
+  InitOptStmt *init;
+
+public:
+  ParamNode(SymbolEntry *_se, InitOptStmt *_init) : se(_se), init(_init) {}
+  SymbolEntry *getParamSymbol() { return se; }
+  void dump(int level);
+  void genCppCode();
+};
+
+class ProcedureSpec : public StmtNode {
+private:
+  SymbolEntry *se;
+  ParamNode *params;
+
+public:
+  ProcedureSpec(SymbolEntry *_se, ParamNode *_params = nullptr)
+      : se(_se), params(_params) {}
+  SymbolEntry *getProcedureSymbol() { return se; }
+  void dump(int level);
+  void genCppCode();
+};
+
+class ProcedureDecl : public StmtNode {
+private:
+  ProcedureSpec *spec;
+
+public:
+  ProcedureDecl(ProcedureSpec *_spec) : spec(_spec) {}
+  SymbolEntry *getProcedureSymbol() { return spec->getProcedureSymbol(); }
+  void dump(int level);
+  void genCppCode();
+};
+
+class ObjectDeclStmt : public StmtNode {
+private:
+  DefId *id;
+  InitOptStmt *init;
+
+public:
+  ObjectDeclStmt(DefId *_id, InitOptStmt *_init) : id(_id), init(_init) {}
+  void dump(int level);
+  void genCppCode();
 };
 
 class DeclStmt : public StmtNode {
 private:
-  Id *id;
+  ObjectDeclStmt *objectDecl;
+  ProcedureDecl *procedureDecl;
 
 public:
-  DeclStmt(Id *id) : id(id){};
-  Id *getId() { return id; };
+  DeclStmt(ObjectDeclStmt *_objectDecl) : objectDecl(_objectDecl) {}
+  DeclStmt(ProcedureDecl *_procedureDecl) : procedureDecl(_procedureDecl) {}
   void dump(int level);
+  void genCppCode();
 };
 
-class IfSectionStmt : public StmtNode {
+class ProcedureDef;
+
+class DeclItemOrBodyStmt : public StmtNode {
 private:
-  StmtNode *ifStmt, *elsifStmt, *elseStmt;
+  DeclStmt *decl;
+  ProcedureDef *prof;
 
 public:
-  IfSectionStmt(StmtNode *ifStmt, StmtNode *elsifStmt = nullptr,
-                StmtNode *elseStmt = nullptr)
-      : ifStmt(ifStmt), elsifStmt(elsifStmt), elseStmt(elseStmt){};
-  void dump(int level){};
+  DeclItemOrBodyStmt(DeclStmt *_decl) : decl(_decl) {}
+  DeclItemOrBodyStmt(ProcedureDef *_prof) : prof(_prof) {}
+  void dump(int level);
+  void genCppCode();
 };
 
-class IfStmt : public StmtNode {
+class NullStmt : public StmtNode {
+public:
+  NullStmt(){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class AssignStmt : public StmtNode {
 private:
-  ExprNode *cond;
-  StmtNode *thenStmt;
-  bool isElsif, isElse;
+  SymbolEntry *se;
+  ExprNode *expr;
 
 public:
-  IfStmt(ExprNode *cond, StmtNode *thenStmt, bool isElsif = false)
-      : cond(cond), thenStmt(thenStmt), isElsif(isElsif) {};
-  IfStmt(StmtNode *thenStmt) : cond(nullptr), thenStmt(thenStmt) {
-    isElse = true;
-  };
+  AssignStmt(SymbolEntry *_se, ExprNode *_expr) : se(_se), expr(_expr){};
   void dump(int level);
+  void genCppCode();
 };
 
 class ReturnStmt : public StmtNode {
@@ -147,30 +295,199 @@ private:
   ExprNode *retValue;
 
 public:
-  ReturnStmt(ExprNode *retValue) : retValue(retValue){};
+  ReturnStmt(ExprNode *_retValue = nullptr) : retValue(_retValue){};
   void dump(int level);
+  void genCppCode();
 };
 
-class AssignStmt : public StmtNode {
-private:
-  ExprNode *lval;
-  ExprNode *expr;
-
-public:
-  AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr){};
-  void dump(int level);
-};
-
-class FunctionDef : public StmtNode {
+class CallStmt : public StmtNode {
 private:
   SymbolEntry *se;
-  DeclStmt *decl;
+
+public:
+  CallStmt(SymbolEntry *_se) : se(_se){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class Stmt : public StmtNode {
+private:
   StmtNode *stmt;
 
 public:
-  FunctionDef(SymbolEntry *se, DeclStmt *decl, StmtNode *stmt)
-      : se(se), decl(decl), stmt(stmt){};
+  Stmt(StmtNode *_stmt) : stmt(_stmt){};
   void dump(int level);
+  void genCppCode();
+};
+
+class ProcedureDef : public StmtNode {
+private:
+  ProcedureSpec *spec;
+  DeclItemOrBodyStmt *items;
+  Stmt *stmts;
+
+public:
+  ProcedureDef(ProcedureSpec *_spec, DeclItemOrBodyStmt *_items = nullptr,
+               Stmt *_stmts = nullptr)
+      : spec(_spec), items(_items), stmts(_stmts){};
+  SymbolEntry *getProcedureSymbol() { return spec->getProcedureSymbol(); }
+  void dump(int level);
+  void genCppCode();
+};
+
+class CondClause : public StmtNode {
+private:
+  ExprNode *cond;
+  Stmt *stmts;
+
+public:
+  CondClause(ExprNode *_cond, Stmt *_stmts) : cond(_cond), stmts(_stmts){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class IfStmt : public StmtNode {
+private:
+  CondClause *clause;
+  Stmt *elsestmt;
+
+public:
+  IfStmt(CondClause *_clause, Stmt *_elsestmt)
+      : clause(_clause), elsestmt(_elsestmt){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class DiscreteRange : public StmtNode {
+private:
+  SymbolEntry *se;
+  Range *range;
+
+public:
+  DiscreteRange(SymbolEntry *_se, Range *_range = nullptr)
+      : se(_se), range(_range){};
+  DiscreteRange(Range *_range) : range(_range){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class Choice : public StmtNode {
+private:
+  ExprNode *expr;
+  DiscreteRange *discret;
+  bool others = false;
+
+public:
+  Choice(ExprNode *_expr) : expr(_expr){};
+  Choice(DiscreteRange *_discret) : discret(_discret){};
+  Choice(bool _others) : others(_others){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class Alternative : public StmtNode {
+private:
+  Choice *choices;
+  Stmt *stmts;
+
+public:
+  Alternative(Choice *_choices, Stmt *_stmts)
+      : choices(_choices), stmts(_stmts){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class CaseStmt : public StmtNode {
+private:
+  ExprNode *expr;
+  Alternative *alter;
+
+public:
+  CaseStmt(ExprNode *_expr, Alternative *_alter) : expr(_expr), alter(_alter){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class ExitStmt : public StmtNode {
+private:
+  ExprNode *cond;
+
+public:
+  ExitStmt(ExprNode *_cond) : cond(_cond){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class BasicLoopStmt : public StmtNode {
+private:
+  Stmt *stmts;
+
+public:
+  BasicLoopStmt(Stmt *_stmts) : stmts(_stmts){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class IterPart : public StmtNode {
+private:
+  SymbolEntry *se;
+
+public:
+  IterPart(SymbolEntry *_se) : se(_se){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class Iteration : public StmtNode {
+private:
+  IterPart *iter;
+  OpSignNode *sign;
+  DiscreteRange *range;
+
+  ExprNode *cond;
+
+public:
+  Iteration(ExprNode *_cond) : cond(_cond){};
+  Iteration(IterPart *_iter, OpSignNode *_sign, DiscreteRange *_range)
+      : iter(_iter), sign(_sign), range(_range){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class LabelOpt : public StmtNode {
+private:
+  SymbolEntry *se;
+
+public:
+  LabelOpt(SymbolEntry *_se) : se(_se){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class LoopStmt : public StmtNode {
+private:
+  LabelOpt *label;
+  Iteration *iter;
+  BasicLoopStmt *loop;
+
+public:
+  LoopStmt(LabelOpt *_label, Iteration *_iter, BasicLoopStmt *_loop)
+      : label(_label), iter(_iter), loop(_loop){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class Block : public StmtNode {
+private:
+  LabelOpt *label;
+  DeclItemOrBodyStmt *decl;
+  Stmt *stmts;
+
+public:
+  Block(LabelOpt *_label, DeclItemOrBodyStmt *_decl, Stmt *_stmts)
+      : label(_label), decl(_decl), stmts(_stmts){};
+  void dump(int level);
+  void genCppCode();
 };
 
 class Ast {
@@ -181,6 +498,7 @@ public:
   Ast() { root = nullptr; }
   void setRoot(Node *n) { root = n; }
   void dump();
+  void genCppCode(CppUnit *unit);
 };
 
 #endif
