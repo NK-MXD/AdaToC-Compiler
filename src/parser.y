@@ -814,10 +814,25 @@ Name
     ;
 
 IndexedComp
-    : name '(' value_s ')' {
+    : Name '(' Values ')' {
 
     }
     ;
+
+Values
+    : Value {
+
+    }
+ 	| Values COMMA Value {
+
+    }
+	;
+
+Value
+    : Expression {
+
+    }
+	;
 
 Attribute
     : Name TIC AttributeId {
