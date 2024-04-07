@@ -116,13 +116,27 @@ void Ast::genCppCode(CppUnit *unit) {
 }
 
 void Id::dump(int level) {
-  std::string name, type;
-  int scope;
-  name = se->dump();
-  type = se->getType()->dump();
-  scope = dynamic_cast<IdentifierSymbolEntry *>(se)->getScope();
-  fprintf(yyout, "%*cId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
-          name.c_str(), scope, type.c_str());
+  fprintf(yyout, "%*cId\n", level, ' ');
+  if (name) {
+    name->dump(level + 4);
+    if (expr) {
+      ExprNode* temp = expr;
+      while(temp) {
+        temp->dump(level + 4);
+        temp = dynamic_cast<ExprNode*>(temp->getNext());
+      }
+    } else {
+      fprintf(yyout, "%*cAttributeId: %s\n", level + 4, ' ', attr.c_str());
+    }
+  } else {
+    std::string name, type;
+    int scope;
+    name = se->dump();
+    type = se->getType()->dump();
+    scope = dynamic_cast<IdentifierSymbolEntry *>(se)->getScope();
+    fprintf(yyout, "%*cname: %s\tscope: %d\ttype: %s\n", level, ' ',
+            name.c_str(), scope, type.c_str());
+  }
 }
 
 void Id::genCppCode() {}

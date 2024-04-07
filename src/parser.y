@@ -132,7 +132,8 @@
 
 %type<StmtType> CompUnit Unit SubprogDecl SubprogBody SubprogSpec FormalPartOpt FormalPart Params Param DefIds DefId InitOpt DeclPart DeclItemOrBody DeclItemOrBodys ObjectDecl Decl Statements Statement SimpleStmt CompoundStmt NullStmt AssignStmt ReturnStmt ProcedureCall ExitStmt IfStmt CaseStmt LoopStmt Iteration IterPart LabelOpt Block CondClause CondClauses ElseOpt Range RangeConstrOpt DiscreteRange DiscreteWithRange Choice Choices Alternative Alternatives BasicLoop BlockBody BlockDecl
 %type<type> Type
-%type<ExprType> Expression Condition CondPart IdOpt WhenOpt Literal ParenthesizedPrimary Primary Factor Term SimpleExpression Relation  
+%type<StrType> AttributeId
+%type<ExprType> Expression Condition CondPart IdOpt WhenOpt Literal ParenthesizedPrimary Primary Factor Term SimpleExpression Relation Attribute Value Values IndexedComp Name
 %type<SignType> ReverseOpt Multiplying Adding Unary Membership Relational ShortCircuit Logical
 
 %%
@@ -294,7 +295,7 @@ ObjectDecl
     | DefIds COLON CONSTANT Type InitOpt SEMICOLON {
         DEBUG_YACC("================Enter CONSTANT ObjectDecl=================");
         DefId* id = dynamic_cast<DefId*>($1);
-        InitOptStmt* init = dynamic_cast<InitOptStmt*>($5);
+        // InitOptStmt* init = dynamic_cast<InitOptStmt*>($5);
         while(id) {
             id->setType($4);
             id->setConst();
@@ -791,9 +792,8 @@ Primary
     : Literal {
         $$ = $1;
     }
-	| Identifier {
-        SymbolEntry* se = identifiers->lookup($1);
-        $$ = new Id(se);
+	| Name {
+        $$ = $1;
     }
 	| ParenthesizedPrimary {
         $$ = $1;
@@ -806,43 +806,49 @@ Name
         $$ = new Id(se);
     }
     | IndexedComp {
-
+        $$ = $1;
     }
     | Attribute {
-
+        $$ = $1;
+    }
+    | INTEGER {
+        SymbolEntry *se = new IdentifierSymbolEntry(TypeSystem::integerType, "Integer", 0);
+        globals->install("Integer", se);
+        $$ = new Id(se);
     }
     ;
 
 IndexedComp
-    : Name '(' Values ')' {
-
+    : Name LPAREN Values RPAREN {
+        $$ = new Id(dynamic_cast<Id*>($1), $3);
     }
     ;
 
 Values
     : Value {
-
+        $$ = $1;
     }
  	| Values COMMA Value {
-
+        $$ = $1;
+        $1->setNext($3);
     }
 	;
 
 Value
     : Expression {
-
+        $$ = $1;
     }
 	;
 
 Attribute
     : Name TIC AttributeId {
-
+        $$ = new Id(dynamic_cast<Id*>($1), $3);
     }
     ;
 
 AttributeId
     : Identifier {
-
+        $$ = $1;
     }
 	;
 

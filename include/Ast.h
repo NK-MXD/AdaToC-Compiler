@@ -92,10 +92,20 @@ public:
 class Id : public ExprNode {
 private:
   SymbolEntry *se;
+  Id *name;
+  ExprNode *expr;
+  std::string attr;
 
 public:
   Id(SymbolEntry *_se) : se(_se){};
-  Type *getType() { return se->getType(); }
+  Id(Id *_name, ExprNode *_expr) : name(_name), expr(_expr){};
+  Id(Id *_name, std::string _attr) : name(_name), attr(_attr){};
+  Type *getType() {
+    if (se)
+      return se->getType();
+    else
+      return name->getType();
+  }
   void dump(int level);
   void genCppCode();
 };
@@ -172,15 +182,9 @@ private:
 
 public:
   DefId(IdentifierSymbolEntry *_id) : id(_id){};
-  IdentifierSymbolEntry* getSymbolEntry() {
-    return id;
-  }
-  void setType(Type* _type) {
-    id->setType(_type);
-  }
-  void setConst() {
-    id->setConst();
-  }
+  IdentifierSymbolEntry *getSymbolEntry() { return id; }
+  void setType(Type *_type) { id->setType(_type); }
+  void setConst() { id->setConst(); }
   void dump(int level);
   void genCppCode();
 };
@@ -233,11 +237,11 @@ public:
 
 class ObjectDeclStmt : public StmtNode {
 private:
-  DefId* id;
+  DefId *id;
   InitOptStmt *init;
 
 public:
-  ObjectDeclStmt(DefId* _id, InitOptStmt *_init) : id(_id), init(_init) {}
+  ObjectDeclStmt(DefId *_id, InitOptStmt *_init) : id(_id), init(_init) {}
   void dump(int level);
   void genCppCode();
 };
