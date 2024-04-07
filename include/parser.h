@@ -143,19 +143,22 @@ extern int yydebug;
     WHILE = 342,
     WITH = 343,
     XOR = 344,
-    DECIMIAL = 345,
-    Identifier = 346,
-    STRINGLITERAL = 347,
-    INTEGER = 348,
-    STRING = 349,
-    NATURAL = 350,
-    COLON = 351,
-    SEMICOLON = 352,
-    LPAREN = 353,
-    RPAREN = 354,
-    COMMA = 355,
-    SINGLEAND = 356,
-    SINGLEOR = 357
+    TRuE = 345,
+    FALsE = 346,
+    DECIMIAL = 347,
+    Identifier = 348,
+    STRINGLITERAL = 349,
+    INTEGER = 350,
+    STRING = 351,
+    NATURAL = 352,
+    BOOLEAN = 353,
+    COLON = 354,
+    SEMICOLON = 355,
+    LPAREN = 356,
+    RPAREN = 357,
+    COMMA = 358,
+    SINGLEAND = 359,
+    SINGLEOR = 360
   };
 #endif
 
@@ -172,7 +175,7 @@ union YYSTYPE
     OpSignNode* SignType;
     Type* type;
 
-#line 176 "/mnt/d/WorkSpace/Ada2C-Project/include/parser.h"
+#line 179 "/mnt/d/WorkSpace/Ada2C-Project/include/parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

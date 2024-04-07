@@ -1,9 +1,8 @@
 #ifndef __ADA2C_SYMBOLTALBE_H__
 #define __ADA2C_SYMBOLTALBE_H__
 
+#include "Type.h"
 #include <map>
-
-class Type;
 
 class SymbolEntry {
 private:
@@ -11,28 +10,32 @@ private:
 
 protected:
   enum { CONSTANT, VARIABLE, TEMPORARY };
-  Type *type;
 
 public:
-  SymbolEntry(Type *type, int kind);
+  SymbolEntry(int kind);
   virtual ~SymbolEntry(){};
   bool isConstant() const { return kind == CONSTANT; };
   bool isTemporary() const { return kind == TEMPORARY; };
   bool isVariable() const { return kind == VARIABLE; };
-  Type *getType() { return type; };
   virtual std::string dump() = 0;
+  virtual Type* getType() = 0;
 };
 
 class ConstantSymbolEntry : public SymbolEntry {
 private:
   int value;
   std::string str;
+  Type* type;
+  bool bvalue;
 
 public:
   ConstantSymbolEntry(Type *type, int value);
-  ConstantSymbolEntry(Type *type, std::string str);
+  ConstantSymbolEntry(Type *type, bool bvalue);
+  ConstantSymbolEntry(Type *type, char* str);
   virtual ~ConstantSymbolEntry(){};
   int getValue() const { return value; };
+  Type *getType() { return type; };
+  void setType(Type* _type) { type = _type; };
   std::string dump();
 };
 
@@ -41,24 +44,31 @@ private:
   std::string name;
   int scope;
   bool isConst;
+  Type* type;
 
 public:
   enum { GLOBAL, PARAM, LOCAL };
 
 public:
+  IdentifierSymbolEntry(std::string name, int scope);
   IdentifierSymbolEntry(Type *type, std::string name, int scope, bool isConst = false);
   virtual ~IdentifierSymbolEntry(){};
+  Type *getType() { return type; };
   std::string dump();
+  void setType(Type* _type) { type = _type; };
+  void setConst() { isConst = true; };
   int getScope() const { return scope; };
 };
 
 class TemporarySymbolEntry : public SymbolEntry {
 private:
   int label;
+  Type* type;
 
 public:
   TemporarySymbolEntry(Type *type, int label);
   virtual ~TemporarySymbolEntry(){};
+  Type *getType() { return type; };
   std::string dump();
 };
 

@@ -95,9 +95,7 @@ private:
 
 public:
   Id(SymbolEntry *_se) : se(_se){};
-  Type *getType() {
-    return se->getType();
-  }
+  Type *getType() { return se->getType(); }
   void dump(int level);
   void genCppCode();
 };
@@ -108,17 +106,15 @@ private:
 
 public:
   Constant(SymbolEntry *_se) : se(_se){};
-  Type *getType() {
-    return se->getType();
-  }
+  Type *getType() { return se->getType(); }
   void dump(int level);
   void genCppCode();
 };
 
 class FactorExpr : public ExprNode {
 private:
-  int op;
   ExprNode *expr;
+  int op;
 
 public:
   enum {
@@ -127,19 +123,17 @@ public:
     EXPON,
   };
   FactorExpr(ExprNode *_expr, int _op) : expr(_expr), op(_op){};
-  Type *getType() {
-    return expr->getType();
-  }
+  Type *getType() { return expr->getType(); }
   void dump(int level);
   void genCppCode();
 };
 
 class BinaryExpr : public ExprNode {
 private:
-  OpSignNode *sign;
   ExprNode *expr1, *expr2;
   Range *range;
   SymbolEntry *se;
+  OpSignNode *sign;
   bool isUnary = false;
   bool isMember = false;
 
@@ -157,9 +151,7 @@ public:
       : expr1(_expr1), se(_se), sign(_sign) {
     isMember = true;
   };
-  Type *getType() {
-    return expr1->getType();
-  }
+  Type *getType() { return expr1->getType(); }
   void dump(int level);
   void genCppCode();
 };
@@ -170,6 +162,25 @@ private:
 
 public:
   SeqNode(StmtNode *_stmt1, StmtNode *_stmt2) : stmt1(_stmt1), stmt2(_stmt2){};
+  void dump(int level);
+  void genCppCode();
+};
+
+class DefId : public StmtNode {
+private:
+  IdentifierSymbolEntry *id;
+
+public:
+  DefId(IdentifierSymbolEntry *_id) : id(_id){};
+  IdentifierSymbolEntry* getSymbolEntry() {
+    return id;
+  }
+  void setType(Type* _type) {
+    id->setType(_type);
+  }
+  void setConst() {
+    id->setConst();
+  }
   void dump(int level);
   void genCppCode();
 };
@@ -222,12 +233,11 @@ public:
 
 class ObjectDeclStmt : public StmtNode {
 private:
-  SymbolEntry *se;
+  DefId* id;
   InitOptStmt *init;
 
 public:
-  ObjectDeclStmt(SymbolEntry *_se, InitOptStmt *_init) : se(_se), init(_init) {}
-  SymbolEntry *getObjectSymbol() { return se; }
+  ObjectDeclStmt(DefId* _id, InitOptStmt *_init) : id(_id), init(_init) {}
   void dump(int level);
   void genCppCode();
 };
@@ -254,6 +264,13 @@ private:
 public:
   DeclItemOrBodyStmt(DeclStmt *_decl) : decl(_decl) {}
   DeclItemOrBodyStmt(ProcedureDef *_prof) : prof(_prof) {}
+  void dump(int level);
+  void genCppCode();
+};
+
+class NullStmt : public StmtNode {
+public:
+  NullStmt(){};
   void dump(int level);
   void genCppCode();
 };
@@ -336,7 +353,6 @@ public:
   void dump(int level);
   void genCppCode();
 };
-
 
 class DiscreteRange : public StmtNode {
 private:
@@ -452,7 +468,7 @@ private:
 
 public:
   LoopStmt(LabelOpt *_label, Iteration *_iter, BasicLoopStmt *_loop)
-      : label(_label), iter(_iter), loop(_loop) {};
+      : label(_label), iter(_iter), loop(_loop){};
   void dump(int level);
   void genCppCode();
 };

@@ -29,8 +29,8 @@ void Node::setNext(Node *node) {
 }
 
 void Ast::dump() {
+  printAstLog("Program dump");
   fprintf(yyout, "program\n");
-  printAstLog("program");
   if (root != nullptr)
     root->dump(4);
 }
@@ -128,6 +128,7 @@ void Id::dump(int level) {
 void Id::genCppCode() {}
 
 void Constant::dump(int level) {
+  printAstLog("Literal dump");
   std::string type, value;
   type = se->getType()->dump();
   value = se->dump();
@@ -165,7 +166,10 @@ void BinaryExpr::dump(int level) {
   if (isUnary) {
     return;
   } else if (isMember) {
-    range->dump(level + 4);
+    if (range)
+      range->dump(level + 4);
+    if (se)
+      se->dump();
   } else {
     expr2->dump(level + 4);
   }
@@ -182,6 +186,18 @@ void SeqNode::genCppCode() {
   stmt1->genCppCode();
   stmt2->genCppCode();
 }
+
+void DefId::dump(int level) {
+  std::string name, type;
+  name = id->dump();
+  type = id->getType()->dump();
+  fprintf(yyout, "%*cDefId\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
+          type.c_str());
+  if (this->getNext())
+    this->getNext()->dump(level);
+}
+
+void DefId::genCppCode() {}
 
 void InitOptStmt::dump(int level) {
   fprintf(yyout, "%*cInitOptStmt\n", level, ' ');
@@ -205,12 +221,14 @@ void ParamNode::dump(int level) {
 void ParamNode::genCppCode() {}
 
 void ProcedureSpec::dump(int level) {
+  printAstLog("ProcedureSpec dump");
   std::string name, type;
   name = se->dump();
   type = se->getType()->dump();
   fprintf(yyout, "%*cProcedure\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
           type.c_str());
-  params->dump(level + 4);
+  if (params)
+    params->dump(level + 4);
 }
 
 void ProcedureSpec::genCppCode() {}
@@ -223,11 +241,9 @@ void ProcedureDecl::dump(int level) {
 void ProcedureDecl::genCppCode() {}
 
 void ObjectDeclStmt::dump(int level) {
-  std::string name, type;
-  name = se->dump();
-  type = se->getType()->dump();
-  fprintf(yyout, "%*cObjectDeclStmt\tname: %s\ttype: %s\n", level, ' ',
-          name.c_str(), type.c_str());
+  printAstLog("ObjectDeclStmt dump");
+  fprintf(yyout, "%*cObjectDeclStmt\n", level, ' ');
+  id->dump(level + 4);
   if (init)
     init->dump(level + 4);
 }
@@ -256,7 +272,12 @@ void DeclItemOrBodyStmt::dump(int level) {
 
 void DeclItemOrBodyStmt::genCppCode() {}
 
+void NullStmt::dump(int level) { fprintf(yyout, "%*cNullStmt\n", level, ' '); }
+
+void NullStmt::genCppCode() {}
+
 void AssignStmt::dump(int level) {
+  printAstLog("AssignStmt dump");
   std::string name, type;
   name = se->dump();
   type = se->getType()->dump();
@@ -281,7 +302,7 @@ void CallStmt::dump(int level) {
   std::string name, type;
   name = se->dump();
   type = se->getType()->dump();
-  fprintf(yyout, "%*cCallStmt\tname: s\ttype: %s\n", level, ' ', name.c_str(),
+  fprintf(yyout, "%*cCallStmt\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
           type.c_str());
 }
 
@@ -298,6 +319,7 @@ void Stmt::dump(int level) {
 void Stmt::genCppCode() {}
 
 void ProcedureDef::dump(int level) {
+  printAstLog("ProcedureDef dump");
   fprintf(yyout, "%*cProcedureDef\n", level, ' ');
   spec->dump(level + 4);
   if (items)
@@ -312,7 +334,7 @@ void CondClause::dump(int level) {
   fprintf(yyout, "%*cCondClause\n", level, ' ');
   cond->dump(level + 4);
   stmts->dump(level + 4);
-  if(this->getNext())
+  if (this->getNext())
     this->getNext()->dump(level);
 }
 
@@ -321,7 +343,7 @@ void CondClause::genCppCode() {}
 void IfStmt::dump(int level) {
   fprintf(yyout, "%*cIfStmt\n", level, ' ');
   clause->dump(level + 4);
-  if(elsestmt)
+  if (elsestmt)
     elsestmt->dump(level + 4);
 }
 
@@ -361,8 +383,8 @@ void Choice::dump(int level) {
   if (others) {
     fprintf(yyout, "%*cothers\n", level + 4, ' ');
   }
-  if(this->getNext()) {
-    fprintf(yyout, "%*c|\n", level, ' ');
+  if (this->getNext()) {
+    fprintf(yyout, "%*cOR\n", level, ' ');
     this->getNext()->dump(level);
   }
 }
@@ -373,7 +395,7 @@ void Alternative::dump(int level) {
   fprintf(yyout, "%*cAlternative\n", level, ' ');
   choices->dump(level + 4);
   stmts->dump(level + 4);
-  if(this->getNext())
+  if (this->getNext())
     this->getNext()->dump(level);
 }
 
@@ -382,7 +404,7 @@ void Alternative::genCppCode() {}
 void CaseStmt::dump(int level) {
   fprintf(yyout, "%*cCaseStmt\n", level, ' ');
   expr->dump(level + 4);
-  if(alter)
+  if (alter)
     alter->dump(level + 4);
 }
 

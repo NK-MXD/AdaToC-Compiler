@@ -1,22 +1,24 @@
 #ifndef __ADA2C_TYPE_H__
 #define __ADA2C_TYPE_H__
 
-#include "SymbolTable.h"
 #include <string>
 #include <vector>
+
+class SymbolEntry;
 
 class Type {
 private:
   int kind;
 
 protected:
-  enum { INTEGER, STRING, NATURAL, PROCEDURE, FUNCTION };
+  enum { INTEGER, BOOLEAN, STRING, NATURAL, PROCEDURE, FUNCTION };
 
 public:
   Type(int _kind) : kind(_kind){};
   ~Type(){};
   virtual std::string dump() = 0;
   bool isInteger() const { return kind == INTEGER; };
+  bool isBoolean() const { return kind == BOOLEAN; };
   bool isString() const { return kind == STRING; };
   bool isNatural() const { return kind == NATURAL; };
   bool isProcedure() const { return kind == PROCEDURE; };
@@ -29,6 +31,15 @@ private:
 
 public:
   IntegerType(int _size) : Type(Type::INTEGER), size(_size){};
+  std::string dump();
+};
+
+class BooleanType : public Type {
+private:
+  int size;
+
+public:
+  BooleanType(int _size) : Type(Type::BOOLEAN), size(_size){};
   std::string dump();
 };
 
@@ -85,7 +96,7 @@ class TypeSystem {
 private:
   static IntegerType commonInteger;
   static NaturalType commonNatural;
-  static IntegerType commonBool;
+  static BooleanType commonBool;
   static StringType commonString;
 
 public:

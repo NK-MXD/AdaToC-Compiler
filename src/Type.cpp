@@ -2,7 +2,7 @@
 
 IntegerType TypeSystem::commonInteger = IntegerType(32);
 NaturalType TypeSystem::commonNatural = NaturalType(32);
-IntegerType TypeSystem::commonBool = IntegerType(1);
+BooleanType TypeSystem::commonBool = BooleanType(1);
 StringType TypeSystem::commonString = StringType(16);
 
 Type* TypeSystem::integerType = &commonInteger;
@@ -12,6 +12,10 @@ Type* TypeSystem::stringType = &commonString;
 
 std::string IntegerType::dump() {
     return "Integer";
+}
+
+std::string BooleanType::dump() {
+    return "Boolean";
 }
 
 std::string StringType::dump() {

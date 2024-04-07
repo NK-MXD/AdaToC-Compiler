@@ -123,13 +123,14 @@
 %token WHILE
 %token WITH
 %token XOR
+%token <BoolType> TRuE FALsE
 %token <IntType> DECIMIAL
 %token <StrType> Identifier STRINGLITERAL
-%token INTEGER STRING NATURAL
+%token INTEGER STRING NATURAL BOOLEAN
 %token COLON SEMICOLON LPAREN RPAREN COMMA
 %token SINGLEAND SINGLEOR
 
-%type<StmtType> CompUnit Unit SubprogDecl SubprogBody SubprogSpec FormalPartOpt FormalPart Params Param InitOpt DeclPart DeclItemOrBody DeclItemOrBodys ObjectDecl Decl Statements Statement SimpleStmt CompoundStmt NullStmt AssignStmt ReturnStmt ProcedureCall ExitStmt IfStmt CaseStmt LoopStmt Iteration IterPart LabelOpt Block CondClause CondClauses ElseOpt Range RangeConstrOpt DiscreteRange DiscreteWithRange Choice Choices Alternative Alternatives BasicLoop BlockBody BlockDecl
+%type<StmtType> CompUnit Unit SubprogDecl SubprogBody SubprogSpec FormalPartOpt FormalPart Params Param DefIds DefId InitOpt DeclPart DeclItemOrBody DeclItemOrBodys ObjectDecl Decl Statements Statement SimpleStmt CompoundStmt NullStmt AssignStmt ReturnStmt ProcedureCall ExitStmt IfStmt CaseStmt LoopStmt Iteration IterPart LabelOpt Block CondClause CondClauses ElseOpt Range RangeConstrOpt DiscreteRange DiscreteWithRange Choice Choices Alternative Alternatives BasicLoop BlockBody BlockDecl
 %type<type> Type
 %type<ExprType> Expression Condition CondPart IdOpt WhenOpt Literal ParenthesizedPrimary Primary Factor Term SimpleExpression Relation  
 %type<SignType> ReverseOpt Multiplying Adding Unary Membership Relational ShortCircuit Logical
@@ -162,13 +163,15 @@ Unit
 
 SubprogDecl
     : SubprogSpec SEMICOLON {
+        DEBUG_YACC("Enter SubprogDecl");
         $$ = new ProcedureDecl(dynamic_cast<ProcedureSpec*>($1));
+        DEBUG_YACC("Leave SubprogDecl");
     }
     ;
 
 SubprogSpec
     : PROCEDURE Identifier FormalPartOpt {
-        DEBUG_YACC("Enter SubprogSpec");
+        DEBUG_YACC("================Enter SubprogSpec=================");
         // Define procedure type.
         Type* proType;
         ParamNode* param = nullptr;
@@ -190,7 +193,8 @@ SubprogSpec
         
         // Define SubprogSpec with ast node.
         $$ = new ProcedureSpec(se, param);
-        DEBUG_YACC("Leave SubprogSpec");
+        DEBUG_YACC("================Leave SubprogSpec=================");
+
     }
     ;
 
@@ -227,6 +231,9 @@ Type
     : INTEGER {
         $$ = TypeSystem::integerType;
     }
+    | BOOLEAN {
+        $$ = TypeSystem::boolType;
+    }
     | STRING {
         $$ = TypeSystem::stringType;
     }
@@ -243,6 +250,7 @@ InitOpt : %empty { $$ = nullptr; }
 
 SubprogBody
     : SubprogSpec IS {
+        DEBUG_YACC("================Enter SubprogBody=================");
         // Enter into new scope.
         identifiers = new SymbolTable(identifiers);
     } DeclPart BlockBody END IdOpt SEMICOLON {
@@ -251,6 +259,7 @@ SubprogBody
         SymbolTable* ScopeTable = identifiers;
         identifiers = identifiers->getPrev();
         delete ScopeTable;
+        DEBUG_YACC("================Leave SubprogBody=================");
     }
 	;
 
@@ -266,22 +275,53 @@ Decl
         $$ = new DeclStmt(dynamic_cast<ObjectDeclStmt*>($1));
     }
     | SubprogDecl {
-        $$ = new DeclStmt(dynamic_cast<SubprogDecl*>($1));
+        $$ = new DeclStmt(dynamic_cast<ProcedureDecl*>($1));
     }
     ;
 
 ObjectDecl
-    : Identifier COLON Type InitOpt SEMICOLON {
-        SymbolEntry *se = new IdentifierSymbolEntry($3, $1, identifiers->getLevel());
-        identifiers->install($1, se);
-        $$ = new ObjectDeclStmt(se, dynamic_cast<InitOptStmt*>($4));
+    : DefIds COLON Type InitOpt SEMICOLON {
+        DEBUG_YACC("================Enter ObjectDecl=================");
+        // Reset the type of id
+        DefId* id = dynamic_cast<DefId*>($1);
+        while(id) {
+            id->setType($3);
+            id = dynamic_cast<DefId*>(id->getNext());
+        }
+        $$ = new ObjectDeclStmt(dynamic_cast<DefId*>($1), dynamic_cast<InitOptStmt*>($4));
+        DEBUG_YACC("================Leave ObjectDecl=================");
     }
-    | Identifier COLON CONSTANT Type InitOpt SEMICOLON {
-        SymbolEntry *se = new IdentifierSymbolEntry($4, $1, identifiers->getLevel(), true);
-        identifiers->install($1, se);
-        $$ = new ObjectDeclStmt(se, dynamic_cast<InitOptStmt*>($5));
+    | DefIds COLON CONSTANT Type InitOpt SEMICOLON {
+        DEBUG_YACC("================Enter CONSTANT ObjectDecl=================");
+        DefId* id = dynamic_cast<DefId*>($1);
+        InitOptStmt* init = dynamic_cast<InitOptStmt*>($5);
+        while(id) {
+            id->setType($4);
+            id->setConst();
+            id = dynamic_cast<DefId*>(id->getNext());
+        }
+        $$ = new ObjectDeclStmt(dynamic_cast<DefId*>($1), dynamic_cast<InitOptStmt*>($5));
+        DEBUG_YACC("================Leave CONSTANT ObjectDecl=================");
     }
 	;
+
+DefIds
+    : DefId {
+        $$ = $1;
+    }
+    | DefIds COMMA DefId {
+        $$ = $1;
+        $1->setNext($3);
+    }
+    ;
+
+DefId
+    : Identifier {
+        IdentifierSymbolEntry *se = new IdentifierSymbolEntry($1, identifiers->getLevel());
+        identifiers->install($1, se);
+        $$ = new DefId(se);
+    }
+    ;
 
 DeclItemOrBodys
     : DeclItemOrBody {
@@ -356,14 +396,19 @@ CompoundStmt
 
 NullStmt
     : NuLL SEMICOLON {
-        $$ = nullptr;
+        $$ = new NullStmt();
     }
 	;
 
 AssignStmt
     : Identifier ASSIGN Expression SEMICOLON {
+        DEBUG_YACC("================Enter AssignStmt=================");
         SymbolEntry *se = identifiers->lookup($1);
+        if(!se) {
+            std::cerr << "[YACC ERROR]: Can't not get symbolEntry: "<< $1 << "\n";
+        }
         $$ = new AssignStmt(se, $3);
+        DEBUG_YACC("================Leave AssignStmt=================");
     }
 	;
 
@@ -380,7 +425,7 @@ ProcedureCall
     : Identifier SEMICOLON {
         SymbolEntry* se = identifiers->lookup($1);
         if(!se || !se->getType()->isProcedure()) {
-            std::cerr << "Can't not get Procedure type SymbolEntry!\n";
+            std::cerr << "[YACC ERROR]: Can't not get Procedure type SymbolEntry!\n";
         }
         $$ = new CallStmt(se);
     }
@@ -488,8 +533,8 @@ Choice
 DiscreteWithRange
     : Identifier RANGE Range {
         Type* type = dynamic_cast<Range*>($3)->getType();
-        SymbolEntry* se = new IdentifierSymbolEntry(type, $1);
-        $$ = new DiscreteRange($1, dynamic_cast<Range*>($3));
+        SymbolEntry* se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
+        $$ = new DiscreteRange(se, dynamic_cast<Range*>($3));
     }
 	| Range {
         $$ = new DiscreteRange(dynamic_cast<Range*>($1));
@@ -504,7 +549,7 @@ LoopStmt
 
 LabelOpt : %empty { $$ = nullptr; }
 	| Identifier COLON {
-        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, $1, identifiers->getLevel());
+        SymbolEntry *se = new IdentifierSymbolEntry(TypeSystem::integerType, $1, identifiers->getLevel());
         identifiers->install($1, se);
         $$ = new LabelOpt(se);
     }
@@ -521,7 +566,7 @@ Iteration : %empty { $$ = nullptr; }
 
 IterPart
     : FOR Identifier IN {
-        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, $2, identifiers->getLevel());
+        SymbolEntry *se = new IdentifierSymbolEntry(TypeSystem::integerType, $2, identifiers->getLevel());
         identifiers->install($2, se);
         $$ = new IterPart(se);
     }
@@ -549,9 +594,9 @@ IdOpt
 
 DiscreteRange
     : Identifier RangeConstrOpt {
-        SymbolEntry *se = new IdentifierSymbolEntry(IdentifierSymbolEntry::IntegerType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        $$ = new DiscreteRange($1, dynamic_cast<Range*>($2));
+        SymbolEntry *se = new IdentifierSymbolEntry(TypeSystem::integerType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        $$ = new DiscreteRange(se, dynamic_cast<Range*>($2));
     }
 	| Range {
         $$ = new DiscreteRange(dynamic_cast<Range*>($1));
@@ -572,7 +617,7 @@ Range
 
 Block
     : LabelOpt BlockDecl BlockBody END IdOpt SEMICOLON {
-        $$ = new Block(dynamic_cast<LabelOpt*>($1), dynamic_cast<DeclItemOrBody*>($2), dynamic_cast<Stmt*>($3));
+        $$ = new Block(dynamic_cast<LabelOpt*>($1), dynamic_cast<DeclItemOrBodyStmt*>($2), dynamic_cast<Stmt*>($3));
     }
 	;
 
@@ -584,7 +629,10 @@ BlockDecl : %empty { $$ = nullptr; }
 
 BlockBody
     : BEGiN Statements {
+        DEBUG_YACC("================Enter BlockBody=================");
         $$ = $2;
+        DEBUG_YACC("================Enter BlockBody=================");
+
     }
 	;
 
@@ -632,7 +680,8 @@ Relation
         $$ = new BinaryExpr($1, dynamic_cast<Range*>($3), $2);
     }
 	| SimpleExpression Membership Identifier {
-        $$ = new BinaryExpr($1, $3, $2);
+        SymbolEntry* se = new IdentifierSymbolEntry(TypeSystem::integerType, $3, identifiers->getLevel());
+        $$ = new BinaryExpr($1, se, $2);
     }
 	;
 
@@ -751,6 +800,37 @@ Primary
     }
 	;
 
+Name
+    : Identifier {
+        SymbolEntry* se = identifiers->lookup($1);
+        $$ = new Id(se);
+    }
+    | IndexedComp {
+
+    }
+    | Attribute {
+
+    }
+    ;
+
+IndexedComp
+    : name '(' value_s ')' {
+
+    }
+    ;
+
+Attribute
+    : Name TIC AttributeId {
+
+    }
+    ;
+
+AttributeId
+    : Identifier {
+
+    }
+	;
+
 ParenthesizedPrimary
     : LPAREN Expression RPAREN {
         $$ = $2;
@@ -759,15 +839,23 @@ ParenthesizedPrimary
 
 Literal
     : DECIMIAL {
-        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::IntegerType, $1);
+        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::integerType, $1);
         $$ = new Constant(se);
     }
 	| STRINGLITERAL {
-        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::StringType, $1);
+        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::stringType, $1);
         $$ = new Constant(se);
     }
 	| NuLL {
         $$ = nullptr;
+    }
+    | TRuE {
+        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::boolType, true);
+        $$ = new Constant(se);
+    }
+    | FALsE {
+        SymbolEntry* se = new ConstantSymbolEntry(TypeSystem::boolType, false);
+        $$ = new Constant(se);
     }
 	;
 %%

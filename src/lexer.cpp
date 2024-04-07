@@ -522,7 +522,7 @@ char *yytext;
     }
     #define YY_USER_ACTION update_loc();  
     
-    #define NUM_KEYWORDS 72
+    #define NUM_KEYWORDS 75
     typedef struct {
       char *keyword;
       int keyword_value;
@@ -541,6 +541,7 @@ char *yytext;
          {"AT", AT},
          {"BEGIN", BEGiN},
          {"BODY", BODY},
+         {"BOOLEAN", BOOLEAN},
          {"CASE", CASE},
          {"CONSTANT", CONSTANT},
          {"DECLARE", DECLARE},
@@ -554,6 +555,7 @@ char *yytext;
          {"ENTRY", ENTRY},
          {"EXCEPTION", EXCEPTION},
          {"EXIT", EXIT},
+         {"FALSE", FALsE},
          {"FOR", FOR},
          {"FUNCTION", FUNCTION},
          {"GENERIC", GENERIC},
@@ -594,6 +596,7 @@ char *yytext;
          {"TASK", TASK},
          {"TERMINATE", TERMINATE},
          {"THEN", THEN},
+         {"TRUE", TRuE},
          {"TYPE", TYPE},
          {"UNTIL", UNTIL},
          {"USE", USE},
@@ -609,8 +612,8 @@ char *yytext;
           *cp -= ('a' - 'A');
       }
     }
-#line 613 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.cpp"
-#line 614 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.cpp"
+#line 616 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.cpp"
+#line 617 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.cpp"
 
 #define INITIAL 0
 
@@ -827,9 +830,9 @@ YY_DECL
 		}
 
 	{
-#line 126 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 129 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 
-#line 833 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.cpp"
+#line 836 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -898,7 +901,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 127 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 130 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("ADD\t+");
@@ -907,7 +910,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 132 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 135 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("SUB\t-");
@@ -916,7 +919,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 137 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 140 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("MUL\t*");
@@ -925,7 +928,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 142 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 145 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("DIV\t/");
@@ -934,7 +937,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 147 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 150 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("EQ\t=");
@@ -943,7 +946,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 152 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 155 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("LTLT\t<<");
@@ -952,7 +955,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 157 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 160 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("GTGT\t>>");
@@ -961,7 +964,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 162 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 165 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("BOX\t<>");
@@ -970,7 +973,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 167 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 170 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("LTEQ\t<=");
@@ -979,7 +982,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 172 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 175 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("EXPON\t**");
@@ -988,7 +991,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 177 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 180 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("NE\t/=");
@@ -997,7 +1000,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 182 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 185 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("LE\t<");
@@ -1006,7 +1009,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 187 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 190 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("GE\t>");
@@ -1015,7 +1018,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 192 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 195 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("GTEQ\t>=");
@@ -1024,7 +1027,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 197 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 200 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("ASSIGN\t:=");
@@ -1033,7 +1036,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 202 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 205 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("RIGHTSHAFT\t=>");
@@ -1042,7 +1045,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 207 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 210 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("COLON\t:");
@@ -1051,7 +1054,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 212 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 215 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("SEMICOLON\t;");
@@ -1060,7 +1063,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 217 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 220 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("LPAREN\t(");
@@ -1069,7 +1072,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 222 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 225 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("RPAREN\t)");
@@ -1078,7 +1081,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 227 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 230 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("COMMA\t,");
@@ -1087,7 +1090,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 232 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 235 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("SINGLEAND\t&");
@@ -1096,7 +1099,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 237 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 240 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("SINGLEOR\t|");
@@ -1105,7 +1108,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 242 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 245 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("TIC\t'");
@@ -1114,7 +1117,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 247 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 250 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     if(dump_token) 
         DUMP_TOKEN("DOTDOT\t..");
@@ -1123,14 +1126,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 253 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 256 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     int min;
     int max;
     int guess, compare;
 
     min = 0;
-    max = strlen(yytext) - 1;
+    max = NUM_KEYWORDS - 1;
     guess = (min + max) / 2;
     char *token;
     token = new char[strlen(yytext) + 1];
@@ -1156,7 +1159,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 283 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 286 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     int num = atoi(yytext);
     if(dump_token)
@@ -1167,7 +1170,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 291 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 294 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     char *token;
     token = new char[strlen(yytext) - 1];
@@ -1181,28 +1184,28 @@ YY_RULE_SETUP
 case 29:
 /* rule 29 can match eol */
 YY_RULE_SETUP
-#line 301 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 304 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {
     newoffsets = 0;
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 305 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 308 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 306 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 309 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 {}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 308 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 311 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 ECHO;
 	YY_BREAK
-#line 1206 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.cpp"
+#line 1209 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2219,6 +2222,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 308 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
+#line 311 "/mnt/d/WorkSpace/Ada2C-Project/src/lexer.l"
 
 

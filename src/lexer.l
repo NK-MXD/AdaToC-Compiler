@@ -26,7 +26,7 @@
     }
     #define YY_USER_ACTION update_loc();  
     
-    #define NUM_KEYWORDS 72
+    #define NUM_KEYWORDS 75
     typedef struct {
       char *keyword;
       int keyword_value;
@@ -45,6 +45,7 @@
          {"AT", AT},
          {"BEGIN", BEGiN},
          {"BODY", BODY},
+         {"BOOLEAN", BOOLEAN},
          {"CASE", CASE},
          {"CONSTANT", CONSTANT},
          {"DECLARE", DECLARE},
@@ -58,6 +59,7 @@
          {"ENTRY", ENTRY},
          {"EXCEPTION", EXCEPTION},
          {"EXIT", EXIT},
+         {"FALSE", FALsE},
          {"FOR", FOR},
          {"FUNCTION", FUNCTION},
          {"GENERIC", GENERIC},
@@ -98,6 +100,7 @@
          {"TASK", TASK},
          {"TERMINATE", TERMINATE},
          {"THEN", THEN},
+         {"TRUE", TRuE},
          {"TYPE", TYPE},
          {"UNTIL", UNTIL},
          {"USE", USE},
@@ -256,7 +259,7 @@ LINECOMMENT --.*\n
     int guess, compare;
 
     min = 0;
-    max = strlen(yytext) - 1;
+    max = NUM_KEYWORDS - 1;
     guess = (min + max) / 2;
     char *token;
     token = new char[strlen(yytext) + 1];
