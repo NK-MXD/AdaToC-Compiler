@@ -10,7 +10,9 @@
     extern char* yytext;
     extern Ast ast;
 
-    #define DEBUG_SWITCH_TYPE_CHECK 1
+    std::vector<bool> whileIters;
+
+    #define DEBUG_SWITCH_TYPE_CHECK 0
     #if DEBUG_SWITCH_TYPE_CHECK
     #define DEBUG_YACC(str) std::cerr<<"[YACC INFO]:"<<str<<"\n";
     #else
@@ -164,38 +166,47 @@ Unit
 
 SubprogDecl
     : SubprogSpec SEMICOLON {
-        DEBUG_YACC("Enter SubprogDecl");
+        DEBUG_YACC("================Enter SubprogDecl=================");
         $$ = new ProcedureDecl(dynamic_cast<ProcedureSpec*>($1));
-        DEBUG_YACC("Leave SubprogDecl");
+
+        SymbolTable* ScopeTable = identifiers;
+        identifiers = identifiers->getPrev();
+        delete ScopeTable;
+        DEBUG_YACC("================Leave SubprogDecl=================");
     }
     ;
 
 SubprogSpec
-    : PROCEDURE Identifier FormalPartOpt {
+    : PROCEDURE Identifier {
         DEBUG_YACC("================Enter SubprogSpec=================");
-        // Define procedure type.
-        Type* proType;
-        ParamNode* param = nullptr;
-        if($3)
-          param = dynamic_cast<ParamNode*>($3);
-        std::vector<Type*> paramTypes;
-        std::vector<SymbolEntry*> paramIds;
-        while (param) {
-            SymbolEntry* paramSe = param->getParamSymbol();
-            paramTypes.push_back(paramSe->getType());
-            paramIds.push_back(paramSe);
-            param = dynamic_cast<ParamNode*>(param->getNext());
-        }
-        proType = new ProcedureType(paramTypes, paramIds);
-
         // Register procedure name into symbol table.
-        SymbolEntry *se = new IdentifierSymbolEntry(proType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        
+        Type* proType = new ProcedureType();
+        SymbolEntry *se = identifiers->lookup($2);
+        if(!se) {
+            se = new IdentifierSymbolEntry(proType, $2, identifiers->getLevel());
+            identifiers->install($2, se);
+        }
+        identifiers = new SymbolTable(identifiers);
+    } FormalPartOpt {
+        SymbolEntry *se = identifiers->lookup($2);
+        ProcedureType* proType = dynamic_cast<ProcedureType*>(se->getType());
+        // Define procedure type.
+        ParamNode* param = nullptr;
+        if($4) {
+            param = dynamic_cast<ParamNode*>($4);
+            std::vector<Type*> paramTypes;
+            std::vector<SymbolEntry*> paramIds;
+            while (param) {
+                SymbolEntry* paramSe = param->getParamSymbol();
+                paramTypes.push_back(paramSe->getType());
+                paramIds.push_back(paramSe);
+                param = dynamic_cast<ParamNode*>(param->getNext());
+            }
+            proType->setParams(paramTypes, paramIds);
+        }
         // Define SubprogSpec with ast node.
         $$ = new ProcedureSpec(se, param);
         DEBUG_YACC("================Leave SubprogSpec=================");
-
     }
     ;
 
@@ -224,6 +235,7 @@ Params
 
 Param : Identifier COLON Type InitOpt {
         SymbolEntry *se = new IdentifierSymbolEntry($3, $1, IdentifierSymbolEntry::PARAM);
+        identifiers->install($1, se);
         $$ = new ParamNode(se, dynamic_cast<InitOptStmt*>($4));
     }
 	;
@@ -258,8 +270,10 @@ SubprogBody
         $$ = new ProcedureDef(dynamic_cast<ProcedureSpec*>($1), dynamic_cast<DeclItemOrBodyStmt*>($4), dynamic_cast<Stmt*>($5));
         // Leave the scope.
         SymbolTable* ScopeTable = identifiers;
-        identifiers = identifiers->getPrev();
+        SymbolTable* PrevTable = identifiers->getPrev();
+        identifiers = PrevTable->getPrev();
         delete ScopeTable;
+        delete PrevTable;
         DEBUG_YACC("================Leave SubprogBody=================");
     }
 	;
@@ -423,12 +437,8 @@ ReturnStmt
 	;
 
 ProcedureCall
-    : Identifier SEMICOLON {
-        SymbolEntry* se = identifiers->lookup($1);
-        if(!se || !se->getType()->isProcedure()) {
-            std::cerr << "[YACC ERROR]: Can't not get Procedure type SymbolEntry!\n";
-        }
-        $$ = new CallStmt(se);
+    : Name SEMICOLON {
+        $$ = new CallStmt(dynamic_cast<Id*>($1));
     }
 	;
 
@@ -545,6 +555,12 @@ DiscreteWithRange
 LoopStmt
     : LabelOpt Iteration BasicLoop IdOpt SEMICOLON {
         $$ = new LoopStmt(dynamic_cast<LabelOpt*>($1), dynamic_cast<Iteration*>($2), dynamic_cast<BasicLoopStmt*>($3));
+        if(!whileIters.empty() && whileIters.back()) {
+            SymbolTable* ScopeTable = identifiers;
+            identifiers = identifiers->getPrev();
+            delete ScopeTable;
+        }
+        whileIters.pop_back();
     }
 	;
 
@@ -556,17 +572,23 @@ LabelOpt : %empty { $$ = nullptr; }
     }
 	;
 
-Iteration : %empty { $$ = nullptr; }
+Iteration : %empty {
+        whileIters.push_back(false);
+        $$ = nullptr; 
+    }
 	| WHILE Condition {
         $$ = new Iteration($2);
+        whileIters.push_back(false);
     }
 	| IterPart ReverseOpt DiscreteRange {
         $$ = new Iteration(dynamic_cast<IterPart*>($1), $2, dynamic_cast<DiscreteRange*>($3));
+        whileIters.push_back(true);
     }
 	;
 
 IterPart
     : FOR Identifier IN {
+        identifiers = new SymbolTable(identifiers);
         SymbolEntry *se = new IdentifierSymbolEntry(TypeSystem::integerType, $2, identifiers->getLevel());
         identifiers->install($2, se);
         $$ = new IterPart(se);
@@ -803,6 +825,9 @@ Primary
 Name
     : Identifier {
         SymbolEntry* se = identifiers->lookup($1);
+        if(!se) {
+            std::cerr << "[YACC ERROR]: Can't not get SymbolEntry "<< $1 << " !\n";
+        }
         $$ = new Id(se);
     }
     | IndexedComp {

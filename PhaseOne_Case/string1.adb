@@ -3,10 +3,10 @@ procedure case12 is
 begin
    N := -2;
    declare
-      S : constant String :=
-        (if N > 0
-           then " is a positive number"
-           else " is not a positive number");
+      S : constant String := " is a positive number";
+      --  S : constant String := (if N > 0
+      --       then " is a positive number"
+      --       else " is not a positive number");
    begin
       null;
    end;

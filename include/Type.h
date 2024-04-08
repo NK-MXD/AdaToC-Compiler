@@ -67,11 +67,17 @@ private:
   std::vector<SymbolEntry *> paramIds;
 
 public:
+  ProcedureType(): Type(Type::PROCEDURE){};
   ProcedureType(std::vector<Type *> paramsType)
       : Type(Type::PROCEDURE), paramsType(paramsType){};
   ProcedureType(std::vector<Type *> paramsType,
                 std::vector<SymbolEntry *> paramIds)
       : Type(Type::PROCEDURE), paramsType(paramsType), paramIds(paramIds){};
+  void setParams(std::vector<Type *> paramsType,
+                 std::vector<SymbolEntry *> paramIds) {
+    this->paramsType.assign(paramsType.begin(), paramsType.end());
+    this->paramIds.assign(paramIds.begin(), paramIds.end());
+  }
   std::string dump();
 };
 

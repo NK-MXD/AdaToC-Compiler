@@ -106,6 +106,12 @@ public:
     else
       return name->getType();
   }
+  Id* getId() {
+    return name;
+  }
+  ExprNode* getExpr() {
+    return expr;
+  }
   void dump(int level);
   void genCppCode();
 };
@@ -302,10 +308,16 @@ public:
 
 class CallStmt : public StmtNode {
 private:
-  SymbolEntry *se;
+  Id *id;
 
 public:
-  CallStmt(SymbolEntry *_se) : se(_se){};
+  CallStmt(Id *_id) : id(_id){};
+  Id* getId() {
+    return id->getId();
+  }
+  ExprNode* getParam() {
+    return id->getExpr();
+  }
   void dump(int level);
   void genCppCode();
 };

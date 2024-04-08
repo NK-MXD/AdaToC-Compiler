@@ -1,0 +1,6 @@
+void case5(){
+    int N = 1;
+    if(N>0){
+        N=-N;
+    }
+}

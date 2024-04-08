@@ -1,0 +1,30 @@
+class case5 
+{
+private:
+  class Compute_A;
+  class Compute_B 
+  {
+  public:
+    static void main(int V) 
+    {
+      if (V > 5)
+      {
+        Compute_A::main(V - 1);
+      }
+    }
+  };
+  class Compute_A
+  {
+  public:
+    static void main(int V)
+    {
+      if (V > 5)
+      {
+        Compute_B::main(V - 1);
+      }
+    }
+  };
+
+public:
+  static void main() { Compute_A::main(15); }
+};
