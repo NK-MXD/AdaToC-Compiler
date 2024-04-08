@@ -3,7 +3,7 @@
 #include "CppUnit.h"
 #include "Procedure.h"
 
-#define DEBUG_SWITCH_AST_LOG 1
+#define DEBUG_SWITCH_AST_LOG 0
 #if DEBUG_SWITCH_AST_LOG
 #define printAstLog(str) std::cerr << "[AST INFO]:" << str << "\n";
 #else
@@ -120,13 +120,14 @@ void Id::dump(int level) {
   if (name) {
     name->dump(level + 4);
     if (expr) {
+      fprintf(yyout, "%*cName PAREN Value\n", level + 4, ' ');
       ExprNode* temp = expr;
       while(temp) {
-        temp->dump(level + 4);
+        temp->dump(level + 8);
         temp = dynamic_cast<ExprNode*>(temp->getNext());
       }
     } else {
-      fprintf(yyout, "%*cAttributeId: %s\n", level + 4, ' ', attr.c_str());
+      fprintf(yyout, "%*cAttributeId: %s\n", level + 8, ' ', attr.c_str());
     }
   } else {
     std::string name, type;
@@ -134,7 +135,7 @@ void Id::dump(int level) {
     name = se->dump();
     type = se->getType()->dump();
     scope = dynamic_cast<IdentifierSymbolEntry *>(se)->getScope();
-    fprintf(yyout, "%*cname: %s\tscope: %d\ttype: %s\n", level, ' ',
+    fprintf(yyout, "%*cname: %s\tscope: %d\ttype: %s\n", level + 4, ' ',
             name.c_str(), scope, type.c_str());
   }
 }
@@ -176,16 +177,16 @@ void FactorExpr::genCppCode() {}
 void BinaryExpr::dump(int level) {
   fprintf(yyout, "%*cBinaryExpr\n", level, ' ');
   sign->dump(level + 4);
-  expr1->dump(level + 4);
+  expr1->dump(level + 8);
   if (isUnary) {
     return;
   } else if (isMember) {
     if (range)
-      range->dump(level + 4);
+      range->dump(level + 8);
     if (se)
       se->dump();
   } else {
-    expr2->dump(level + 4);
+    expr2->dump(level + 8);
   }
 }
 
@@ -313,11 +314,8 @@ void ReturnStmt::dump(int level) {
 void ReturnStmt::genCppCode() {}
 
 void CallStmt::dump(int level) {
-  std::string name, type;
-  name = se->dump();
-  type = se->getType()->dump();
-  fprintf(yyout, "%*cCallStmt\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
-          type.c_str());
+  fprintf(yyout, "%*cCallStmt\n", level, ' ');
+  id->dump(level + 4);
 }
 
 void CallStmt::genCppCode() {}

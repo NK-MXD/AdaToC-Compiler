@@ -44,7 +44,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 24 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+#line 26 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
 
     #include "SymbolTable.h"
     #include "Ast.h"
@@ -166,7 +166,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 29 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
+#line 31 "/mnt/d/WorkSpace/Ada2C-Project/src/parser.y"
 
     char* StrType;
     int IntType;
