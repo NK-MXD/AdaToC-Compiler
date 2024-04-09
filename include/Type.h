@@ -78,6 +78,12 @@ public:
     this->paramsType.assign(paramsType.begin(), paramsType.end());
     this->paramIds.assign(paramIds.begin(), paramIds.end());
   }
+  std::vector<Type*> getParamType() {
+    return paramsType;
+  }
+  std::vector<SymbolEntry*> getParamIds() {
+    return paramIds;
+  }
   std::string dump();
 };
 

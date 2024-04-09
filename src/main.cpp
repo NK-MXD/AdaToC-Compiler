@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
     yyparse();
     if(dump_type == AST)
         ast.dump();
-    // ast.genCppCode(&unit);
-    // if(dump_type == CPP)
-    //     unit.output();
+    ast.genCppCode(&unit);
+    if(dump_type == CPP)
+        unit.output();
     return 0;
 }
