@@ -3,6 +3,8 @@
 
 #include "SymbolTable.h"
 #include "Type.h"
+#include "Operand.h"
+#include "Statement.h"
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -11,16 +13,32 @@
 
 class CppUnit;
 
+// Ada Procedure and Ada Function => Cpp Class
 class Function {
 private:
-  SymbolEntry *sym_ptr;
+  // Name of Procedure or Function
+  SymbolEntry *symPtr;
   CppUnit *parent;
+  
+  // Some declared operands.
+  std::vector<Operand*> declOps;
+  // Some declarations.
+  CppStmt* decls;
+
+  // Some statements.
+  CppStmt* stats;
 
 public:
   Function(CppUnit *unit, SymbolEntry *symbol);
   ~Function() ;
+  void addDeclOps(Operand* op) {
+    declOps.push_back(op);
+  }
   void output() const;
-  SymbolEntry *getSymPtr() { return sym_ptr; };
+  SymbolEntry *getSymPtr() { return symPtr; };
+  bool haveDeclOp() const{
+    return !declOps.empty();
+  }
 };
 
 #endif

@@ -1,7 +1,6 @@
 #include "Ast.h"
 #include "CppBuilder.h"
 #include "CppUnit.h"
-#include "Procedure.h"
 
 #define DEBUG_SWITCH_AST_LOG 0
 #if DEBUG_SWITCH_AST_LOG
@@ -109,22 +108,16 @@ void OpSignNode::dump(int level) {
 
 void OpSignNode::genCppCode() {}
 
-void Ast::genCppCode(CppUnit *unit) {
-  //   CppBuilder *builder = new CppBuilder(unit);
-  //   Node::setCppBuilder(builder);
-  //   root->genCppCode();
-}
-
 void Id::dump(int level) {
   fprintf(yyout, "%*cId\n", level, ' ');
   if (name) {
     name->dump(level + 4);
     if (expr) {
       fprintf(yyout, "%*cName PAREN Value\n", level + 4, ' ');
-      ExprNode* temp = expr;
-      while(temp) {
+      ExprNode *temp = expr;
+      while (temp) {
         temp->dump(level + 8);
-        temp = dynamic_cast<ExprNode*>(temp->getNext());
+        temp = dynamic_cast<ExprNode *>(temp->getNext());
       }
     } else {
       fprintf(yyout, "%*cAttributeId: %s\n", level + 8, ' ', attr.c_str());
@@ -263,7 +256,18 @@ void ObjectDeclStmt::dump(int level) {
     init->dump(level + 4);
 }
 
-void ObjectDeclStmt::genCppCode() {}
+void ObjectDeclStmt::genCppCode() {
+  Function *func = builder->getCurrFunc();
+  // Init Var
+
+  // Declared objects
+  DefId *temp = id;
+  while (temp) {
+    Operand *op = new Operand(temp->getSymbolEntry(), temp->getType());
+    func->addDeclOps(op);
+    temp = dynamic_cast<DefId *>(temp->getNext());
+  }
+}
 
 void DeclStmt::dump(int level) {
   fprintf(yyout, "%*cDeclStmt\n", level, ' ');
@@ -273,7 +277,12 @@ void DeclStmt::dump(int level) {
     procedureDecl->dump(level + 4);
 }
 
-void DeclStmt::genCppCode() {}
+void DeclStmt::genCppCode() {
+  if (objectDecl)
+    objectDecl->genCppCode();
+  if (procedureDecl)
+    procedureDecl->genCppCode();
+}
 
 void DeclItemOrBodyStmt::dump(int level) {
   fprintf(yyout, "%*cDeclItemOrBodyStmt\n", level, ' ');
@@ -285,7 +294,14 @@ void DeclItemOrBodyStmt::dump(int level) {
     this->getNext()->dump(level);
 }
 
-void DeclItemOrBodyStmt::genCppCode() {}
+void DeclItemOrBodyStmt::genCppCode() {
+  if (decl)
+    decl->genCppCode();
+  if (prof)
+    prof->genCppCode();
+  if (this->getNext())
+    this->getNext()->genCppCode();
+}
 
 void NullStmt::dump(int level) { fprintf(yyout, "%*cNullStmt\n", level, ' '); }
 
@@ -340,7 +356,18 @@ void ProcedureDef::dump(int level) {
     stmts->dump(level + 4);
 }
 
-void ProcedureDef::genCppCode() {}
+void ProcedureDef::genCppCode() {
+  SymbolEntry *se = spec->getProcedureSymbol();
+  CppUnit *unit = builder->getUnit();
+  Function *curFunc = new Function(unit, se);
+  unit->insertFunc(curFunc);
+  builder->setCurrFunc(curFunc);
+  spec->genCppCode();
+  if (items)
+    items->genCppCode();
+  if (stmts)
+    stmts->genCppCode();
+}
 
 void CondClause::dump(int level) {
   fprintf(yyout, "%*cCondClause\n", level, ' ');
@@ -487,3 +514,9 @@ void Block::dump(int level) {
 }
 
 void Block::genCppCode() {}
+
+void Ast::genCppCode(CppUnit *unit) {
+  CppBuilder *builder = new CppBuilder(unit);
+  Node::setCppBuilder(builder);
+  root->genCppCode();
+}

@@ -1,7 +1,7 @@
 #ifndef __ADA2C_AST_H__
 #define __ADA2C_AST_H__
 
-#include "CppUnit.h"
+#include "Operand.h"
 #include <SymbolTable.h>
 #include <Type.h>
 #include <iostream>
@@ -189,6 +189,7 @@ private:
 public:
   DefId(IdentifierSymbolEntry *_id) : id(_id){};
   IdentifierSymbolEntry *getSymbolEntry() { return id; }
+  Type* getType() {return id->getType(); }
   void setType(Type *_type) { id->setType(_type); }
   void setConst() { id->setConst(); }
   void dump(int level);
@@ -201,6 +202,9 @@ private:
 
 public:
   InitOptStmt(ExprNode *_expr) : expr(_expr){};
+  ExprNode* getExpr() {
+    return expr;
+  }
   void dump(int level);
   void genCppCode();
 };
