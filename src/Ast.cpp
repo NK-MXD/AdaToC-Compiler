@@ -360,7 +360,6 @@ void ProcedureDef::genCppCode() {
   SymbolEntry *se = spec->getProcedureSymbol();
   CppUnit *unit = builder->getUnit();
   Function *curFunc = new Function(unit, se);
-  unit->insertFunc(curFunc);
   builder->setCurrFunc(curFunc);
   spec->genCppCode();
   if (items)

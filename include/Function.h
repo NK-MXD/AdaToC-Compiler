@@ -34,7 +34,7 @@ public:
   void addDeclOps(Operand* op) {
     declOps.push_back(op);
   }
-  void output() const;
+  void output(int level) const;
   SymbolEntry *getSymPtr() { return symPtr; };
   bool haveDeclOp() const{
     return !declOps.empty();

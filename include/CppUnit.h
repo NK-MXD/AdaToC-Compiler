@@ -22,7 +22,7 @@ public:
   }
   void output() const {
     for (auto &func : funcList)
-      func->output();
+      func->output(0);
   }
 };
 
