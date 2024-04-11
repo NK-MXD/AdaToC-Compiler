@@ -70,8 +70,13 @@ public:
 };
 
 class ExprNode : public Node {
+protected:
+  CppExpr* expr;
 public:
   virtual Type *getType() = 0;
+  CppExpr* getCppExpr() {
+    return expr;
+  };
 };
 
 class StmtNode : public Node {};
@@ -204,6 +209,9 @@ public:
   InitOptStmt(ExprNode *_expr) : expr(_expr){};
   ExprNode* getExpr() {
     return expr;
+  }
+  CppExpr* getCppExpr() {
+    return expr->getCppExpr();
   }
   void dump(int level);
   void genCppCode();

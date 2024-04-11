@@ -27,13 +27,6 @@ void Node::setNext(Node *node) {
   }
 }
 
-void Ast::dump() {
-  printAstLog("Program dump");
-  fprintf(yyout, "program\n");
-  if (root != nullptr)
-    root->dump(4);
-}
-
 void OpSignNode::dump(int level) {
   std::string opSignName;
   switch (kind) {
@@ -259,7 +252,7 @@ void ObjectDeclStmt::dump(int level) {
 void ObjectDeclStmt::genCppCode() {
   Function *func = builder->getCurrFunc();
   // Init Var
-
+  CppExpr* initExpr = init->getCppExpr();
   // Declared objects
   DefId *temp = id;
   while (temp) {
@@ -513,6 +506,13 @@ void Block::dump(int level) {
 }
 
 void Block::genCppCode() {}
+
+void Ast::dump() {
+  printAstLog("Program dump");
+  fprintf(yyout, "program\n");
+  if (root != nullptr)
+    root->dump(4);
+}
 
 void Ast::genCppCode(CppUnit *unit) {
   CppBuilder *builder = new CppBuilder(unit);

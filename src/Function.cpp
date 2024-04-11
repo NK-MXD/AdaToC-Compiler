@@ -40,10 +40,11 @@ void Function::output(int level) const {
       if (curOp->getType()->isInteger()) {
         opType = "int";
       }
-      fprintf(yyout, "%*c%s %s;\n", level + 2, ' ', opType.c_str(), curOp->dump().c_str());
+      fprintf(yyout, "%*c%s %s;\n", level + 4, ' ', opType.c_str(),
+              curOp->dump().c_str());
     }
     if (decls) {
-      decls->output();
+      decls->output(level + 4);
     }
   }
   // 2. Process statements
@@ -51,19 +52,19 @@ void Function::output(int level) const {
   std::string retType;
   if (symPtr->getType()->isProcedure()) {
     retType = "void";
-    fprintf(yyout, "%*cstatic %s main", level + 2, ' ', retType.c_str());
+    fprintf(yyout, "%*cstatic %s main", level + 4, ' ', retType.c_str());
     ProcedureType *proType = dynamic_cast<ProcedureType *>(symPtr->getType());
     std::vector<Type *> paramType = proType->getParamType();
     std::vector<SymbolEntry *> paramIds = proType->getParamIds();
     if (paramType.empty()) {
       fprintf(yyout, "()\n");
     }
-    fprintf(yyout, "%*c{\n", level + 2, ' ');
+    fprintf(yyout, "%*c{\n", level + 4, ' ');
     // 3. Core statments translation
     if (stats) {
-      stats->output();
+      stats->output(level + 8);
     }
-    fprintf(yyout, "%*c}\n", level + 2, ' ');
+    fprintf(yyout, "%*c}\n", level + 4, ' ');
   }
   fprintf(yyout, "%*c};\n", level, ' ');
 }
