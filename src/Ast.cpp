@@ -1,6 +1,4 @@
 #include "Ast.h"
-#include "CppBuilder.h"
-#include "CppUnit.h"
 
 #define DEBUG_SWITCH_AST_LOG 0
 #if DEBUG_SWITCH_AST_LOG
@@ -25,13 +23,6 @@ void Node::setNext(Node *node) {
   } else {
     n->setNext(node);
   }
-}
-
-void Ast::dump() {
-  printAstLog("Program dump");
-  fprintf(yyout, "program\n");
-  if (root != nullptr)
-    root->dump(4);
 }
 
 void OpSignNode::dump(int level) {
@@ -133,7 +124,9 @@ void Id::dump(int level) {
   }
 }
 
-void Id::genCppCode() {}
+void Id::genCppCode() {
+  
+}
 
 void Constant::dump(int level) {
   printAstLog("Literal dump");
@@ -144,7 +137,9 @@ void Constant::dump(int level) {
           value.c_str());
 }
 
-void Constant::genCppCode() {}
+void Constant::genCppCode() {
+  
+}
 
 void FactorExpr::dump(int level) {
   std::string opName;
@@ -155,9 +150,6 @@ void FactorExpr::dump(int level) {
   case FactorExpr::ABS:
     opName = "abs";
     break;
-  case FactorExpr::EXPON:
-    opName = "expon";
-    break;
   default:
     break;
   }
@@ -165,7 +157,9 @@ void FactorExpr::dump(int level) {
   expr->dump(level + 4);
 }
 
-void FactorExpr::genCppCode() {}
+void FactorExpr::genCppCode() {
+  
+}
 
 void BinaryExpr::dump(int level) {
   fprintf(yyout, "%*cBinaryExpr\n", level, ' ');
@@ -183,7 +177,9 @@ void BinaryExpr::dump(int level) {
   }
 }
 
-void BinaryExpr::genCppCode() {}
+void BinaryExpr::genCppCode() {
+  
+}
 
 void SeqNode::dump(int level) {
   stmt1->dump(level);
@@ -258,13 +254,17 @@ void ObjectDeclStmt::dump(int level) {
 
 void ObjectDeclStmt::genCppCode() {
   Function *func = builder->getCurrFunc();
+  CppUnit* unit = builder->getUnit();
   // Init Var
-
+  CppExpr* initExpr = nullptr;
+  if(init)
+    initExpr = init->getCppExpr();
   // Declared objects
   DefId *temp = id;
   while (temp) {
-    Operand *op = new Operand(temp->getSymbolEntry(), temp->getType());
+    Operand *op = new Operand(temp->getSymbolEntry(), temp->getType(), initExpr);
     func->addDeclOps(op);
+    unit->insertOp(func, op);
     temp = dynamic_cast<DefId *>(temp->getNext());
   }
 }
@@ -317,7 +317,10 @@ void AssignStmt::dump(int level) {
   expr->dump(level + 4);
 }
 
-void AssignStmt::genCppCode() {}
+void AssignStmt::genCppCode() {
+  Function* func = builder->getCurrFunc();
+  new CppAssignStmt(func, se, expr->getCppExpr());
+}
 
 void ReturnStmt::dump(int level) {
   fprintf(yyout, "%*cReturnStmt\n", level, ' ');
@@ -340,11 +343,16 @@ void Stmt::dump(int level) {
   fprintf(yyout, "%*cStmt\n", level, ' ');
   if (stmt)
     stmt->dump(level + 4);
-  if (stmt->getNext())
+  if (stmt && stmt->getNext())
     stmt->getNext()->dump(level + 4);
 }
 
-void Stmt::genCppCode() {}
+void Stmt::genCppCode() {
+  if (stmt)
+    stmt->genCppCode();
+  if (stmt && stmt->getNext())
+    stmt->getNext()->genCppCode();
+}
 
 void ProcedureDef::dump(int level) {
   printAstLog("ProcedureDef dump");
@@ -360,8 +368,13 @@ void ProcedureDef::genCppCode() {
   SymbolEntry *se = spec->getProcedureSymbol();
   CppUnit *unit = builder->getUnit();
   Function *curFunc = new Function(unit, se);
-  unit->insertFunc(curFunc);
   builder->setCurrFunc(curFunc);
+  // Set Prev Function
+  if(prev) {
+    SymbolEntry* prevSe = prev->getProcedureSymbol();
+    Function *prevFunc = unit->getFunction(prevSe);
+    curFunc->setPrev(prevFunc);
+  }
   spec->genCppCode();
   if (items)
     items->genCppCode();
@@ -514,6 +527,13 @@ void Block::dump(int level) {
 }
 
 void Block::genCppCode() {}
+
+void Ast::dump() {
+  printAstLog("Program dump");
+  fprintf(yyout, "program\n");
+  if (root != nullptr)
+    root->dump(4);
+}
 
 void Ast::genCppCode(CppUnit *unit) {
   CppBuilder *builder = new CppBuilder(unit);

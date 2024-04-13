@@ -13,7 +13,7 @@ Function::Function(CppUnit *unit, SymbolEntry *symbol) {
 
 Function::~Function() { parent->removeFunc(this); }
 
-void Function::output() const {
+void Function::output(int level) const {
   // translate Procedure in ada grammar to Function in cpp grammar
   // eg.
   /*
@@ -30,41 +30,41 @@ void Function::output() const {
       }
     };
   */
-  fprintf(yyout, "class %s\n", symPtr->dump().c_str());
-  fprintf(yyout, "{\n");
+  fprintf(yyout, "%*cclass %s {\n", level, ' ', symPtr->dump().c_str());
   // 1. Process declared operands
   if (haveDeclOp()) {
-    fprintf(yyout, "private:\n");
+    fprintf(yyout, "%*cprivate:\n", level, ' ');
     for (int i = 0; i < declOps.size(); i++) {
       Operand *curOp = declOps[i];
       std::string opType;
       if (curOp->getType()->isInteger()) {
-        opType = "int";
+        opType = "AdaInteger";
       }
-      fprintf(yyout, "%s %s;\n", opType.c_str(), curOp->dump().c_str());
+      fprintf(yyout, "%*cstatic %s %s;\n", level + 4, ' ', opType.c_str(),
+              curOp->dump().c_str());
     }
     if (decls) {
-      decls->output();
+    //   decls->output(level + 4);
     }
   }
   // 2. Process statements
-  fprintf(yyout, "public:\n");
+  fprintf(yyout, "%*cpublic:\n", level, ' ');
   std::string retType;
   if (symPtr->getType()->isProcedure()) {
     retType = "void";
-    fprintf(yyout, "static %s main", retType.c_str());
+    fprintf(yyout, "%*cstatic %s main", level + 4, ' ', retType.c_str());
     ProcedureType *proType = dynamic_cast<ProcedureType *>(symPtr->getType());
     std::vector<Type *> paramType = proType->getParamType();
     std::vector<SymbolEntry *> paramIds = proType->getParamIds();
     if (paramType.empty()) {
       fprintf(yyout, "()\n");
     }
-    fprintf(yyout, "{\n");
+    fprintf(yyout, "%*c{\n", level + 4, ' ');
     // 3. Core statments translation
-    if (stats) {
-      stats->output();
+    for(auto stmt: stats) {
+      fprintf(yyout, "%*c%s\n", level + 8, ' ', stmt->output().c_str());
     }
-    fprintf(yyout, "}\n");
+    fprintf(yyout, "%*c}\n", level + 4, ' ');
   }
-  fprintf(yyout, "};\n");
+  fprintf(yyout, "%*c};\n", level, ' ');
 }

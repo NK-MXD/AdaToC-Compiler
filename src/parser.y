@@ -11,6 +11,7 @@
     extern Ast ast;
 
     std::vector<bool> whileIters;
+    std::vector<ProcedureSpec*> procedureIters;
 
     #define DEBUG_SWITCH_TYPE_CHECK 0
     #if DEBUG_SWITCH_TYPE_CHECK
@@ -266,8 +267,11 @@ SubprogBody
         DEBUG_YACC("================Enter SubprogBody=================");
         // Enter into new scope.
         identifiers = new SymbolTable(identifiers);
+        procedureIters.push_back(dynamic_cast<ProcedureSpec*>($1));
     } DeclPart BlockBody END IdOpt SEMICOLON {
-        $$ = new ProcedureDef(dynamic_cast<ProcedureSpec*>($1), dynamic_cast<DeclItemOrBodyStmt*>($4), dynamic_cast<Stmt*>($5));
+        procedureIters.pop_back();
+        ProcedureSpec* prev = procedureIters.empty()? nullptr : procedureIters.back();
+        $$ = new ProcedureDef(dynamic_cast<ProcedureSpec*>($1), dynamic_cast<DeclItemOrBodyStmt*>($4), dynamic_cast<Stmt*>($5), prev);
         // Leave the scope.
         SymbolTable* ScopeTable = identifiers;
         SymbolTable* PrevTable = identifiers->getPrev();
