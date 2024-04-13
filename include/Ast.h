@@ -2,6 +2,8 @@
 #define __ADA2C_AST_H__
 
 #include "Operand.h"
+#include "CppBuilder.h"
+#include "CppUnit.h"
 #include <SymbolTable.h>
 #include <Type.h>
 #include <iostream>
@@ -65,18 +67,18 @@ public:
     EXPON,
   };
   OpSignNode(int _kind) : kind(_kind){};
+  int getKind() { return kind; }
   void dump(int level);
   void genCppCode();
 };
 
 class ExprNode : public Node {
 protected:
-  CppExpr* expr;
+  CppExpr *cExpr;
+
 public:
   virtual Type *getType() = 0;
-  CppExpr* getCppExpr() {
-    return expr;
-  };
+  CppExpr *getCppExpr() { return cExpr; };
 };
 
 class StmtNode : public Node {};
@@ -102,7 +104,10 @@ private:
   std::string attr;
 
 public:
-  Id(SymbolEntry *_se) : se(_se){};
+  Id(SymbolEntry *_se) : se(_se) {
+    // 1. For simple id
+    cExpr = new CppId(se);
+  };
   Id(Id *_name, ExprNode *_expr) : name(_name), expr(_expr){};
   Id(Id *_name, std::string _attr) : name(_name), attr(_attr){};
   Type *getType() {
@@ -111,12 +116,8 @@ public:
     else
       return name->getType();
   }
-  Id* getId() {
-    return name;
-  }
-  ExprNode* getExpr() {
-    return expr;
-  }
+  Id *getId() { return name; }
+  ExprNode *getExpr() { return expr; }
   void dump(int level);
   void genCppCode();
 };
@@ -126,7 +127,7 @@ private:
   SymbolEntry *se;
 
 public:
-  Constant(SymbolEntry *_se) : se(_se){};
+  Constant(SymbolEntry *_se) : se(_se) { cExpr = new CppConstant(se); };
   Type *getType() { return se->getType(); }
   void dump(int level);
   void genCppCode();
@@ -141,9 +142,10 @@ public:
   enum {
     NOT,
     ABS,
-    EXPON,
   };
-  FactorExpr(ExprNode *_expr, int _op) : expr(_expr), op(_op){};
+  FactorExpr(ExprNode *_expr, int _op) : expr(_expr), op(_op) {
+    cExpr = new CppFactor(expr->getCppExpr(), op);
+  };
   Type *getType() { return expr->getType(); }
   void dump(int level);
   void genCppCode();
@@ -160,7 +162,82 @@ private:
 
 public:
   BinaryExpr(ExprNode *_expr1, ExprNode *_expr2, OpSignNode *_sign)
-      : expr1(_expr1), expr2(_expr2), sign(_sign){};
+      : expr1(_expr1), expr2(_expr2), sign(_sign) {
+    int cppOp;
+    switch (sign->getKind()) {
+    case OpSignNode::MUL:
+      cppOp = CppBinaryExpr::MUL;
+      break;
+    case OpSignNode::DIV:
+      cppOp = CppBinaryExpr::DIV;
+      break;
+    case OpSignNode::MOD:
+      cppOp = CppBinaryExpr::MOD;
+      break;
+    case OpSignNode::REM:
+      cppOp = CppBinaryExpr::REM;
+      break;
+    case OpSignNode::ADD:
+      cppOp = CppBinaryExpr::ADD;
+      break;
+    case OpSignNode::SUB:
+      cppOp = CppBinaryExpr::SUB;
+      break;
+    case OpSignNode::SINGLEAND:
+      cppOp = CppBinaryExpr::SINGLEAND;
+      break;
+    case OpSignNode::IN:
+      cppOp = CppBinaryExpr::IN;
+      break;
+    case OpSignNode::NOTIN:
+      cppOp = CppBinaryExpr::NOTIN;
+      break;
+    case OpSignNode::EQ:
+      cppOp = CppBinaryExpr::EQ;
+      break;
+    case OpSignNode::NE:
+      cppOp = CppBinaryExpr::NE;
+      break;
+    case OpSignNode::LE:
+      cppOp = CppBinaryExpr::LE;
+      break;
+    case OpSignNode::LTEQ:
+      cppOp = CppBinaryExpr::LTEQ;
+      break;
+    case OpSignNode::GE:
+      cppOp = CppBinaryExpr::GE;
+      break;
+    case OpSignNode::GTEQ:
+      cppOp = CppBinaryExpr::GTEQ;
+      break;
+    case OpSignNode::ANDTHEN:
+      cppOp = CppBinaryExpr::ANDTHEN;
+      break;
+    case OpSignNode::ORELSE:
+      cppOp = CppBinaryExpr::ORELSE;
+      break;
+    case OpSignNode::AND:
+      cppOp = CppBinaryExpr::AND;
+      break;
+    case OpSignNode::OR:
+      cppOp = CppBinaryExpr::OR;
+      break;
+    case OpSignNode::XOR:
+      cppOp = CppBinaryExpr::XOR;
+      break;
+    case OpSignNode::EXPON:
+      cppOp = CppBinaryExpr::EXPON;
+      break;
+    default:
+      break;
+    }
+    if (expr2) {
+      cExpr =
+          new CppBinaryExpr(expr1->getCppExpr(), expr2->getCppExpr(), cppOp);
+    } else {
+      cExpr = new CppBinaryExpr(expr1->getCppExpr(), se, cppOp);
+    }
+  };
   BinaryExpr(ExprNode *_expr1, OpSignNode *_sign) : expr1(_expr1), sign(_sign) {
     isUnary = true;
   };
@@ -194,7 +271,7 @@ private:
 public:
   DefId(IdentifierSymbolEntry *_id) : id(_id){};
   IdentifierSymbolEntry *getSymbolEntry() { return id; }
-  Type* getType() {return id->getType(); }
+  Type *getType() { return id->getType(); }
   void setType(Type *_type) { id->setType(_type); }
   void setConst() { id->setConst(); }
   void dump(int level);
@@ -207,12 +284,8 @@ private:
 
 public:
   InitOptStmt(ExprNode *_expr) : expr(_expr){};
-  ExprNode* getExpr() {
-    return expr;
-  }
-  CppExpr* getCppExpr() {
-    return expr->getCppExpr();
-  }
+  ExprNode *getExpr() { return expr; }
+  CppExpr *getCppExpr() { return expr->getCppExpr(); }
   void dump(int level);
   void genCppCode();
 };
@@ -324,12 +397,8 @@ private:
 
 public:
   CallStmt(Id *_id) : id(_id){};
-  Id* getId() {
-    return id->getId();
-  }
-  ExprNode* getParam() {
-    return id->getExpr();
-  }
+  Id *getId() { return id->getId(); }
+  ExprNode *getParam() { return id->getExpr(); }
   void dump(int level);
   void genCppCode();
 };
@@ -349,11 +418,12 @@ private:
   ProcedureSpec *spec;
   DeclItemOrBodyStmt *items;
   Stmt *stmts;
+  ProcedureSpec *prev;
 
 public:
   ProcedureDef(ProcedureSpec *_spec, DeclItemOrBodyStmt *_items = nullptr,
-               Stmt *_stmts = nullptr)
-      : spec(_spec), items(_items), stmts(_stmts){};
+               Stmt *_stmts = nullptr, ProcedureSpec *_prev = nullptr)
+      : spec(_spec), items(_items), stmts(_stmts), prev(_prev){};
   SymbolEntry *getProcedureSymbol() { return spec->getProcedureSymbol(); }
   void dump(int level);
   void genCppCode();

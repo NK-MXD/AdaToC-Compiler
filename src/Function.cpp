@@ -38,13 +38,13 @@ void Function::output(int level) const {
       Operand *curOp = declOps[i];
       std::string opType;
       if (curOp->getType()->isInteger()) {
-        opType = "int";
+        opType = "AdaInteger";
       }
-      fprintf(yyout, "%*c%s %s;\n", level + 4, ' ', opType.c_str(),
+      fprintf(yyout, "%*cstatic %s %s;\n", level + 4, ' ', opType.c_str(),
               curOp->dump().c_str());
     }
     if (decls) {
-      decls->output(level + 4);
+    //   decls->output(level + 4);
     }
   }
   // 2. Process statements
@@ -61,8 +61,8 @@ void Function::output(int level) const {
     }
     fprintf(yyout, "%*c{\n", level + 4, ' ');
     // 3. Core statments translation
-    if (stats) {
-      stats->output(level + 8);
+    for(auto stmt: stats) {
+      fprintf(yyout, "%*c%s\n", level + 8, ' ', stmt->output().c_str());
     }
     fprintf(yyout, "%*c}\n", level + 4, ' ');
   }

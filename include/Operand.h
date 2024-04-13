@@ -22,9 +22,14 @@ public:
   Operand(SymbolEntry *_se, Type *_type, bool _isConst)
       : se(_se), type(_type), isConst(_isConst) {}
   std::string dump() { return se->dump(); }
-  Type* getType() {
-    return type;
+  std::string typeName() {
+    if (type->isInteger()) {
+      return std::string("AdaInteger");
+    }
+    return std::string("type");
   }
+  Type *getType() { return type; }
+  CppExpr *getCppExpr() { return init; }
   CppExpr *getInit() { return init; }
 };
 

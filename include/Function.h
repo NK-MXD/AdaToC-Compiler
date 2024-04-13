@@ -1,10 +1,10 @@
 #ifndef __ADA2C_FUNCTION_H__
 #define __ADA2C_FUNCTION_H__
 
-#include "SymbolTable.h"
-#include "Type.h"
 #include "Operand.h"
 #include "Statement.h"
+#include "SymbolTable.h"
+#include "Type.h"
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -19,26 +19,26 @@ private:
   // Name of Procedure or Function
   SymbolEntry *symPtr;
   CppUnit *parent;
-  
+  Function *prev = nullptr;
+
   // Some declared operands.
-  std::vector<Operand*> declOps;
+  std::vector<Operand *> declOps;
   // Some declarations.
-  CppStmt* decls;
+  CppStmt *decls;
 
   // Some statements.
-  CppStmt* stats;
+  std::vector<CppStmt*> stats;
 
 public:
   Function(CppUnit *unit, SymbolEntry *symbol);
-  ~Function() ;
-  void addDeclOps(Operand* op) {
-    declOps.push_back(op);
-  }
+  ~Function();
+  void addDeclOps(Operand *op) { declOps.push_back(op); }
+  void setPrev(Function *func) { prev = func; }
+  std::string getName() { return symPtr->dump(); }
   void output(int level) const;
   SymbolEntry *getSymPtr() { return symPtr; };
-  bool haveDeclOp() const{
-    return !declOps.empty();
-  }
+  bool haveDeclOp() const { return !declOps.empty(); }
+  void insertStmts(CppStmt* stmt) { stats.push_back(stmt); }
 };
 
 #endif

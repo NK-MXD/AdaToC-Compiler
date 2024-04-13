@@ -1,4 +1,5 @@
 #include "Statement.h"
+#include "Function.h"
 
 extern FILE *yyout;
 int CppNode::counter = 0;
@@ -17,15 +18,20 @@ void CppNode::setNext(CppNode *node) {
   }
 }
 
-void CppId::output(int level) const {
-  fprintf(yyout, "%s", se->dump().c_str());
+CppStmt::CppStmt(Function* func) {
+  if(func)
+    func->insertStmts(this);
 }
 
-void CppConstant::output(int level) const {
-  fprintf(yyout, "%s", se->dump().c_str());
+std::string CppId::output() const {
+  return se->dump();
 }
 
-void CppFactor::output(int level) const {
+std::string CppConstant::output() const {
+  return se->dump();
+}
+
+std::string CppFactor::output() const {
   std::string opMethod;
   switch (op)
   {
@@ -35,10 +41,84 @@ void CppFactor::output(int level) const {
   case CppFactor::ABS:
     opMethod = "";
   }
-  fprintf(yyout, "%*c%s", level, ' ', opMethod.c_str());
-  cExpr->output(level + opMethod.size());
+  return opMethod + cExpr->output();
 }
 
-void CppBinaryExpr::output(int level) const {
-  
+std::string CppBinaryExpr::output() const {
+  // For some operator, we can use them in Cpp directly.
+  // But others we should define method to implement them.
+  std::string opSignName;
+  switch (sign) {
+  case CppBinaryExpr::MUL:
+    opSignName = " * ";
+    break;
+  case CppBinaryExpr::DIV:
+    opSignName = " / ";
+    break;
+  case CppBinaryExpr::MOD:
+    opSignName = " % ";
+    break;
+  case CppBinaryExpr::REM:
+    opSignName = " rem ";
+    break;
+  case CppBinaryExpr::ADD:
+    opSignName = " + ";
+    break;
+  case CppBinaryExpr::SUB:
+    opSignName = " - ";
+    break;
+  case CppBinaryExpr::SINGLEAND:
+    opSignName = " & ";
+    break;
+  case CppBinaryExpr::IN:
+    opSignName = " in ";
+    break;
+  case CppBinaryExpr::NOTIN:
+    opSignName = " not in ";
+    break;
+  case CppBinaryExpr::EQ:
+    opSignName = " = ";
+    break;
+  case CppBinaryExpr::NE:
+    opSignName = " != ";
+    break;
+  case CppBinaryExpr::LE:
+    opSignName = " < ";
+    break;
+  case CppBinaryExpr::LTEQ:
+    opSignName = " <= ";
+    break;
+  case CppBinaryExpr::GE:
+    opSignName = " > ";
+    break;
+  case CppBinaryExpr::GTEQ:
+    opSignName = " >= ";
+    break;
+  case CppBinaryExpr::ANDTHEN:
+    opSignName = " and then ";
+    break;
+  case CppBinaryExpr::ORELSE:
+    opSignName = " or else ";
+    break;
+  case CppBinaryExpr::AND:
+    opSignName = " && ";
+    break;
+  case CppBinaryExpr::OR:
+    opSignName = " || ";
+    break;
+  case CppBinaryExpr::XOR:
+    opSignName = " xor ";
+    break;
+  default:
+    break;
+  }
+  if(cExpr2 != nullptr) {
+    return cExpr1->output() + opSignName + cExpr2->output();
+  } else {
+    return cExpr1->output() + opSignName + se->dump();
+  }
+}
+
+std::string CppAssignStmt::output() const{
+  return se->dump() + std::string(" = ") + cExpr->output() + std::string(";");
 }
