@@ -4,27 +4,27 @@ extern FILE *yyout;
 bool AdaInteger::isUsed = false;
 
 void AdaInteger::output() {
-  fprintf(yyout, "\
-class AdaInteger {\n\
-private:\n\
-  int value;\n\
-public:\n\
-  AdaInteger() = default;\n\
-  AdaInteger(int _value) : value(_value) {};\n\
-  int getValue() { return value; }\n\
-  void setValue(int _value) { value = _value; }\n\
-  void operator=(int _value) {\n\
-    value = _value;\n\
-  }\n\
-  AdaInteger &operator+(AdaInteger _right) {\n\
-    AdaInteger res;\n\
-    res.setValue(value + _right.getValue());\n\
-    return res;\n\
-  }\n\
-  AdaInteger &operator+(int _right) {\n\
-    AdaInteger res;\n\
-    res.setValue(value + _right);\n\
-    return res;\n\
-  }\n\
-};\n");
+  fprintf(yyout, R"(class AdaInteger {
+private:
+  int value;
+public:
+  AdaInteger() = default;
+  AdaInteger(int _value) : value(_value) {};
+  int getValue() { return value; }
+  void setValue(int _value) { value = _value; }
+  void operator=(int _value) {
+    value = _value;
+  }
+  AdaInteger &operator+(AdaInteger _right) {
+    AdaInteger res;
+    res.setValue(value + _right.getValue());
+    return res;
+  }
+  AdaInteger &operator+(int _right) {
+    AdaInteger res;
+    res.setValue(value + _right);
+    return res;
+  }
+};
+)");
 }

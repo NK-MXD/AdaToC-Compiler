@@ -4,14 +4,16 @@ extern FILE *yyout;
 
 void CppUnit::output() const {
   AdaInteger::getInstance().output();
-  for (auto &func : funcList)
-    func->output(0);
+  for (auto &func : funcList) {
+    std::string temp = func->output(0);
+    fprintf(yyout, "%s", temp.c_str());
+  }
   for (auto item : opList) {
     Function *func = item.first;
     std::vector<Operand *> *vec = item.second;
     for (auto op : *vec) {
       // Simple Operand Name
-      std::string opName = func->getName() + "::" + op->dump();
+      std::string opName = func->getName() + "::" + op->getName();
       CppExpr *init = op->getCppExpr();
       if (init) {
         fprintf(yyout, "%s %s = %s;\n", op->typeName().c_str(), opName.c_str(),

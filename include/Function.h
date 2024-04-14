@@ -11,7 +11,10 @@
 #include <set>
 #include <vector>
 
+#define MAX_OUTPUT_LENGTH 100000
+
 class CppUnit;
+
 
 // Ada Procedure and Ada Function => Cpp Class
 class Function {
@@ -24,10 +27,10 @@ private:
   // Some declared operands.
   std::vector<Operand *> declOps;
   // Some declarations.
-  CppStmt *decls;
+  std::vector<CppStmt* > decls;
 
   // Some statements.
-  std::vector<CppStmt*> stats;
+  std::vector<CppStmt *> stats;
 
 public:
   Function(CppUnit *unit, SymbolEntry *symbol);
@@ -35,10 +38,16 @@ public:
   void addDeclOps(Operand *op) { declOps.push_back(op); }
   void setPrev(Function *func) { prev = func; }
   std::string getName() { return symPtr->dump(); }
-  void output(int level) const;
   SymbolEntry *getSymPtr() { return symPtr; };
+  Type* getType() { return symPtr->getType(); }
+  bool isProcedure() { return getType()->isProcedure(); }
+  bool isFunction() { return getType()->isFunction(); }
   bool haveDeclOp() const { return !declOps.empty(); }
-  void insertStmts(CppStmt* stmt) { stats.push_back(stmt); }
+  void insertStmts(CppStmt *stmt) { stats.push_back(stmt); }
+  std::string getDeclStr(int level) const;
+  std::string getStmtStr(int level) const;
+  std::string getParamStr() const;
+  std::string output(int level) const;
 };
 
 #endif

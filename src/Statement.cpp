@@ -18,23 +18,18 @@ void CppNode::setNext(CppNode *node) {
   }
 }
 
-CppStmt::CppStmt(Function* func) {
-  if(func)
+CppStmt::CppStmt(Function *func) {
+  if (func)
     func->insertStmts(this);
 }
 
-std::string CppId::output() const {
-  return se->dump();
-}
+std::string CppId::output() const { return se->dump(); }
 
-std::string CppConstant::output() const {
-  return se->dump();
-}
+std::string CppConstant::output() const { return se->dump(); }
 
 std::string CppFactor::output() const {
   std::string opMethod;
-  switch (op)
-  {
+  switch (op) {
   case CppFactor::NOT:
     opMethod = "!";
     break;
@@ -112,13 +107,16 @@ std::string CppBinaryExpr::output() const {
   default:
     break;
   }
-  if(cExpr2 != nullptr) {
+  if (cExpr2 != nullptr) {
     return cExpr1->output() + opSignName + cExpr2->output();
   } else {
     return cExpr1->output() + opSignName + se->dump();
   }
 }
 
-std::string CppAssignStmt::output() const{
-  return se->dump() + std::string(" = ") + cExpr->output() + std::string(";");
+std::string CppAssignStmt::output(int level) const {
+  char temp[200];
+  sprintf(temp, "%*c%s = %s;\n", level, ' ', se->dump().c_str(),
+          cExpr->output().c_str());
+  return std::string(temp);
 }

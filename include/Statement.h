@@ -19,7 +19,6 @@ public:
   int getSeq() const { return seq; };
   void setNext(CppNode *node);
   CppNode *getNext() { return next; }
-  virtual std::string output() const = 0;
 };
 
 // Statement in Cpp
@@ -29,13 +28,13 @@ private:
 
 public:
   CppStmt(Function *func);
-  std::string output() const {};
+  virtual std::string output(int level) const = 0;
 };
 
 // Expr in Cpp
 class CppExpr : public CppNode {
 public:
-  std::string output() const {};
+  virtual std::string output() const = 0;
 };
 
 class CppId : public CppExpr {
@@ -111,7 +110,7 @@ public:
 class CppDummyStmt : public CppStmt {
 public:
   CppDummyStmt() : CppStmt(nullptr){};
-  std::string output(){};
+  std::string output(int level) const {};
 };
 
 class CppAssignStmt : public CppStmt {
@@ -125,7 +124,7 @@ public:
     se = _se;
     cExpr = _cExpr;
   };
-  std::string output() const;
+  std::string output(int level) const;
 };
 
 #endif

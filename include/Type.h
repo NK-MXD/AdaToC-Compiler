@@ -17,6 +17,7 @@ public:
   Type(int _kind) : kind(_kind){};
   ~Type(){};
   virtual std::string dump() = 0;
+  virtual std::string toCppStr() = 0;
   bool isInteger() const { return kind == INTEGER; };
   bool isBoolean() const { return kind == BOOLEAN; };
   bool isString() const { return kind == STRING; };
@@ -32,6 +33,7 @@ private:
 public:
   IntegerType(int _size) : Type(Type::INTEGER), size(_size){};
   std::string dump();
+  std::string toCppStr();
 };
 
 class BooleanType : public Type {
@@ -41,6 +43,7 @@ private:
 public:
   BooleanType(int _size) : Type(Type::BOOLEAN), size(_size){};
   std::string dump();
+  std::string toCppStr();
 };
 
 class StringType : public Type {
@@ -50,6 +53,7 @@ private:
 public:
   StringType(int _length) : Type(Type::STRING), length(_length){};
   std::string dump();
+  std::string toCppStr();
 };
 
 class NaturalType : public Type {
@@ -59,6 +63,7 @@ private:
 public:
   NaturalType(int _size) : Type(Type::NATURAL), size(_size){};
   std::string dump();
+  std::string toCppStr();
 };
 
 class ProcedureType : public Type {
@@ -85,6 +90,7 @@ public:
     return paramIds;
   }
   std::string dump();
+  std::string toCppStr();
 };
 
 class FunctionType : public Type {
@@ -101,7 +107,14 @@ public:
       : Type(Type::FUNCTION), returnType(returnType), paramsType(paramsType),
         paramIds(paramIds){};
   std::string dump();
+  std::vector<Type*> getParamType() {
+    return paramsType;
+  }
+  std::vector<SymbolEntry*> getParamIds() {
+    return paramIds;
+  }
   Type *getRetType() { return returnType; };
+  std::string toCppStr();
 };
 
 class TypeSystem {

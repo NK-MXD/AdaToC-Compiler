@@ -21,13 +21,8 @@ public:
       : se(_se), type(_type), init(_init) {}
   Operand(SymbolEntry *_se, Type *_type, bool _isConst)
       : se(_se), type(_type), isConst(_isConst) {}
-  std::string dump() { return se->dump(); }
-  std::string typeName() {
-    if (type->isInteger()) {
-      return std::string("AdaInteger");
-    }
-    return std::string("type");
-  }
+  std::string getName() { return se->dump(); }
+  std::string typeName() { return type->toCppStr(); }
   Type *getType() { return type; }
   CppExpr *getCppExpr() { return init; }
   CppExpr *getInit() { return init; }

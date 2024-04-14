@@ -13,7 +13,58 @@ Function::Function(CppUnit *unit, SymbolEntry *symbol) {
 
 Function::~Function() { parent->removeFunc(this); }
 
-void Function::output(int level) const {
+std::string Function::getDeclStr(int level) const {
+  std::string declStr;
+  // 1. process operand declarations
+  for (auto op : declOps) {
+    char temp[100];
+    sprintf(temp, "%*cstatic %s %s;\n", level, ' ', op->typeName().c_str(),
+            op->getName().c_str());
+    declStr += std::string(temp);
+  }
+  // 2. process other declarations
+  for (auto decl : decls) {
+    declStr += decl->output(level);
+  }
+  return declStr;
+}
+
+std::string Function::getParamStr() const {
+  std::string paramStr;
+  std::vector<Type *> paramType;
+  std::vector<SymbolEntry *> paramIds;
+  if (symPtr->getType()->isProcedure()) {
+    ProcedureType *type = dynamic_cast<ProcedureType *>(symPtr->getType());
+    paramType = type->getParamType();
+    paramIds = type->getParamIds();
+  }
+  if (symPtr->getType()->isFunction()) {
+    FunctionType *type = dynamic_cast<FunctionType *>(symPtr->getType());
+    paramType = type->getParamType();
+    paramIds = type->getParamIds();
+  }
+  paramStr += "(";
+  if (paramType.empty()) {
+    paramStr += ")";
+    return paramStr;
+  }
+  for (auto i = 0; i < paramType.size() - 1; i++) {
+    paramStr += paramType[i]->toCppStr() + " " + paramIds[i]->dump() + ", ";
+  }
+  paramStr += paramType.back()->toCppStr() + " " + paramIds.back()->dump();
+  paramStr += ")";
+  return paramStr;
+}
+
+std::string Function::getStmtStr(int level) const {
+  std::string stmtStr;
+  for (auto stmt : stats) {
+    stmtStr += stmt->output(level);
+  }
+  return stmtStr;
+}
+
+std::string Function::output(int level) const {
   // translate Procedure in ada grammar to Function in cpp grammar
   // eg.
   /*
@@ -30,41 +81,25 @@ void Function::output(int level) const {
       }
     };
   */
-  fprintf(yyout, "%*cclass %s {\n", level, ' ', symPtr->dump().c_str());
-  // 1. Process declared operands
-  if (haveDeclOp()) {
-    fprintf(yyout, "%*cprivate:\n", level, ' ');
-    for (int i = 0; i < declOps.size(); i++) {
-      Operand *curOp = declOps[i];
-      std::string opType;
-      if (curOp->getType()->isInteger()) {
-        opType = "AdaInteger";
-      }
-      fprintf(yyout, "%*cstatic %s %s;\n", level + 4, ' ', opType.c_str(),
-              curOp->dump().c_str());
-    }
-    if (decls) {
-    //   decls->output(level + 4);
-    }
-  }
-  // 2. Process statements
-  fprintf(yyout, "%*cpublic:\n", level, ' ');
-  std::string retType;
-  if (symPtr->getType()->isProcedure()) {
-    retType = "void";
-    fprintf(yyout, "%*cstatic %s main", level + 4, ' ', retType.c_str());
-    ProcedureType *proType = dynamic_cast<ProcedureType *>(symPtr->getType());
-    std::vector<Type *> paramType = proType->getParamType();
-    std::vector<SymbolEntry *> paramIds = proType->getParamIds();
-    if (paramType.empty()) {
-      fprintf(yyout, "()\n");
-    }
-    fprintf(yyout, "%*c{\n", level + 4, ' ');
-    // 3. Core statments translation
-    for(auto stmt: stats) {
-      fprintf(yyout, "%*c%s\n", level + 8, ' ', stmt->output().c_str());
-    }
-    fprintf(yyout, "%*c}\n", level + 4, ' ');
-  }
-  fprintf(yyout, "%*c};\n", level, ' ');
+  // 1. get decl string
+  std::string declStr = getDeclStr(level + 4);
+  // 2. get param string
+  std::string paramStr = getParamStr();
+  // 3. get stmt string
+  std::string stmtStr = getStmtStr(level + 8);
+  char resStr[MAX_OUTPUT_LENGTH];
+  sprintf(resStr, R"deli(
+%*cclass %s {
+%*cprivate:
+%s
+%*cpublic:
+%*c  static void main%s {
+%s
+%*c  }
+%*c};
+)deli",
+          level, ' ', symPtr->dump().c_str(), level, ' ', declStr.c_str(),
+          level, ' ', level, ' ', paramStr.c_str(), stmtStr.c_str(), level, ' ',
+          level, ' ');
+  return std::string(resStr);
 }
