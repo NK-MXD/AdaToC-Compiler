@@ -15,7 +15,6 @@
 
 class CppUnit;
 
-
 // Ada Procedure and Ada Function => Cpp Class
 class Function {
 private:
@@ -27,19 +26,24 @@ private:
   // Some declared operands.
   std::vector<Operand *> declOps;
   // Some declarations.
-  std::vector<CppStmt* > decls;
+  std::vector<CppStmt *> decls;
+  // Some procedure.
+  std::vector<Function *> subFuncs;
 
   // Some statements.
   std::vector<CppStmt *> stats;
 
 public:
   Function(CppUnit *unit, SymbolEntry *symbol);
+  Function(Function *func, SymbolEntry *symbol);
   ~Function();
   void addDeclOps(Operand *op) { declOps.push_back(op); }
   void setPrev(Function *func) { prev = func; }
+  Function* getPrev() { return prev; }
+  void addSubFunc(Function *func) { subFuncs.push_back(func); }
   std::string getName() { return symPtr->dump(); }
   SymbolEntry *getSymPtr() { return symPtr; };
-  Type* getType() { return symPtr->getType(); }
+  Type *getType() { return symPtr->getType(); }
   bool isProcedure() { return getType()->isProcedure(); }
   bool isFunction() { return getType()->isFunction(); }
   bool haveDeclOp() const { return !declOps.empty(); }

@@ -11,7 +11,16 @@ Function::Function(CppUnit *unit, SymbolEntry *symbol) {
   parent = unit;
 }
 
-Function::~Function() { parent->removeFunc(this); }
+Function::Function(Function *func, SymbolEntry *symbol) {
+  func->addSubFunc(this);
+  prev = func;
+  symPtr = symbol;
+}
+
+Function::~Function() {
+  if (parent)
+    parent->removeFunc(this);
+}
 
 std::string Function::getDeclStr(int level) const {
   std::string declStr;
@@ -25,6 +34,11 @@ std::string Function::getDeclStr(int level) const {
   // 2. process other declarations
   for (auto decl : decls) {
     declStr += decl->output(level);
+  }
+  // 3. process procedure defination
+  for (auto &func : subFuncs) {
+    std::string temp = func->output(level);
+    declStr += temp;
   }
   return declStr;
 }

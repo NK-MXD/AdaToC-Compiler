@@ -367,19 +367,22 @@ void ProcedureDef::dump(int level) {
 void ProcedureDef::genCppCode() {
   SymbolEntry *se = spec->getProcedureSymbol();
   CppUnit *unit = builder->getUnit();
-  Function *curFunc = new Function(unit, se);
-  builder->setCurrFunc(curFunc);
-  // Set Prev Function
+  Function* curFunc;
   if(prev) {
     SymbolEntry* prevSe = prev->getProcedureSymbol();
+    // Fix: subsubfunction can't get subfunction
     Function *prevFunc = unit->getFunction(prevSe);
-    curFunc->setPrev(prevFunc);
+    curFunc = new Function(prevFunc, se);
+  } else {
+    curFunc = new Function(unit, se);
   }
+  builder->setCurrFunc(curFunc);
   spec->genCppCode();
   if (items)
     items->genCppCode();
   if (stmts)
     stmts->genCppCode();
+  builder->removeCurrFunc();
 }
 
 void CondClause::dump(int level) {

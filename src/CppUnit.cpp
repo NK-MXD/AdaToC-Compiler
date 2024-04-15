@@ -2,6 +2,17 @@
 
 extern FILE *yyout;
 
+std::string CppUnit::getOpFullName(Function* func, Operand* op) {
+  std::string fullName = func->getName() + "::" + op->getName();
+  Function* temp = func;
+  Function* prev;
+  while(prev = temp->getPrev()) {
+    fullName = prev->getName() + "::" + fullName;
+    temp = prev;
+  }
+  return fullName;
+}
+
 void CppUnit::output() const {
   AdaInteger::getInstance().output();
   for (auto &func : funcList) {
@@ -13,7 +24,7 @@ void CppUnit::output() const {
     std::vector<Operand *> *vec = item.second;
     for (auto op : *vec) {
       // Simple Operand Name
-      std::string opName = func->getName() + "::" + op->getName();
+      std::string opName = getOpFullName(func, op);
       CppExpr *init = op->getCppExpr();
       if (init) {
         fprintf(yyout, "%s %s = %s;\n", op->typeName().c_str(), opName.c_str(),

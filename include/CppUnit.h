@@ -42,6 +42,7 @@ public:
     return nullptr;
   }
   void output() const;
+  static std::string getOpFullName(Function* func, Operand* op); 
 };
 
 #endif
