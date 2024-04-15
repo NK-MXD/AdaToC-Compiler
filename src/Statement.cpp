@@ -114,9 +114,21 @@ std::string CppBinaryExpr::output() const {
   }
 }
 
+std::string CppDummyStmt::output(int level) const {
+  char temp[80];
+  sprintf(temp, "%*c;\n", level, ' ');
+  return std::string(temp);  
+}
+
 std::string CppAssignStmt::output(int level) const {
   char temp[200];
   sprintf(temp, "%*c%s = %s;\n", level, ' ', se->dump().c_str(),
           cExpr->output().c_str());
+  return std::string(temp);
+}
+
+std::string CppCallStmt::output(int level) const {
+  char temp[200];
+  sprintf(temp, "%*c%s::main();\n", level, ' ', cId->output().c_str());
   return std::string(temp);
 }

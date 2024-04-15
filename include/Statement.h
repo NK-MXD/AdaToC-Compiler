@@ -110,7 +110,8 @@ public:
 class CppDummyStmt : public CppStmt {
 public:
   CppDummyStmt() : CppStmt(nullptr){};
-  std::string output(int level) const {};
+  CppDummyStmt(Function *func) : CppStmt(func){};
+  std::string output(int level) const;
 };
 
 class CppAssignStmt : public CppStmt {
@@ -123,6 +124,17 @@ public:
       : CppStmt(func) {
     se = _se;
     cExpr = _cExpr;
+  };
+  std::string output(int level) const;
+};
+
+class CppCallStmt : public CppStmt {
+private:
+  CppId *cId;
+
+public:
+  CppCallStmt(Function *func, CppId *_cId) : CppStmt(func) {
+    cId = _cId;
   };
   std::string output(int level) const;
 };

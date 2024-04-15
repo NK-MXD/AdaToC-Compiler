@@ -305,7 +305,10 @@ void DeclItemOrBodyStmt::genCppCode() {
 
 void NullStmt::dump(int level) { fprintf(yyout, "%*cNullStmt\n", level, ' '); }
 
-void NullStmt::genCppCode() {}
+void NullStmt::genCppCode() {
+  Function* curFunc = builder->getCurrFunc();
+  new CppDummyStmt(curFunc);
+}
 
 void AssignStmt::dump(int level) {
   printAstLog("AssignStmt dump");
@@ -337,21 +340,25 @@ void CallStmt::dump(int level) {
   id->dump(level + 4);
 }
 
-void CallStmt::genCppCode() {}
+void CallStmt::genCppCode() {
+  Function* curFunc = builder->getCurrFunc();
+  CppId *cId = dynamic_cast<CppId*>(id->getCppExpr());
+  new CppCallStmt(curFunc, cId);
+}
 
 void Stmt::dump(int level) {
   fprintf(yyout, "%*cStmt\n", level, ' ');
   if (stmt)
     stmt->dump(level + 4);
-  if (stmt && stmt->getNext())
-    stmt->getNext()->dump(level + 4);
+  if (this->getNext())
+    this->getNext()->dump(level);
 }
 
 void Stmt::genCppCode() {
-  if (stmt)
+  if (stmt) 
     stmt->genCppCode();
-  if (stmt && stmt->getNext())
-    stmt->getNext()->genCppCode();
+  if (this->getNext())
+    this->getNext()->genCppCode();
 }
 
 void ProcedureDef::dump(int level) {
