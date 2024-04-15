@@ -10,20 +10,41 @@ private:
 public:
   AdaInteger() = default;
   AdaInteger(int _value) : value(_value) {};
-  int getValue() { return value; }
-  void setValue(int _value) { value = _value; }
-  void operator=(int _value) {
-    value = _value;
+  AdaInteger operator-() {
+    return AdaInteger(-value);
   }
-  AdaInteger &operator+(AdaInteger _right) {
-    AdaInteger res;
-    res.setValue(value + _right.getValue());
-    return res;
+  friend AdaInteger operator+(AdaInteger& _left, AdaInteger& _right) {
+    return AdaInteger(_left.value + _right.value);
   }
-  AdaInteger &operator+(int _right) {
-    AdaInteger res;
-    res.setValue(value + _right);
-    return res;
+  friend AdaInteger operator+(AdaInteger& _left, int _right) {
+    return AdaInteger(_left.value + _right);
+  }
+  friend AdaInteger operator-(AdaInteger& _left, AdaInteger& _right) {
+    return AdaInteger(_left.value - _right.value);
+  }
+  friend bool operator>(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value > _right.value;
+  }
+  friend bool operator>(AdaInteger& _left, int _right) {
+    return _left.value > _right;
+  }
+  friend bool operator<(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value < _right.value;
+  }
+  friend bool operator<(AdaInteger& _left, int _right) {
+    return _left.value < _right;
+  }
+  friend bool operator==(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value == _right.value;
+  }
+  friend bool operator==(AdaInteger& _left, int _right) {
+    return _left.value == _right;
+  }
+  friend bool operator!=(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value != _right.value;
+  }
+  friend bool operator!=(AdaInteger& _left, int _right) {
+    return _left.value != _right;
   }
 };
 )");

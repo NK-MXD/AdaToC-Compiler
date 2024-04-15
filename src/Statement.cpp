@@ -109,15 +109,17 @@ std::string CppBinaryExpr::output() const {
   }
   if (cExpr2 != nullptr) {
     return cExpr1->output() + opSignName + cExpr2->output();
-  } else {
+  } else if(se) {
     return cExpr1->output() + opSignName + se->dump();
+  } else {
+    return opSignName + cExpr1->output();
   }
 }
 
 std::string CppDummyStmt::output(int level) const {
   char temp[80];
   sprintf(temp, "%*c;\n", level, ' ');
-  return std::string(temp);  
+  return std::string(temp);
 }
 
 std::string CppAssignStmt::output(int level) const {
@@ -131,4 +133,44 @@ std::string CppCallStmt::output(int level) const {
   char temp[200];
   sprintf(temp, "%*c%s::main();\n", level, ' ', cId->output().c_str());
   return std::string(temp);
+}
+
+std::string CppCondClause::output(int level) const {
+  std::string stmtStr = stmts->output(level + 4);
+  char res[400];
+  sprintf(res, R"deli(%*cif(%s) {
+%s
+%*c}
+)deli",
+          level, ' ', cond->output().c_str(), stmtStr.c_str(), level, ' ');
+  CppCondClause *elseIf = dynamic_cast<CppCondClause *>(this->getNext());
+  while (elseIf) {
+    char temp[200];
+    std::string elseIfStmtStr = elseIf->getStmts()->output(level + 4);
+    sprintf(res, R"deli(%*celse if(%s) {
+%s
+%*c}
+)deli",
+            level, ' ', elseIf->getCond()->output().c_str(),
+            elseIfStmtStr.c_str(), level, ' ');
+    strcat(res, temp);
+    elseIf = dynamic_cast<CppCondClause *>(elseIf->getNext());
+  }
+  return std::string(res);
+}
+
+std::string CppIfStmt::output(int level) const {
+  char res[500];
+  if (elsestmt) {
+    std::string elseStr = elsestmt->output(level + 4);
+    sprintf(res, R"deli(%s
+%*celse {
+%s
+%*c}
+)deli",
+            clause->output(level).c_str(), level, ' ', elseStr.c_str(), level,
+            ' ');
+    return std::string(res);
+  }
+  return clause->output(level);
 }

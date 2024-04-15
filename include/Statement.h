@@ -3,6 +3,7 @@
 
 #include "SymbolTable.h"
 #include <iostream>
+#include <string.h>
 using namespace std;
 
 class Function;
@@ -18,16 +19,18 @@ public:
   CppNode();
   int getSeq() const { return seq; };
   void setNext(CppNode *node);
-  CppNode *getNext() { return next; }
+  CppNode *getNext() const { return next; };
 };
 
 // Statement in Cpp
 class CppStmt : public CppNode {
-private:
+protected:
   CppStmt *next;
 
 public:
   CppStmt(Function *func);
+  void setNext(CppStmt *stmt) { next = stmt; };
+  CppStmt *getNext() const { return next; };
   virtual std::string output(int level) const = 0;
 };
 
@@ -104,6 +107,8 @@ public:
       : cExpr1(_expr1), cExpr2(_expr2), sign(_sign){};
   CppBinaryExpr(CppExpr *_expr1, SymbolEntry *_se, int _sign)
       : cExpr1(_expr1), se(_se), sign(_sign){};
+  CppBinaryExpr(CppExpr *_expr1, int _sign)
+      : cExpr1(_expr1), sign(_sign){};
   std::string output() const;
 };
 
@@ -133,8 +138,37 @@ private:
   CppId *cId;
 
 public:
-  CppCallStmt(Function *func, CppId *_cId) : CppStmt(func) {
-    cId = _cId;
+  CppCallStmt(Function *_func, CppId *_cId) : CppStmt(_func) { cId = _cId; };
+  std::string output(int level) const;
+};
+
+class CppCondClause : public CppStmt {
+private:
+  CppExpr *cond;
+  CppStmt *stmts;
+
+public:
+  CppCondClause(Function *_func, CppExpr *_cond, CppStmt *_stmts)
+      : CppStmt(_func) {
+    cond = _cond;
+    stmts = _stmts;
+  };
+  CppExpr *getCond() { return cond; }
+  CppStmt *getStmts() { return stmts; }
+  std::string output(int level) const;
+};
+
+class CppIfStmt : public CppStmt {
+private:
+  CppCondClause *clause;
+  CppStmt *elsestmt; // maybe is nullptr
+
+public:
+  CppIfStmt(Function *_func, CppCondClause *_clause,
+            CppStmt *_elsestmt = nullptr)
+      : CppStmt(_func) {
+    clause = _clause;
+    elsestmt = _elsestmt;
   };
   std::string output(int level) const;
 };
