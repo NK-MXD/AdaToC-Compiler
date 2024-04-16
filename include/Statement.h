@@ -3,6 +3,7 @@
 
 #include "SymbolTable.h"
 #include <iostream>
+#include <cstring> 
 using namespace std;
 
 class Function;
@@ -18,24 +19,38 @@ public:
   CppNode();
   int getSeq() const { return seq; };
   void setNext(CppNode *node);
-  CppNode *getNext() { return next; }
-  virtual std::string output() const = 0;
+  CppNode *getNext() const { return next; };
 };
 
 // Statement in Cpp
 class CppStmt : public CppNode {
-private:
+protected:
   CppStmt *next;
 
 public:
   CppStmt(Function *func);
-  std::string output() const {};
+  void setNext(CppStmt *stmt);
+  CppStmt *getNext() const { return next; };
+  virtual std::string output(int level) const = 0;
 };
 
 // Expr in Cpp
 class CppExpr : public CppNode {
 public:
-  std::string output() const {};
+  virtual std::string output() const = 0;
+};
+
+class CppRange : public CppStmt {
+private:
+  CppExpr *cLow;
+  CppExpr *cUpper;
+
+public:
+  CppRange(CppExpr *_low, CppExpr *_upper)
+      : CppStmt(nullptr), cLow(_low), cUpper(_upper){};
+  CppExpr *getLow() { return cLow; }
+  CppExpr *getUpper() { return cUpper; }
+  std::string output(int level) const { return ""; };
 };
 
 class CppId : public CppExpr {
@@ -74,8 +89,11 @@ public:
 class CppBinaryExpr : public CppExpr {
 private:
   CppExpr *cExpr1, *cExpr2;
+  CppRange *cRange;
   SymbolEntry *se;
   int sign;
+  bool isUnary;
+  bool isMember;
 
 public:
   enum {
@@ -103,15 +121,25 @@ public:
   };
   CppBinaryExpr(CppExpr *_expr1, CppExpr *_expr2, int _sign)
       : cExpr1(_expr1), cExpr2(_expr2), sign(_sign){};
+  CppBinaryExpr(CppExpr *_expr1, int _sign) : cExpr1(_expr1), sign(_sign) {
+    isUnary = true;
+  };
+  CppBinaryExpr(CppExpr *_expr1, CppRange *_range, int _sign)
+      : cExpr1(_expr1), cRange(_range), sign(_sign) {
+    isMember = true;
+  };
   CppBinaryExpr(CppExpr *_expr1, SymbolEntry *_se, int _sign)
-      : cExpr1(_expr1), se(_se), sign(_sign){};
+      : cExpr1(_expr1), se(_se), sign(_sign) {
+    isMember = true;
+  };
   std::string output() const;
 };
 
 class CppDummyStmt : public CppStmt {
 public:
   CppDummyStmt() : CppStmt(nullptr){};
-  std::string output(){};
+  CppDummyStmt(Function *func) : CppStmt(func){};
+  std::string output(int level) const;
 };
 
 class CppAssignStmt : public CppStmt {
@@ -125,7 +153,47 @@ public:
     se = _se;
     cExpr = _cExpr;
   };
-  std::string output() const;
+  std::string output(int level) const;
+};
+
+class CppCallStmt : public CppStmt {
+private:
+  CppId *cId;
+
+public:
+  CppCallStmt(Function *_func, CppId *_cId) : CppStmt(_func) { cId = _cId; };
+  std::string output(int level) const;
+};
+
+class CppCondClause : public CppStmt {
+private:
+  CppExpr *cond;
+  CppStmt *stmts;
+
+public:
+  CppCondClause(Function *_func, CppExpr *_cond, CppStmt *_stmts)
+      : CppStmt(_func) {
+    cond = _cond;
+    stmts = _stmts;
+  };
+  CppExpr *getCond() { return cond; }
+  CppStmt *getStmts() { return stmts; }
+  std::string output(int level) const;
+};
+
+class CppIfStmt : public CppStmt {
+private:
+  CppCondClause *clause;
+  CppStmt *elsestmt; // maybe is nullptr
+
+public:
+  CppIfStmt(Function *_func, CppCondClause *_clause,
+            CppStmt *_elsestmt = nullptr)
+      : CppStmt(_func) {
+    clause = _clause;
+    elsestmt = _elsestmt;
+  };
+  std::string output(int level) const;
 };
 
 #endif

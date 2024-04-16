@@ -4,27 +4,60 @@ extern FILE *yyout;
 bool AdaInteger::isUsed = false;
 
 void AdaInteger::output() {
-  fprintf(yyout, "\
-class AdaInteger {\n\
-private:\n\
-  int value;\n\
-public:\n\
-  AdaInteger() = default;\n\
-  AdaInteger(int _value) : value(_value) {};\n\
-  int getValue() { return value; }\n\
-  void setValue(int _value) { value = _value; }\n\
-  void operator=(int _value) {\n\
-    value = _value;\n\
-  }\n\
-  AdaInteger &operator+(AdaInteger _right) {\n\
-    AdaInteger res;\n\
-    res.setValue(value + _right.getValue());\n\
-    return res;\n\
-  }\n\
-  AdaInteger &operator+(int _right) {\n\
-    AdaInteger res;\n\
-    res.setValue(value + _right);\n\
-    return res;\n\
-  }\n\
-};\n");
+  fprintf(yyout, R"(class AdaInteger {
+private:
+  int value;
+public:
+  AdaInteger() = default;
+  AdaInteger(int _value) : value(_value) {};
+  AdaInteger operator-() {
+    return AdaInteger(-value);
+  }
+  friend AdaInteger operator+(AdaInteger& _left, AdaInteger& _right) {
+    return AdaInteger(_left.value + _right.value);
+  }
+  friend AdaInteger operator+(AdaInteger& _left, int _right) {
+    return AdaInteger(_left.value + _right);
+  }
+  friend AdaInteger operator-(AdaInteger& _left, AdaInteger& _right) {
+    return AdaInteger(_left.value - _right.value);
+  }
+  friend bool operator>(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value > _right.value;
+  }
+  friend bool operator>(AdaInteger& _left, int _right) {
+    return _left.value > _right;
+  }
+  friend bool operator<(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value < _right.value;
+  }
+  friend bool operator<(AdaInteger& _left, int _right) {
+    return _left.value < _right;
+  }
+  friend bool operator==(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value == _right.value;
+  }
+  friend bool operator==(AdaInteger& _left, int _right) {
+    return _left.value == _right;
+  }
+  friend bool operator!=(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value != _right.value;
+  }
+  friend bool operator!=(AdaInteger& _left, int _right) {
+    return _left.value != _right;
+  }
+  friend bool operator<=(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value <= _right.value;
+  }
+  friend bool operator<=(AdaInteger& _left, int _right) {
+    return _left.value <= _right;
+  }
+  friend bool operator>=(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value >= _right.value;
+  }
+  friend bool operator>=(AdaInteger& _left, int _right) {
+    return _left.value >= _right;
+  }
+};
+)");
 }
