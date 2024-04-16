@@ -307,9 +307,7 @@ void InitOptStmt::dump(int level) {
   expr->dump(level + 4);
 }
 
-void InitOptStmt::genCppCode(Node *parent) {
-  expr->genCppCode(parent);
-}
+void InitOptStmt::genCppCode(Node *parent) { expr->genCppCode(parent); }
 
 void ParamNode::dump(int level) {
   std::string name, type;
@@ -413,7 +411,6 @@ void DeclItemOrBodyStmt::genCppCode(Node *parent) {
   }
   if (prof) {
     prof->genCppCode(parent);
-    cStmt = decl->getCppStmt();
   }
   if (this->getNext())
     this->getNext()->genCppCode(parent);
@@ -594,7 +591,10 @@ void DiscreteRange::dump(int level) {
   }
 }
 
-void DiscreteRange::genCppCode(Node *parent) {}
+void DiscreteRange::genCppCode(Node *parent) {
+  range->genCppCode(parent);
+  cStmt = range->getCppStmt();
+}
 
 void Choice::dump(int level) {
   fprintf(yyout, "%*cChoice\n", level, ' ');
@@ -611,7 +611,23 @@ void Choice::dump(int level) {
   }
 }
 
-void Choice::genCppCode(Node *parent) {}
+void Choice::genCppCode(Node *parent) {
+  if(expr) {
+    expr->genCppCode(parent);
+    cStmt = new CppChoice(expr->getCppExpr());
+  } 
+  if(discret) {
+    discret->genCppCode(parent);
+    cStmt = new CppChoice(discret->getCppStmt());
+  } 
+  if(others) {
+    cStmt = new CppChoice(true);
+  }
+  if(this->getNext()) {
+    this->getNext()->genCppCode(parent);
+    cStmt->setNext(this->getNext()->getCppStmt());
+  }
+}
 
 void Alternative::dump(int level) {
   fprintf(yyout, "%*cAlternative\n", level, ' ');
@@ -621,7 +637,16 @@ void Alternative::dump(int level) {
     this->getNext()->dump(level);
 }
 
-void Alternative::genCppCode(Node *parent) {}
+void Alternative::genCppCode(Node *parent) {
+  choices->genCppCode(parent);
+  stmts->genCppCode(parent);
+  cStmt = new CppAlternative(dynamic_cast<CppChoice *>(choices->getCppStmt()),
+                             stmts->getCppStmt());
+  if(this->getNext()) {
+    this->getNext()->genCppCode(parent);
+    cStmt->setNext(this->getNext()->getCppStmt());
+  }
+}
 
 void CaseStmt::dump(int level) {
   fprintf(yyout, "%*cCaseStmt\n", level, ' ');
@@ -630,7 +655,20 @@ void CaseStmt::dump(int level) {
     alter->dump(level + 4);
 }
 
-void CaseStmt::genCppCode(Node *parent) {}
+void CaseStmt::genCppCode(Node *parent) {
+  expr->genCppCode(parent);
+  alter->genCppCode(parent);
+  if (dynamic_cast<ProcedureDef *>(parent)) {
+    Function *curFunc = builder->getCurrFunc();
+    cStmt =
+        new CppCaseStmt(curFunc, expr->getCppExpr(),
+                        dynamic_cast<CppAlternative *>(alter->getCppStmt()));
+  } else {
+    cStmt =
+        new CppCaseStmt(nullptr, expr->getCppExpr(),
+                        dynamic_cast<CppAlternative *>(alter->getCppStmt()));
+  }
+}
 
 void ExitStmt::dump(int level) {
   fprintf(yyout, "%*cExitStmt\n", level, ' ');
@@ -645,7 +683,10 @@ void BasicLoopStmt::dump(int level) {
   stmts->dump(level + 4);
 }
 
-void BasicLoopStmt::genCppCode(Node *parent) {}
+void BasicLoopStmt::genCppCode(Node *parent) {
+  stmts->genCppCode(parent);
+  cStmt = stmts->getCppStmt();
+}
 
 void IterPart::dump(int level) {
   std::string name;
@@ -667,7 +708,14 @@ void Iteration::dump(int level) {
   }
 }
 
-void Iteration::genCppCode(Node *parent) {}
+void Iteration::genCppCode(Node *parent) {
+  if (iter) {
+    iter->genCppCode(parent);
+    range->genCppCode(parent);
+    cStmt = new CppIteration(iter->getSymbol(),
+                             dynamic_cast<CppRange *>(range->getCppStmt()));
+  }
+}
 
 void LabelOpt::dump(int level) {
   std::string name;
@@ -686,7 +734,20 @@ void LoopStmt::dump(int level) {
   loop->dump(level + 4);
 }
 
-void LoopStmt::genCppCode(Node *parent) {}
+void LoopStmt::genCppCode(Node *parent) {
+  iter->genCppCode(this);
+  loop->genCppCode(this);
+  if (dynamic_cast<ProcedureDef *>(parent)) {
+    Function *curFunc = builder->getCurrFunc();
+    cStmt = new CppLoopStmt(curFunc,
+                            dynamic_cast<CppIteration *>(iter->getCppStmt()),
+                            loop->getCppStmt());
+  } else {
+    cStmt = new CppLoopStmt(nullptr,
+                            dynamic_cast<CppIteration *>(iter->getCppStmt()),
+                            loop->getCppStmt());
+  }
+}
 
 void Block::dump(int level) {
   fprintf(yyout, "%*cBlockStmt\n", level, ' ');

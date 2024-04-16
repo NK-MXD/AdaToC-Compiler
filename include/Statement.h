@@ -2,8 +2,8 @@
 #define __ADA2C_STATEMENT_H__
 
 #include "SymbolTable.h"
+#include <cstring>
 #include <iostream>
-#include <cstring> 
 using namespace std;
 
 class Function;
@@ -193,6 +193,76 @@ public:
     clause = _clause;
     elsestmt = _elsestmt;
   };
+  std::string output(int level) const;
+};
+
+class CppIteration : public CppStmt {
+private:
+  SymbolEntry *se;
+  CppRange *range;
+
+public:
+  CppIteration(SymbolEntry *_se, CppRange *_range)
+      : CppStmt(nullptr), se(_se), range(_range){};
+  std::string output(int level) const;
+};
+
+class CppLoopStmt : public CppStmt {
+private:
+  CppIteration *cIter;
+  CppStmt *loop;
+
+public:
+  CppLoopStmt(Function *_func, CppIteration *_cIter, CppStmt *_loop)
+      : CppStmt(_func), cIter(_cIter), loop(_loop){};
+  std::string output(int level) const;
+};
+
+class CppChoice : public CppStmt {
+private:
+  CppExpr *cExpr;
+  CppRange *range;
+  bool isOther = false;
+  bool isExpr = false;
+  bool isRange = false;
+
+public:
+  CppChoice(CppExpr *_cExpr) : CppStmt(nullptr), cExpr(_cExpr) {
+    isExpr = true;
+  };
+  CppChoice(CppRange *_range) : CppStmt(nullptr), range(_range) {
+    isRange = true;
+  };
+  bool getIsExpr() { return isExpr; }
+  bool getIsRange() { return isRange; }
+  bool getIsOther() { return isOther; }
+  CppExpr *getExpr() { return cExpr; }
+  CppRange *getRange() { return range; }
+  CppChoice(bool _isOther) : CppStmt(nullptr), isOther(_isOther){};
+  std::string output(int level) const { return ""; };
+};
+
+class CppAlternative : public CppStmt {
+private:
+  CppChoice *choices;
+  CppStmt *stmts;
+
+public:
+  CppAlternative(CppChoice *_choices, CppStmt *_stmts)
+      : CppStmt(nullptr), choices(_choices), stmts(_stmts){};
+  CppChoice *getChoices() { return choices; }
+  CppStmt *getStmts() { return stmts; }
+  std::string output(int level) const {};
+};
+
+class CppCaseStmt : public CppStmt {
+private:
+  CppExpr* cExpr;
+  CppAlternative* alter;
+
+public:
+  CppCaseStmt(Function* _func, CppExpr* _cExpr, CppAlternative* _alter)
+      : CppStmt(_func), cExpr(_cExpr), alter(_alter){};
   std::string output(int level) const;
 };
 

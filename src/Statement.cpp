@@ -30,7 +30,6 @@ void CppStmt::setNext(CppStmt *node) {
   }
 }
 
-
 CppStmt::CppStmt(Function *func) {
   if (func)
     func->insertStmts(this);
@@ -224,4 +223,85 @@ std::string CppIfStmt::output(int level) const {
     return std::string(res);
   }
   return clause->output(level);
+}
+
+std::string CppIteration::output(int level) const {
+  char res[200];
+  sprintf(res, "for(int %s = %s; %s <= %s; %s++)", se->dump().c_str(),
+          range->getLow()->output().c_str(), se->dump().c_str(),
+          range->getUpper()->output().c_str(), se->dump().c_str());
+  return std::string(res);
+}
+
+std::string CppLoopStmt::output(int level) const {
+  char res[2000];
+  sprintf(res, R"deli(%*c%s {
+%s%*c}
+)deli",
+          level, ' ', cIter->output(level).c_str(),
+          loop->output(level + 4).c_str(), level, ' ');
+  return std::string(res);
+}
+
+std::string CppCaseStmt::output(int level) const {
+  std::string resStr;
+  std::string exprStr = cExpr->output();
+  bool haveElse = false;
+  CppStmt *elseStmts;
+  CppAlternative *temp = alter;
+  bool firstCase = true;
+  while (temp) {
+    char tempIf[300];
+    CppChoice *choices = temp->getChoices();
+    CppStmt *stmts = temp->getStmts();
+    std::string condStr;
+    bool isFirst = true;
+    while (choices) {
+      char tempCond[50];
+      if (choices->getIsExpr()) {
+        sprintf(tempCond, "%s == %s", exprStr.c_str(),
+                choices->getExpr()->output().c_str());
+      } else if (choices->getIsRange()) {
+        sprintf(tempCond, "%s >= %s && %s <= %s", exprStr.c_str(),
+                choices->getRange()->getLow()->output().c_str(),
+                exprStr.c_str(),
+                choices->getRange()->getUpper()->output().c_str());
+      } else {
+        haveElse = true;
+        elseStmts = stmts;
+        break;
+      }
+      if (isFirst) {
+        condStr += std::string(tempCond);
+        isFirst = false;
+      } else {
+        condStr += std::string(" || ") + std::string(tempCond);
+      }
+      choices = dynamic_cast<CppChoice *>(choices->getNext());
+    }
+    if (firstCase && !haveElse) {
+      sprintf(tempIf, R"deli(%*cif(%s) {
+%s%*c}
+)deli",
+              level, ' ', condStr.c_str(), stmts->output(level + 4).c_str(),
+              level, ' ');
+      firstCase = false;
+      resStr += std::string(tempIf);
+    } else if (!firstCase && !haveElse) {
+      sprintf(tempIf, R"deli(%*celse if(%s) {
+%s%*c}
+)deli",
+              level, ' ', condStr.c_str(), stmts->output(level + 4).c_str(),
+              level, ' ');
+      resStr += std::string(tempIf);
+    } else {
+      sprintf(tempIf, R"deli(%*celse{
+%s%*c}
+)deli",
+              level, ' ', elseStmts->output(level + 4).c_str(), level, ' ');
+      resStr += std::string(tempIf);
+    }
+    temp = dynamic_cast<CppAlternative *>(temp->getNext());
+  }
+  return resStr;
 }
