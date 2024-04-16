@@ -46,6 +46,18 @@ public:
   friend bool operator!=(AdaInteger& _left, int _right) {
     return _left.value != _right;
   }
+  friend bool operator<=(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value <= _right.value;
+  }
+  friend bool operator<=(AdaInteger& _left, int _right) {
+    return _left.value <= _right;
+  }
+  friend bool operator>=(AdaInteger& _left, AdaInteger& _right) {
+    return _left.value >= _right.value;
+  }
+  friend bool operator>=(AdaInteger& _left, int _right) {
+    return _left.value >= _right;
+  }
 };
 )");
 }

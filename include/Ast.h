@@ -89,7 +89,7 @@ protected:
 
 public:
   CppStmt *getCppStmt() { return cStmt; }
-  void setNext(StmtNode *node) { next = node; };
+  void setNext(StmtNode *node);
   StmtNode *getNext() { return next; }
   virtual void genCppCode(Node* parent) {};
 };

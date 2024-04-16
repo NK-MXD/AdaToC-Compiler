@@ -25,10 +25,10 @@ void CppUnit::output() const {
     for (auto op : *vec) {
       // Simple Operand Name
       std::string opName = getOpFullName(func, op);
-      CppExpr *init = op->getCppExpr();
+      CppExpr *init = op->getInit();
       if (init) {
         fprintf(yyout, "%s %s = %s;\n", op->typeName().c_str(), opName.c_str(),
-                op->getCppExpr()->output().c_str());
+                init->output().c_str());
       } else {
         fprintf(yyout, "%s %s = 0;\n", op->typeName().c_str(), opName.c_str());
       }

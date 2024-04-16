@@ -107,9 +107,8 @@ std::string Function::output(int level) const {
 %*cprivate:
 %s
 %*cpublic:
-%*c  static void main%s {
-%s
-%*c  }
+%*c   static void main%s {
+%s%*c   }
 %*c};
 )deli",
           level, ' ', symPtr->dump().c_str(), level, ' ', declStr.c_str(),

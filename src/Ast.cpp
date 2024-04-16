@@ -25,6 +25,18 @@ void Node::setNext(Node *node) {
   }
 }
 
+void StmtNode::setNext(StmtNode *node) {
+  StmtNode *n = this;
+  while (n->getNext()) {
+    n = n->getNext();
+  }
+  if (n == this) {
+    this->next = node;
+  } else {
+    n->setNext(node);
+  }
+}
+
 void OpSignNode::dump(int level) {
   std::string opSignName;
   switch (kind) {
@@ -97,7 +109,7 @@ void OpSignNode::dump(int level) {
   fprintf(yyout, "%*cOpSign: %s\n", level, ' ', opSignName.c_str());
 }
 
-void OpSignNode::genCppCode(Node* parent) {}
+void OpSignNode::genCppCode(Node *parent) {}
 
 void Id::dump(int level) {
   fprintf(yyout, "%*cId\n", level, ' ');
@@ -124,7 +136,7 @@ void Id::dump(int level) {
   }
 }
 
-void Id::genCppCode(Node* parent) {
+void Id::genCppCode(Node *parent) {
   // 1. For simple id
   cExpr = new CppId(se);
 }
@@ -138,7 +150,7 @@ void Constant::dump(int level) {
           value.c_str());
 }
 
-void Constant::genCppCode(Node* parent) { cExpr = new CppConstant(se); }
+void Constant::genCppCode(Node *parent) { cExpr = new CppConstant(se); }
 
 void FactorExpr::dump(int level) {
   std::string opName;
@@ -156,7 +168,7 @@ void FactorExpr::dump(int level) {
   expr->dump(level + 4);
 }
 
-void FactorExpr::genCppCode(Node* parent) {
+void FactorExpr::genCppCode(Node *parent) {
   expr->genCppCode(parent);
   cExpr = new CppFactor(expr->getCppExpr(), op);
 }
@@ -177,7 +189,7 @@ void BinaryExpr::dump(int level) {
   }
 }
 
-void BinaryExpr::genCppCode(Node* parent) {
+void BinaryExpr::genCppCode(Node *parent) {
   int cppOp;
   switch (sign->getKind()) {
   case OpSignNode::MUL:
@@ -246,16 +258,25 @@ void BinaryExpr::genCppCode(Node* parent) {
   default:
     break;
   }
-  if (expr2) {
+  if (isUnary) {
+    expr1->genCppCode(parent);
+    cExpr = new CppBinaryExpr(expr1->getCppExpr(), cppOp);
+  } else if (isMember) {
+    if (range) {
+      expr1->genCppCode(parent);
+      range->genCppCode(parent);
+      cExpr = new CppBinaryExpr(expr1->getCppExpr(),
+                                dynamic_cast<CppRange *>(range->getCppStmt()),
+                                cppOp);
+    }
+    if (se) {
+      expr1->genCppCode(parent);
+      cExpr = new CppBinaryExpr(expr1->getCppExpr(), se, cppOp);
+    }
+  } else {
     expr1->genCppCode(parent);
     expr2->genCppCode(parent);
     cExpr = new CppBinaryExpr(expr1->getCppExpr(), expr2->getCppExpr(), cppOp);
-  } else if (se) {
-    expr1->genCppCode(parent);
-    cExpr = new CppBinaryExpr(expr1->getCppExpr(), se, cppOp);
-  } else {
-    expr1->genCppCode(parent);
-    cExpr = new CppBinaryExpr(expr1->getCppExpr(), cppOp);
   }
 }
 
@@ -264,7 +285,7 @@ void SeqNode::dump(int level) {
   stmt2->dump(level);
 }
 
-void SeqNode::genCppCode(Node* parent) {
+void SeqNode::genCppCode(Node *parent) {
   stmt1->genCppCode(parent);
   stmt2->genCppCode(parent);
 }
@@ -279,14 +300,16 @@ void DefId::dump(int level) {
     this->getNext()->dump(level);
 }
 
-void DefId::genCppCode(Node* parent) {}
+void DefId::genCppCode(Node *parent) {}
 
 void InitOptStmt::dump(int level) {
   fprintf(yyout, "%*cInitOptStmt\n", level, ' ');
   expr->dump(level + 4);
 }
 
-void InitOptStmt::genCppCode(Node* parent) {}
+void InitOptStmt::genCppCode(Node *parent) {
+  expr->genCppCode(parent);
+}
 
 void ParamNode::dump(int level) {
   std::string name, type;
@@ -300,7 +323,7 @@ void ParamNode::dump(int level) {
     this->getNext()->dump(level);
 }
 
-void ParamNode::genCppCode(Node* parent) {}
+void ParamNode::genCppCode(Node *parent) {}
 
 void ProcedureSpec::dump(int level) {
   printAstLog("ProcedureSpec dump");
@@ -313,14 +336,14 @@ void ProcedureSpec::dump(int level) {
     params->dump(level + 4);
 }
 
-void ProcedureSpec::genCppCode(Node* parent) {}
+void ProcedureSpec::genCppCode(Node *parent) {}
 
 void ProcedureDecl::dump(int level) {
   fprintf(yyout, "%*cProcedureDecl\n", level, ' ');
   spec->dump(level + 4);
 }
 
-void ProcedureDecl::genCppCode(Node* parent) {}
+void ProcedureDecl::genCppCode(Node *parent) {}
 
 void ObjectDeclStmt::dump(int level) {
   printAstLog("ObjectDeclStmt dump");
@@ -330,7 +353,7 @@ void ObjectDeclStmt::dump(int level) {
     init->dump(level + 4);
 }
 
-void ObjectDeclStmt::genCppCode(Node* parent) {
+void ObjectDeclStmt::genCppCode(Node *parent) {
   if (dynamic_cast<ProcedureDef *>(parent)) {
     Function *func = builder->getCurrFunc();
     CppUnit *unit = builder->getUnit();
@@ -362,7 +385,7 @@ void DeclStmt::dump(int level) {
     procedureDecl->dump(level + 4);
 }
 
-void DeclStmt::genCppCode(Node* parent) {
+void DeclStmt::genCppCode(Node *parent) {
   if (objectDecl) {
     objectDecl->genCppCode(parent);
     cStmt = objectDecl->getCppStmt();
@@ -383,7 +406,7 @@ void DeclItemOrBodyStmt::dump(int level) {
     this->getNext()->dump(level);
 }
 
-void DeclItemOrBodyStmt::genCppCode(Node* parent) {
+void DeclItemOrBodyStmt::genCppCode(Node *parent) {
   if (decl) {
     decl->genCppCode(parent);
     cStmt = decl->getCppStmt();
@@ -398,7 +421,7 @@ void DeclItemOrBodyStmt::genCppCode(Node* parent) {
 
 void NullStmt::dump(int level) { fprintf(yyout, "%*cNullStmt\n", level, ' '); }
 
-void NullStmt::genCppCode(Node* parent) {
+void NullStmt::genCppCode(Node *parent) {
   if (dynamic_cast<ProcedureDef *>(parent)) {
     Function *curFunc = builder->getCurrFunc();
     cStmt = new CppDummyStmt(curFunc);
@@ -417,7 +440,7 @@ void AssignStmt::dump(int level) {
   expr->dump(level + 4);
 }
 
-void AssignStmt::genCppCode(Node* parent) {
+void AssignStmt::genCppCode(Node *parent) {
   expr->genCppCode(parent);
   if (dynamic_cast<ProcedureDef *>(parent)) {
     Function *func = builder->getCurrFunc();
@@ -435,14 +458,14 @@ void ReturnStmt::dump(int level) {
     fprintf(yyout, "%*cvoid\n", level + 4, ' ');
 }
 
-void ReturnStmt::genCppCode(Node* parent) {}
+void ReturnStmt::genCppCode(Node *parent) {}
 
 void CallStmt::dump(int level) {
   fprintf(yyout, "%*cCallStmt\n", level, ' ');
   id->dump(level + 4);
 }
 
-void CallStmt::genCppCode(Node* parent) {
+void CallStmt::genCppCode(Node *parent) {
   id->genCppCode(parent);
   CppId *cId = dynamic_cast<CppId *>(id->getCppExpr());
   if (dynamic_cast<ProcedureDef *>(parent)) {
@@ -461,7 +484,7 @@ void Stmt::dump(int level) {
     this->getNext()->dump(level);
 }
 
-void Stmt::genCppCode(Node* parent) {
+void Stmt::genCppCode(Node *parent) {
   if (stmt) {
     stmt->genCppCode(parent);
     cStmt = stmt->getCppStmt();
@@ -480,7 +503,7 @@ void ProcedureDef::dump(int level) {
     stmts->dump(level + 4);
 }
 
-void ProcedureDef::genCppCode(Node* parent) {
+void ProcedureDef::genCppCode(Node *parent) {
   SymbolEntry *se = spec->getProcedureSymbol();
   CppUnit *unit = builder->getUnit();
   Function *curFunc;
@@ -509,24 +532,26 @@ void CondClause::dump(int level) {
     this->getNext()->dump(level);
 }
 
-void CondClause::genCppCode(Node* parent) {
+void CondClause::genCppCode(Node *parent) {
   cond->genCppCode(parent);
   stmts->genCppCode(this);
   cStmt = new CppCondClause(nullptr, cond->getCppExpr(), stmts->getCppStmt());
   if (this->getNext()) {
     this->getNext()->genCppCode(this);
-    cStmt->setNext(dynamic_cast<Stmt *>(this->getNext())->getCppStmt());
+    cStmt->setNext(this->getNext()->getCppStmt());
   }
 }
 
 void IfStmt::dump(int level) {
   fprintf(yyout, "%*cIfStmt\n", level, ' ');
   clause->dump(level + 4);
-  if (elsestmt)
-    elsestmt->dump(level + 4);
+  if (elsestmt) {
+    fprintf(yyout, "%*cElse\n", level + 4, ' ');
+    elsestmt->dump(level + 8);
+  }
 }
 
-void IfStmt::genCppCode(Node* parent) {
+void IfStmt::genCppCode(Node *parent) {
   clause->genCppCode(this);
   CppCondClause *cClause = dynamic_cast<CppCondClause *>(clause->getCppStmt());
   CppStmt *cElseStmt = nullptr;
@@ -548,7 +573,11 @@ void Range::dump(int level) {
   upperbound->dump(level + 4);
 }
 
-void Range::genCppCode(Node* parent) {}
+void Range::genCppCode(Node *parent) {
+  lowerbound->genCppCode(parent);
+  upperbound->genCppCode(parent);
+  cStmt = new CppRange(lowerbound->getCppExpr(), upperbound->getCppExpr());
+}
 
 void DiscreteRange::dump(int level) {
   if (se) {
@@ -565,7 +594,7 @@ void DiscreteRange::dump(int level) {
   }
 }
 
-void DiscreteRange::genCppCode(Node* parent) {}
+void DiscreteRange::genCppCode(Node *parent) {}
 
 void Choice::dump(int level) {
   fprintf(yyout, "%*cChoice\n", level, ' ');
@@ -582,7 +611,7 @@ void Choice::dump(int level) {
   }
 }
 
-void Choice::genCppCode(Node* parent) {}
+void Choice::genCppCode(Node *parent) {}
 
 void Alternative::dump(int level) {
   fprintf(yyout, "%*cAlternative\n", level, ' ');
@@ -592,7 +621,7 @@ void Alternative::dump(int level) {
     this->getNext()->dump(level);
 }
 
-void Alternative::genCppCode(Node* parent) {}
+void Alternative::genCppCode(Node *parent) {}
 
 void CaseStmt::dump(int level) {
   fprintf(yyout, "%*cCaseStmt\n", level, ' ');
@@ -601,7 +630,7 @@ void CaseStmt::dump(int level) {
     alter->dump(level + 4);
 }
 
-void CaseStmt::genCppCode(Node* parent) {}
+void CaseStmt::genCppCode(Node *parent) {}
 
 void ExitStmt::dump(int level) {
   fprintf(yyout, "%*cExitStmt\n", level, ' ');
@@ -609,14 +638,14 @@ void ExitStmt::dump(int level) {
     cond->dump(level + 4);
 }
 
-void ExitStmt::genCppCode(Node* parent) {}
+void ExitStmt::genCppCode(Node *parent) {}
 
 void BasicLoopStmt::dump(int level) {
   fprintf(yyout, "%*cBasicLoopStmt\n", level, ' ');
   stmts->dump(level + 4);
 }
 
-void BasicLoopStmt::genCppCode(Node* parent) {}
+void BasicLoopStmt::genCppCode(Node *parent) {}
 
 void IterPart::dump(int level) {
   std::string name;
@@ -624,7 +653,7 @@ void IterPart::dump(int level) {
   fprintf(yyout, "%*cIterPart\tname: %s\n", level, ' ', name.c_str());
 }
 
-void IterPart::genCppCode(Node* parent) {}
+void IterPart::genCppCode(Node *parent) {}
 
 void Iteration::dump(int level) {
   fprintf(yyout, "%*cIteration\n", level, ' ');
@@ -638,7 +667,7 @@ void Iteration::dump(int level) {
   }
 }
 
-void Iteration::genCppCode(Node* parent) {}
+void Iteration::genCppCode(Node *parent) {}
 
 void LabelOpt::dump(int level) {
   std::string name;
@@ -646,7 +675,7 @@ void LabelOpt::dump(int level) {
   fprintf(yyout, "%*cIterPart\tname: %s\n", level, ' ', name.c_str());
 }
 
-void LabelOpt::genCppCode(Node* parent) {}
+void LabelOpt::genCppCode(Node *parent) {}
 
 void LoopStmt::dump(int level) {
   fprintf(yyout, "%*cLoopStmt\n", level, ' ');
@@ -657,7 +686,7 @@ void LoopStmt::dump(int level) {
   loop->dump(level + 4);
 }
 
-void LoopStmt::genCppCode(Node* parent) {}
+void LoopStmt::genCppCode(Node *parent) {}
 
 void Block::dump(int level) {
   fprintf(yyout, "%*cBlockStmt\n", level, ' ');
@@ -667,7 +696,7 @@ void Block::dump(int level) {
   stmts->dump(level + 4);
 }
 
-void Block::genCppCode(Node* parent) {}
+void Block::genCppCode(Node *parent) {}
 
 void Ast::dump() {
   printAstLog("Program dump");

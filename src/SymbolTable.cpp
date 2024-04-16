@@ -28,9 +28,9 @@ std::string ConstantSymbolEntry::dump() {
     return str;
   } else if (type->isBoolean()) {
     if (bvalue)
-      return std::string("True");
+      return std::string("true");
     else
-      return std::string("False");
+      return std::string("false");
   } else {
     return std::string("");
   }
