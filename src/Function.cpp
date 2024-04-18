@@ -72,10 +72,7 @@ std::string Function::getParamStr() const {
 
 std::string Function::getStmtStr(int level) const {
   std::string stmtStr;
-  for (auto stmt : stats) {
-    stmtStr += stmt->output(level);
-  }
-  return stmtStr;
+  return stats.front()->output(level);
 }
 
 std::string Function::output(int level) const {

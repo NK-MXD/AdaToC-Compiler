@@ -135,6 +135,17 @@ public:
   std::string output() const;
 };
 
+class CppSeqStmt : public CppStmt {
+private:
+  CppStmt* stmt;
+
+public:
+  CppSeqStmt() : CppStmt(nullptr){};
+  CppSeqStmt(Function *func) : CppStmt(func){};
+  CppSeqStmt(Function *func, CppStmt* _stmt) : CppStmt(func), stmt(_stmt) {};
+  std::string output(int level) const;
+};
+
 class CppDummyStmt : public CppStmt {
 public:
   CppDummyStmt() : CppStmt(nullptr){};
@@ -168,10 +179,10 @@ public:
 class CppCondClause : public CppStmt {
 private:
   CppExpr *cond;
-  CppStmt *stmts;
+  CppSeqStmt *stmts;
 
 public:
-  CppCondClause(Function *_func, CppExpr *_cond, CppStmt *_stmts)
+  CppCondClause(Function *_func, CppExpr *_cond, CppSeqStmt *_stmts)
       : CppStmt(_func) {
     cond = _cond;
     stmts = _stmts;
@@ -184,11 +195,11 @@ public:
 class CppIfStmt : public CppStmt {
 private:
   CppCondClause *clause;
-  CppStmt *elsestmt; // maybe is nullptr
+  CppSeqStmt *elsestmt; // maybe is nullptr
 
 public:
   CppIfStmt(Function *_func, CppCondClause *_clause,
-            CppStmt *_elsestmt = nullptr)
+            CppSeqStmt *_elsestmt = nullptr)
       : CppStmt(_func) {
     clause = _clause;
     elsestmt = _elsestmt;
@@ -210,10 +221,10 @@ public:
 class CppLoopStmt : public CppStmt {
 private:
   CppIteration *cIter;
-  CppStmt *loop;
+  CppSeqStmt *loop;
 
 public:
-  CppLoopStmt(Function *_func, CppIteration *_cIter, CppStmt *_loop)
+  CppLoopStmt(Function *_func, CppIteration *_cIter, CppSeqStmt *_loop)
       : CppStmt(_func), cIter(_cIter), loop(_loop){};
   std::string output(int level) const;
 };
@@ -245,13 +256,13 @@ public:
 class CppAlternative : public CppStmt {
 private:
   CppChoice *choices;
-  CppStmt *stmts;
+  CppSeqStmt *stmts;
 
 public:
-  CppAlternative(CppChoice *_choices, CppStmt *_stmts)
+  CppAlternative(CppChoice *_choices, CppSeqStmt *_stmts)
       : CppStmt(nullptr), choices(_choices), stmts(_stmts){};
   CppChoice *getChoices() { return choices; }
-  CppStmt *getStmts() { return stmts; }
+  CppSeqStmt *getStmts() { return stmts; }
   std::string output(int level) const {};
 };
 
@@ -263,6 +274,16 @@ private:
 public:
   CppCaseStmt(Function* _func, CppExpr* _cExpr, CppAlternative* _alter)
       : CppStmt(_func), cExpr(_cExpr), alter(_alter){};
+  std::string output(int level) const;
+};
+
+class CppExitStmt : public CppStmt {
+private:
+  CppExpr* cCond;
+
+public:
+  CppExitStmt(CppExpr* _cCond = nullptr)
+      : CppStmt(nullptr), cCond(_cCond) {};
   std::string output(int level) const;
 };
 

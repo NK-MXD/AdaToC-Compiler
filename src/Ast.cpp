@@ -1,4 +1,5 @@
 #include "Ast.h"
+#include <cassert>
 
 #define DEBUG_SWITCH_AST_LOG 0
 #if DEBUG_SWITCH_AST_LOG
@@ -10,6 +11,7 @@
 extern FILE *yyout;
 int Node::counter = 0;
 CppBuilder *Node::builder = nullptr;
+std::stack<LoopStmt *> loopIter;
 
 Node::Node() { seq = counter++; }
 
@@ -482,12 +484,17 @@ void Stmt::dump(int level) {
 }
 
 void Stmt::genCppCode(Node *parent) {
-  if (stmt) {
-    stmt->genCppCode(parent);
-    cStmt = stmt->getCppStmt();
+  stmt->genCppCode(this);
+  if (dynamic_cast<ProcedureDef *>(parent)) {
+    Function *curFunc = builder->getCurrFunc();
+    cStmt = new CppSeqStmt(curFunc, stmt->getCppStmt());
+  } else {
+    cStmt = new CppSeqStmt(nullptr, stmt->getCppStmt());
   }
-  if (this->getNext())
-    this->getNext()->genCppCode(parent);
+  if (this->getNext()) {
+    this->getNext()->genCppCode(this);
+    cStmt->setNext(this->getNext()->getCppStmt());
+  }
 }
 
 void ProcedureDef::dump(int level) {
@@ -532,7 +539,8 @@ void CondClause::dump(int level) {
 void CondClause::genCppCode(Node *parent) {
   cond->genCppCode(parent);
   stmts->genCppCode(this);
-  cStmt = new CppCondClause(nullptr, cond->getCppExpr(), stmts->getCppStmt());
+  cStmt = new CppCondClause(nullptr, cond->getCppExpr(),
+                            dynamic_cast<CppSeqStmt *>(stmts->getCppStmt()));
   if (this->getNext()) {
     this->getNext()->genCppCode(this);
     cStmt->setNext(this->getNext()->getCppStmt());
@@ -551,10 +559,10 @@ void IfStmt::dump(int level) {
 void IfStmt::genCppCode(Node *parent) {
   clause->genCppCode(this);
   CppCondClause *cClause = dynamic_cast<CppCondClause *>(clause->getCppStmt());
-  CppStmt *cElseStmt = nullptr;
+  CppSeqStmt *cElseStmt = nullptr;
   if (elsestmt) {
     elsestmt->genCppCode(this);
-    cElseStmt = elsestmt->getCppStmt();
+    cElseStmt = dynamic_cast<CppSeqStmt *>(elsestmt->getCppStmt());
   }
   if (dynamic_cast<ProcedureDef *>(parent)) {
     Function *curFunc = builder->getCurrFunc();
@@ -612,18 +620,18 @@ void Choice::dump(int level) {
 }
 
 void Choice::genCppCode(Node *parent) {
-  if(expr) {
+  if (expr) {
     expr->genCppCode(parent);
-    cStmt = new CppChoice(expr->getCppExpr());
-  } 
-  if(discret) {
+    cStmt = new CppChoice(dynamic_cast<CppExpr*>(expr->getCppExpr()));
+  }
+  if (discret) {
     discret->genCppCode(parent);
-    cStmt = new CppChoice(discret->getCppStmt());
-  } 
-  if(others) {
+    cStmt = new CppChoice(dynamic_cast<CppRange*>(discret->getCppStmt()));
+  }
+  if (others) {
     cStmt = new CppChoice(true);
   }
-  if(this->getNext()) {
+  if (this->getNext()) {
     this->getNext()->genCppCode(parent);
     cStmt->setNext(this->getNext()->getCppStmt());
   }
@@ -641,8 +649,8 @@ void Alternative::genCppCode(Node *parent) {
   choices->genCppCode(parent);
   stmts->genCppCode(parent);
   cStmt = new CppAlternative(dynamic_cast<CppChoice *>(choices->getCppStmt()),
-                             stmts->getCppStmt());
-  if(this->getNext()) {
+                             dynamic_cast<CppSeqStmt *>(stmts->getCppStmt()));
+  if (this->getNext()) {
     this->getNext()->genCppCode(parent);
     cStmt->setNext(this->getNext()->getCppStmt());
   }
@@ -676,7 +684,14 @@ void ExitStmt::dump(int level) {
     cond->dump(level + 4);
 }
 
-void ExitStmt::genCppCode(Node *parent) {}
+void ExitStmt::genCppCode(Node *parent) {
+  if (cond) {
+    cond->genCppCode(parent);
+    cStmt = new CppExitStmt(cond->getCppExpr());
+  } else {
+    cStmt = new CppExitStmt();
+  }
+}
 
 void BasicLoopStmt::dump(int level) {
   fprintf(yyout, "%*cBasicLoopStmt\n", level, ' ');
@@ -735,18 +750,23 @@ void LoopStmt::dump(int level) {
 }
 
 void LoopStmt::genCppCode(Node *parent) {
-  iter->genCppCode(this);
+  loopIter.push(this);
+  CppIteration *cIter = nullptr;
+  if (iter) {
+    iter->genCppCode(this);
+    cIter = dynamic_cast<CppIteration *>(iter->getCppStmt());
+  }
   loop->genCppCode(this);
+
   if (dynamic_cast<ProcedureDef *>(parent)) {
     Function *curFunc = builder->getCurrFunc();
-    cStmt = new CppLoopStmt(curFunc,
-                            dynamic_cast<CppIteration *>(iter->getCppStmt()),
-                            loop->getCppStmt());
+    cStmt = new CppLoopStmt(curFunc, cIter,
+                            dynamic_cast<CppSeqStmt *>(loop->getCppStmt()));
   } else {
-    cStmt = new CppLoopStmt(nullptr,
-                            dynamic_cast<CppIteration *>(iter->getCppStmt()),
-                            loop->getCppStmt());
+    cStmt = new CppLoopStmt(nullptr, cIter,
+                            dynamic_cast<CppSeqStmt *>(loop->getCppStmt()));
   }
+  loopIter.pop();
 }
 
 void Block::dump(int level) {

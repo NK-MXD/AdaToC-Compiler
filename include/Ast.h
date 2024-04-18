@@ -7,6 +7,7 @@
 #include <SymbolTable.h>
 #include <Type.h>
 #include <iostream>
+#include <stack>
 using namespace std;
 
 class SymbolEntry;
