@@ -35,7 +35,23 @@ CppStmt::CppStmt(Function *func) {
     func->insertStmts(this);
 }
 
-std::string CppId::output() const { return se->dump(); }
+std::string CppId::output() const {
+  if (name) {
+    std::string res = name->output() + "(";
+    CppExpr *temp = expr;
+    while (temp) {
+      res += temp->output();
+      temp = dynamic_cast<CppExpr *>(temp->getNext());
+      if (expr) {
+        res += ", ";
+      }
+    }
+    res += ")";
+    return res;
+  } else {
+    return se->dump();
+  }
+}
 
 std::string CppConstant::output() const { return se->dump(); }
 
@@ -235,9 +251,15 @@ std::string CppIfStmt::output(int level) const {
 
 std::string CppIteration::output(int level) const {
   char res[200];
-  sprintf(res, "for(int %s = %s; %s <= %s; %s++)", se->dump().c_str(),
-          range->getLow()->output().c_str(), se->dump().c_str(),
-          range->getUpper()->output().c_str(), se->dump().c_str());
+  if (isReverse) {
+    sprintf(res, "for(int %s = %s; %s >= %s; %s--)", se->dump().c_str(),
+            range->getUpper()->output().c_str(), se->dump().c_str(),
+            range->getLow()->output().c_str(), se->dump().c_str());
+  } else {
+    sprintf(res, "for(int %s = %s; %s <= %s; %s++)", se->dump().c_str(),
+            range->getLow()->output().c_str(), se->dump().c_str(),
+            range->getUpper()->output().c_str(), se->dump().c_str());
+  }
   return std::string(res);
 }
 
@@ -294,7 +316,8 @@ std::string CppCaseStmt::output(int level) const {
       }
       choices = dynamic_cast<CppChoice *>(choices->getNext());
     }
-    if(condStr.empty()) break;
+    if (condStr.empty())
+      break;
     if (firstCase) {
       sprintf(tempIf, R"deli(%*cif(%s) {
 %s%*c}
@@ -332,9 +355,26 @@ std::string CppExitStmt::output(int level) const {
 %*cbreak;
 %*c}
 )deli",
-            level, ' ', cCond->output().c_str(), level, ' ', level, ' ');
+            level, ' ', cCond->output().c_str(), level + 4, ' ', level, ' ');
   } else {
     sprintf(res, "%*cbreak;\n", level, ' ');
   }
   return std::string(res);
+}
+
+std::string CppBlockStmt::output(int level) const {
+  std::string res;
+  for (auto op : declvec) {
+    char temp[200];
+    CppExpr *init = op->getInit();
+    if (init)
+      sprintf(temp, "%*c%s %s = %s;\n", level, ' ', op->typeName().c_str(),
+              op->getName().c_str(), init->output().c_str());
+    else
+      sprintf(temp, "%*c%s %s;\n", level, ' ', op->typeName().c_str(),
+              op->getName().c_str());
+    res += temp;
+  }
+  res += stmts->output(level);
+  return res;
 }

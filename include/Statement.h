@@ -2,6 +2,7 @@
 #define __ADA2C_STATEMENT_H__
 
 #include "SymbolTable.h"
+#include "Operand.h"
 #include <cstring>
 #include <iostream>
 using namespace std;
@@ -17,6 +18,7 @@ private:
 
 public:
   CppNode();
+  virtual ~CppNode() {} 
   int getSeq() const { return seq; };
   void setNext(CppNode *node);
   CppNode *getNext() const { return next; };
@@ -56,10 +58,12 @@ public:
 class CppId : public CppExpr {
 private:
   SymbolEntry *se;
+  CppId* name;
   CppExpr *expr;
 
 public:
   CppId(SymbolEntry *_se) : se(_se){};
+  CppId(CppId *_id, CppExpr* _expr) : name(_id), expr(_expr) {};
   std::string output() const;
 };
 
@@ -211,10 +215,11 @@ class CppIteration : public CppStmt {
 private:
   SymbolEntry *se;
   CppRange *range;
+  bool isReverse;
 
 public:
-  CppIteration(SymbolEntry *_se, CppRange *_range)
-      : CppStmt(nullptr), se(_se), range(_range){};
+  CppIteration(SymbolEntry *_se, CppRange *_range, bool _isReverse = false)
+      : CppStmt(nullptr), se(_se), range(_range), isReverse(_isReverse) {};
   std::string output(int level) const;
 };
 
@@ -284,6 +289,20 @@ private:
 public:
   CppExitStmt(CppExpr* _cCond = nullptr)
       : CppStmt(nullptr), cCond(_cCond) {};
+  std::string output(int level) const;
+};
+
+class CppBlockStmt : public CppStmt {
+private:
+  CppSeqStmt* stmts;
+  std::vector<Operand*> declvec;
+
+public:
+  CppBlockStmt(Function* _func, CppSeqStmt* _stmts)
+      : CppStmt(_func), stmts(_stmts) {};
+  void addOps(Operand* _op) {
+    declvec.push_back(_op);
+  }
   std::string output(int level) const;
 };
 

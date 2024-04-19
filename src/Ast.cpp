@@ -139,8 +139,22 @@ void Id::dump(int level) {
 }
 
 void Id::genCppCode(Node *parent) {
-  // 1. For simple id
-  cExpr = new CppId(se);
+  if (name) {
+    name->genCppCode(parent);
+    CppId *id = dynamic_cast<CppId *>(name->getCppExpr());
+    expr->genCppCode(parent);
+    CppExpr *cExpr = expr->getCppExpr();
+    ExprNode *temp = dynamic_cast<ExprNode *>(expr->getNext());
+    while (temp) {
+      temp->genCppCode(parent);
+      cExpr->setNext(temp->getCppExpr());
+      temp = dynamic_cast<ExprNode *>(temp->getNext());
+    }
+    cExpr = new CppId(id, cExpr);
+  } else {
+    // for simple id
+    cExpr = new CppId(se);
+  }
 }
 
 void Constant::dump(int level) {
@@ -374,6 +388,21 @@ void ObjectDeclStmt::genCppCode(Node *parent) {
     }
   } else {
     // declarations in main function
+    CppBlockStmt *block = dynamic_cast<CppBlockStmt *>(
+        dynamic_cast<StmtNode *>(parent)->getCppStmt());
+    CppExpr *initExpr = nullptr;
+    if (init) {
+      init->genCppCode(parent);
+      initExpr = init->getCppExpr();
+    }
+    // Declared objects
+    DefId *temp = id;
+    while (temp) {
+      Operand *op =
+          new Operand(temp->getSymbolEntry(), temp->getType(), initExpr);
+      block->addOps(op);
+      temp = dynamic_cast<DefId *>(temp->getNext());
+    }
   }
 }
 
@@ -622,11 +651,11 @@ void Choice::dump(int level) {
 void Choice::genCppCode(Node *parent) {
   if (expr) {
     expr->genCppCode(parent);
-    cStmt = new CppChoice(dynamic_cast<CppExpr*>(expr->getCppExpr()));
+    cStmt = new CppChoice(dynamic_cast<CppExpr *>(expr->getCppExpr()));
   }
   if (discret) {
     discret->genCppCode(parent);
-    cStmt = new CppChoice(dynamic_cast<CppRange*>(discret->getCppStmt()));
+    cStmt = new CppChoice(dynamic_cast<CppRange *>(discret->getCppStmt()));
   }
   if (others) {
     cStmt = new CppChoice(true);
@@ -727,8 +756,12 @@ void Iteration::genCppCode(Node *parent) {
   if (iter) {
     iter->genCppCode(parent);
     range->genCppCode(parent);
+    bool reverse = false;
+    if (sign)
+      reverse = true;
     cStmt = new CppIteration(iter->getSymbol(),
-                             dynamic_cast<CppRange *>(range->getCppStmt()));
+                             dynamic_cast<CppRange *>(range->getCppStmt()),
+                             reverse);
   }
 }
 
@@ -777,7 +810,18 @@ void Block::dump(int level) {
   stmts->dump(level + 4);
 }
 
-void Block::genCppCode(Node *parent) {}
+void Block::genCppCode(Node *parent) {
+  stmts->genCppCode(this);
+  if (dynamic_cast<ProcedureDef *>(parent)) {
+    Function *func = builder->getCurrFunc();
+    cStmt =
+        new CppBlockStmt(func, dynamic_cast<CppSeqStmt *>(stmts->getCppStmt()));
+  } else {
+    cStmt = new CppBlockStmt(nullptr,
+                             dynamic_cast<CppSeqStmt *>(stmts->getCppStmt()));
+  }
+  decl->genCppCode(this);
+}
 
 void Ast::dump() {
   printAstLog("Program dump");
