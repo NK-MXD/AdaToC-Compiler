@@ -762,6 +762,9 @@ void Iteration::genCppCode(Node *parent) {
     cStmt = new CppIteration(iter->getSymbol(),
                              dynamic_cast<CppRange *>(range->getCppStmt()),
                              reverse);
+  } else {
+    cond->genCppCode(parent);
+    cStmt = new CppIteration(cond->getCppExpr());
   }
 }
 

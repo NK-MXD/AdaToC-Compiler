@@ -217,9 +217,12 @@ private:
   CppRange *range;
   bool isReverse;
 
+  CppExpr* cond;
+
 public:
   CppIteration(SymbolEntry *_se, CppRange *_range, bool _isReverse = false)
       : CppStmt(nullptr), se(_se), range(_range), isReverse(_isReverse) {};
+  CppIteration(CppExpr* _cond) : CppStmt(nullptr), cond(_cond) {};
   std::string output(int level) const;
 };
 

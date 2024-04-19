@@ -251,14 +251,18 @@ std::string CppIfStmt::output(int level) const {
 
 std::string CppIteration::output(int level) const {
   char res[200];
-  if (isReverse) {
-    sprintf(res, "for(int %s = %s; %s >= %s; %s--)", se->dump().c_str(),
-            range->getUpper()->output().c_str(), se->dump().c_str(),
-            range->getLow()->output().c_str(), se->dump().c_str());
+  if (cond) {
+    sprintf(res, "while(%s)", cond->output().c_str());
   } else {
-    sprintf(res, "for(int %s = %s; %s <= %s; %s++)", se->dump().c_str(),
-            range->getLow()->output().c_str(), se->dump().c_str(),
-            range->getUpper()->output().c_str(), se->dump().c_str());
+    if (isReverse) {
+      sprintf(res, "for(int %s = %s; %s >= %s; %s--)", se->dump().c_str(),
+              range->getUpper()->output().c_str(), se->dump().c_str(),
+              range->getLow()->output().c_str(), se->dump().c_str());
+    } else {
+      sprintf(res, "for(int %s = %s; %s <= %s; %s++)", se->dump().c_str(),
+              range->getLow()->output().c_str(), se->dump().c_str(),
+              range->getUpper()->output().c_str(), se->dump().c_str());
+    }
   }
   return std::string(res);
 }
