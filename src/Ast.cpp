@@ -143,14 +143,14 @@ void Id::genCppCode(Node *parent) {
     name->genCppCode(parent);
     CppId *id = dynamic_cast<CppId *>(name->getCppExpr());
     expr->genCppCode(parent);
-    CppExpr *cExpr = expr->getCppExpr();
+    CppExpr *paramExpr = expr->getCppExpr();
     ExprNode *temp = dynamic_cast<ExprNode *>(expr->getNext());
     while (temp) {
       temp->genCppCode(parent);
       cExpr->setNext(temp->getCppExpr());
       temp = dynamic_cast<ExprNode *>(temp->getNext());
     }
-    cExpr = new CppId(id, cExpr);
+    cExpr = new CppId(id, paramExpr);
   } else {
     // for simple id
     cExpr = new CppId(se);
@@ -357,7 +357,10 @@ void ProcedureDecl::dump(int level) {
   spec->dump(level + 4);
 }
 
-void ProcedureDecl::genCppCode(Node *parent) {}
+void ProcedureDecl::genCppCode(Node *parent) {
+  Function *curFunc = builder->getCurrFunc();
+  cStmt = new CppFuncDecl(curFunc, getProcedureSymbol());
+}
 
 void ObjectDeclStmt::dump(int level) {
   printAstLog("ObjectDeclStmt dump");

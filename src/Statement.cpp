@@ -31,23 +31,14 @@ void CppStmt::setNext(CppStmt *node) {
 }
 
 CppStmt::CppStmt(Function *func) {
-  if (func)
+  if (func) {
     func->insertStmts(this);
+  }
 }
 
 std::string CppId::output() const {
   if (name) {
-    std::string res = name->output() + "(";
-    CppExpr *temp = expr;
-    while (temp) {
-      res += temp->output();
-      temp = dynamic_cast<CppExpr *>(temp->getNext());
-      if (expr) {
-        res += ", ";
-      }
-    }
-    res += ")";
-    return res;
+    return name->output();
   } else {
     return se->dump();
   }
@@ -207,7 +198,17 @@ std::string CppAssignStmt::output(int level) const {
 
 std::string CppCallStmt::output(int level) const {
   char temp[200];
-  sprintf(temp, "%*c%s::main();\n", level, ' ', cId->output().c_str());
+  std::string paramStr;
+  if (cId->getParam()) {
+    CppExpr *temp = cId->getParam();
+    paramStr += temp->output();
+    if (temp->getNext()) {
+      paramStr += ", ";
+      temp = dynamic_cast<CppExpr *>(temp->getNext());
+    }
+  }
+  sprintf(temp, "%*c%s::main(%s);\n", level, ' ', cId->output().c_str(),
+          paramStr.c_str());
   return std::string(temp);
 }
 
@@ -381,4 +382,15 @@ std::string CppBlockStmt::output(int level) const {
   }
   res += stmts->output(level);
   return res;
+}
+
+CppFuncDecl::CppFuncDecl(Function *_func, SymbolEntry *_se) : CppStmt(nullptr) {
+  se = _se;
+  _func->insertDecls(this);
+}
+
+std::string CppFuncDecl::output(int level) const {
+  char res[50];
+  sprintf(res, "%*cclass %s;", level, ' ', se->dump().c_str());
+return std::string(res);
 }

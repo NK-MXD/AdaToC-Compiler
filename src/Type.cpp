@@ -39,6 +39,7 @@ std::string NaturalType::dump() {
 }
 
 std::string NaturalType::toCppStr() {
+    AdaNatural::getInstance();
     return "AdaNatural";
 }
 
