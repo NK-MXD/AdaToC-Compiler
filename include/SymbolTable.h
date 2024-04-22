@@ -57,6 +57,7 @@ public:
   std::string dump();
   void setType(Type* _type) { type = _type; };
   void setConst() { isConst = true; };
+  bool getConst() { return isConst; };
   int getScope() const { return scope; };
 };
 

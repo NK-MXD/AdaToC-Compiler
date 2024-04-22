@@ -52,4 +52,22 @@ public:
   static void output();
 };
 
+class AdaString {
+private:
+  std::string value;
+
+public:
+  static bool isUsed;
+  AdaString() = default;
+  static AdaString getInstance() {
+    AdaString i;
+    AdaString::isUsed = true;
+    return i;
+  }
+  AdaString(std::string _value): value(_value) {};
+  std::string getValue() { return value; }
+  void setValue(std::string _value) { value = _value; }
+  static void output();
+};
+
 #endif

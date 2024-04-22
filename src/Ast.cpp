@@ -142,15 +142,19 @@ void Id::genCppCode(Node *parent) {
   if (name) {
     name->genCppCode(parent);
     CppId *id = dynamic_cast<CppId *>(name->getCppExpr());
-    expr->genCppCode(parent);
-    CppExpr *paramExpr = expr->getCppExpr();
-    ExprNode *temp = dynamic_cast<ExprNode *>(expr->getNext());
-    while (temp) {
-      temp->genCppCode(parent);
-      cExpr->setNext(temp->getCppExpr());
-      temp = dynamic_cast<ExprNode *>(temp->getNext());
+    if (expr) {
+      expr->genCppCode(parent);
+      CppExpr *paramExpr = expr->getCppExpr();
+      ExprNode *temp = dynamic_cast<ExprNode *>(expr->getNext());
+      while (temp) {
+        temp->genCppCode(parent);
+        cExpr->setNext(temp->getCppExpr());
+        temp = dynamic_cast<ExprNode *>(temp->getNext());
+      }
+      cExpr = new CppId(id, paramExpr);
+    } else {
+      cExpr = new CppId(id, attr);
     }
-    cExpr = new CppId(id, paramExpr);
   } else {
     // for simple id
     cExpr = new CppId(se);
@@ -310,8 +314,12 @@ void DefId::dump(int level) {
   std::string name, type;
   name = id->dump();
   type = id->getType()->dump();
-  fprintf(yyout, "%*cDefId\tname: %s\ttype: %s\n", level, ' ', name.c_str(),
-          type.c_str());
+  std::string isConst = "false";
+  if(id->getConst()) {
+    isConst = "true";
+  }
+  fprintf(yyout, "%*cDefId\tname: %s\ttype: %s\tisConst: %s\n", level, ' ', name.c_str(),
+          type.c_str(), isConst.c_str());
   if (this->getNext())
     this->getNext()->dump(level);
 }
@@ -402,7 +410,7 @@ void ObjectDeclStmt::genCppCode(Node *parent) {
     DefId *temp = id;
     while (temp) {
       Operand *op =
-          new Operand(temp->getSymbolEntry(), temp->getType(), initExpr);
+          new Operand(temp->getSymbolEntry(), temp->getType(), temp->getConst() ,initExpr);
       block->addOps(op);
       temp = dynamic_cast<DefId *>(temp->getNext());
     }

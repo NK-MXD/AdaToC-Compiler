@@ -16,6 +16,7 @@ std::string CppUnit::getOpFullName(Function *func, Operand *op) {
 void CppUnit::output() const {
   AdaInteger::getInstance().output();
   AdaNatural::getInstance().output();
+  AdaString::getInstance().output();
 
   for (auto &func : funcList) {
     std::string temp = func->output(0);

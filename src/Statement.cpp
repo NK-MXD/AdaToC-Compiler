@@ -38,9 +38,32 @@ CppStmt::CppStmt(Function *func) {
 
 std::string CppId::output() const {
   if (name) {
-    return name->output();
+    if (expr) {
+      std::string paramStr;
+      CppExpr *temp = expr;
+      paramStr += temp->output();
+      if (temp->getNext()) {
+        paramStr += ", ";
+        temp = dynamic_cast<CppExpr *>(temp->getNext());
+      }
+      char res[50];
+      sprintf(res, "%s(%s)", name->output().c_str(), paramStr.c_str());
+      return std::string(res);
+    } else {
+      char res[50];
+      std::string className = name->output();
+      if (name->output() == "Integer") {
+        className = "AdaInteger";
+      }
+      sprintf(res, "%s::%s", className.c_str(), attr.c_str());
+      return std::string(res);
+    }
   } else {
-    return se->dump();
+    if (se->getType()->isProcedure()) {
+      return se->dump() + "::main";
+    } else {
+      return se->dump();
+    }
   }
 }
 
@@ -83,8 +106,8 @@ std::string CppBinaryExpr::output() const {
     opSignName = "-";
     break;
   case CppBinaryExpr::SINGLEAND:
-    // Fix: add rules of it
-    opSignName = "&";
+    // HL: maybe string
+    opSignName = "+";
     break;
     //   case CppBinaryExpr::IN:
     //     opSignName = "in";
@@ -199,15 +222,10 @@ std::string CppAssignStmt::output(int level) const {
 std::string CppCallStmt::output(int level) const {
   char temp[200];
   std::string paramStr;
-  if (cId->getParam()) {
-    CppExpr *temp = cId->getParam();
-    paramStr += temp->output();
-    if (temp->getNext()) {
-      paramStr += ", ";
-      temp = dynamic_cast<CppExpr *>(temp->getNext());
-    }
+  if (!cId->getParam()) {
+    paramStr = "()";
   }
-  sprintf(temp, "%*c%s::main(%s);\n", level, ' ', cId->output().c_str(),
+  sprintf(temp, "%*c%s%s;\n", level, ' ', cId->output().c_str(),
           paramStr.c_str());
   return std::string(temp);
 }
@@ -372,11 +390,15 @@ std::string CppBlockStmt::output(int level) const {
   for (auto op : declvec) {
     char temp[200];
     CppExpr *init = op->getInit();
+    std::string typeName = op->typeName();
+    if (op->getConst()) {
+      typeName = "const " + typeName;
+    }
     if (init)
-      sprintf(temp, "%*c%s %s = %s;\n", level, ' ', op->typeName().c_str(),
+      sprintf(temp, "%*c%s %s = %s;\n", level, ' ', typeName.c_str(),
               op->getName().c_str(), init->output().c_str());
     else
-      sprintf(temp, "%*c%s %s;\n", level, ' ', op->typeName().c_str(),
+      sprintf(temp, "%*c%s %s;\n", level, ' ', typeName.c_str(),
               op->getName().c_str());
     res += temp;
   }
@@ -392,5 +414,5 @@ CppFuncDecl::CppFuncDecl(Function *_func, SymbolEntry *_se) : CppStmt(nullptr) {
 std::string CppFuncDecl::output(int level) const {
   char res[50];
   sprintf(res, "%*cclass %s;", level, ' ', se->dump().c_str());
-return std::string(res);
+  return std::string(res);
 }

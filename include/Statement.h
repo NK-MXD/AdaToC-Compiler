@@ -60,10 +60,12 @@ private:
   SymbolEntry *se;
   CppId *name;
   CppExpr *expr;
+  std::string attr;
 
 public:
   CppId(SymbolEntry *_se) : se(_se){};
   CppId(CppId *_id, CppExpr *_expr) : name(_id), expr(_expr){};
+  CppId(CppId *_id, std::string _attr) : name(_id), attr(_attr){};
   CppExpr *getParam() { return expr; }
   std::string output() const;
 };
@@ -218,7 +220,7 @@ private:
   CppRange *range;
   bool isReverse;
 
-  CppExpr *cond;
+  CppExpr *cond = nullptr;
 
 public:
   CppIteration(SymbolEntry *_se, CppRange *_range, bool _isReverse = false)

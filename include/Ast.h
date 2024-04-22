@@ -206,6 +206,7 @@ public:
   Type *getType() { return id->getType(); }
   void setType(Type *_type) { id->setType(_type); }
   void setConst() { id->setConst(); }
+  bool getConst() { return id->getConst(); }
   void dump(int level);
   void genCppCode(Node *parent);
 };
