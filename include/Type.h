@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "CppType.h"
 
 class SymbolEntry;
 

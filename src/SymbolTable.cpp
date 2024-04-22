@@ -25,7 +25,8 @@ std::string ConstantSymbolEntry::dump() {
     buffer << value;
     return buffer.str();
   } else if (type->isString()) {
-    return str;
+    std::string res = "\"" + str + "\"";
+    return res;
   } else if (type->isBoolean()) {
     if (bvalue)
       return std::string("true");

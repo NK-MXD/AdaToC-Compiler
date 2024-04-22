@@ -2,11 +2,11 @@
 
 extern FILE *yyout;
 
-std::string CppUnit::getOpFullName(Function* func, Operand* op) {
+std::string CppUnit::getOpFullName(Function *func, Operand *op) {
   std::string fullName = func->getName() + "::" + op->getName();
-  Function* temp = func;
-  Function* prev;
-  while(prev = temp->getPrev()) {
+  Function *temp = func;
+  Function *prev;
+  while (prev = temp->getPrev()) {
     fullName = prev->getName() + "::" + fullName;
     temp = prev;
   }
@@ -15,6 +15,9 @@ std::string CppUnit::getOpFullName(Function* func, Operand* op) {
 
 void CppUnit::output() const {
   AdaInteger::getInstance().output();
+  AdaNatural::getInstance().output();
+  AdaString::getInstance().output();
+
   for (auto &func : funcList) {
     std::string temp = func->output(0);
     fprintf(yyout, "%s", temp.c_str());

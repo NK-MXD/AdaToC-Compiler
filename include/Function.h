@@ -48,6 +48,7 @@ public:
   bool isFunction() { return getType()->isFunction(); }
   bool haveDeclOp() const { return !declOps.empty(); }
   void insertStmts(CppStmt *stmt) { stats.push_back(stmt); }
+  void insertDecls(CppStmt *decl) { decls.push_back(decl); }
   std::string getDeclStr(int level) const;
   std::string getStmtStr(int level) const;
   std::string getParamStr() const;

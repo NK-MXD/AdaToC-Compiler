@@ -1,8 +1,8 @@
 #ifndef __ADA2C_STATEMENT_H__
 #define __ADA2C_STATEMENT_H__
 
-#include "SymbolTable.h"
 #include "Operand.h"
+#include "SymbolTable.h"
 #include <cstring>
 #include <iostream>
 using namespace std;
@@ -18,7 +18,7 @@ private:
 
 public:
   CppNode();
-  virtual ~CppNode() {} 
+  virtual ~CppNode() {}
   int getSeq() const { return seq; };
   void setNext(CppNode *node);
   CppNode *getNext() const { return next; };
@@ -58,12 +58,15 @@ public:
 class CppId : public CppExpr {
 private:
   SymbolEntry *se;
-  CppId* name;
+  CppId *name;
   CppExpr *expr;
+  std::string attr;
 
 public:
   CppId(SymbolEntry *_se) : se(_se){};
-  CppId(CppId *_id, CppExpr* _expr) : name(_id), expr(_expr) {};
+  CppId(CppId *_id, CppExpr *_expr) : name(_id), expr(_expr){};
+  CppId(CppId *_id, std::string _attr) : name(_id), attr(_attr){};
+  CppExpr *getParam() { return expr; }
   std::string output() const;
 };
 
@@ -141,12 +144,12 @@ public:
 
 class CppSeqStmt : public CppStmt {
 private:
-  CppStmt* stmt;
+  CppStmt *stmt;
 
 public:
   CppSeqStmt() : CppStmt(nullptr){};
   CppSeqStmt(Function *func) : CppStmt(func){};
-  CppSeqStmt(Function *func, CppStmt* _stmt) : CppStmt(func), stmt(_stmt) {};
+  CppSeqStmt(Function *func, CppStmt *_stmt) : CppStmt(func), stmt(_stmt){};
   std::string output(int level) const;
 };
 
@@ -176,7 +179,7 @@ private:
   CppId *cId;
 
 public:
-  CppCallStmt(Function *_func, CppId *_cId) : CppStmt(_func) { cId = _cId; };
+  CppCallStmt(Function *_func, CppId *_cId) : CppStmt(_func), cId(_cId){};
   std::string output(int level) const;
 };
 
@@ -217,12 +220,12 @@ private:
   CppRange *range;
   bool isReverse;
 
-  CppExpr* cond;
+  CppExpr *cond = nullptr;
 
 public:
   CppIteration(SymbolEntry *_se, CppRange *_range, bool _isReverse = false)
-      : CppStmt(nullptr), se(_se), range(_range), isReverse(_isReverse) {};
-  CppIteration(CppExpr* _cond) : CppStmt(nullptr), cond(_cond) {};
+      : CppStmt(nullptr), se(_se), range(_range), isReverse(_isReverse){};
+  CppIteration(CppExpr *_cond) : CppStmt(nullptr), cond(_cond){};
   std::string output(int level) const;
 };
 
@@ -276,36 +279,42 @@ public:
 
 class CppCaseStmt : public CppStmt {
 private:
-  CppExpr* cExpr;
-  CppAlternative* alter;
+  CppExpr *cExpr;
+  CppAlternative *alter;
 
 public:
-  CppCaseStmt(Function* _func, CppExpr* _cExpr, CppAlternative* _alter)
+  CppCaseStmt(Function *_func, CppExpr *_cExpr, CppAlternative *_alter)
       : CppStmt(_func), cExpr(_cExpr), alter(_alter){};
   std::string output(int level) const;
 };
 
 class CppExitStmt : public CppStmt {
 private:
-  CppExpr* cCond;
+  CppExpr *cCond;
 
 public:
-  CppExitStmt(CppExpr* _cCond = nullptr)
-      : CppStmt(nullptr), cCond(_cCond) {};
+  CppExitStmt(CppExpr *_cCond = nullptr) : CppStmt(nullptr), cCond(_cCond){};
   std::string output(int level) const;
 };
 
 class CppBlockStmt : public CppStmt {
 private:
-  CppSeqStmt* stmts;
-  std::vector<Operand*> declvec;
+  CppSeqStmt *stmts;
+  std::vector<Operand *> declvec;
 
 public:
-  CppBlockStmt(Function* _func, CppSeqStmt* _stmts)
-      : CppStmt(_func), stmts(_stmts) {};
-  void addOps(Operand* _op) {
-    declvec.push_back(_op);
-  }
+  CppBlockStmt(Function *_func, CppSeqStmt *_stmts)
+      : CppStmt(_func), stmts(_stmts){};
+  void addOps(Operand *_op) { declvec.push_back(_op); }
+  std::string output(int level) const;
+};
+
+class CppFuncDecl: public CppStmt {
+private:
+  SymbolEntry* se;
+
+public:
+  CppFuncDecl(Function *_func, SymbolEntry* _se);
   std::string output(int level) const;
 };
 

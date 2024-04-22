@@ -31,7 +31,7 @@ std::string StringType::dump() {
 }
 
 std::string StringType::toCppStr() {
-    return "string";
+    return "AdaString";
 }
 
 std::string NaturalType::dump() {
@@ -39,6 +39,7 @@ std::string NaturalType::dump() {
 }
 
 std::string NaturalType::toCppStr() {
+    AdaNatural::getInstance();
     return "AdaNatural";
 }
 
