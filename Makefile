@@ -32,10 +32,10 @@ TESTCASE_NUM = $(words $(TESTCASE))
 OUTPUT_TOKEN = $(addsuffix .toks, $(basename $(TESTCASE)))
 OUTPUT_AST = $(addsuffix .ast, $(basename $(TESTCASE)))
 OUTPUT_ADB1 = $(shell find $(TEST_PATH) -name "b__*.adb")
-OUTPUT_ADB2 = $(filter %.toks %.log %.ads %.ali %.o %.stderr %.stdout %.bexch %.bin, $(wildcard $(TEST_PATH)/*))
+OUTPUT_ADB2 = $(filter %.toks %.ast %.log %.ads %.ali %.o %.stderr %.stdout %.bexch %.bin %.cpp, $(wildcard $(TEST_PATH)/*))
 
 OUTPUT_EXAMPLE1 = $(shell find $(EXAMPLE_PATH)/src -name "b__*.adb")
-OUTPUT_EXAMPLE2 = $(filter %.ads %.ali %.o %.stderr %.stdout %.bexch %.bin, $(wildcard $(EXAMPLE_PATH)/src/*))
+OUTPUT_EXAMPLE2 = $(filter %.ads %.ali %.o %.stderr %.stdout %.bexch %.bin %.cpp %.ast %.toks, $(wildcard $(EXAMPLE_PATH)/src/*))
 
 .phony:all app example run clean-run test-example
 
@@ -91,8 +91,12 @@ test-all:app
 	do
 		FILE=$${file##*/}
 		TOKS=$${file%.*}.toks
+		AST=$${file%.*}.ast
+		CPP=$${file%.*}.cpp
 		LOG=$${file%.*}.log
 		$(BINARY) $${file} -t -o $${TOKS}
+		$(BINARY) $${file} -a -o $${AST}
+		$(BINARY) $${file} -c -o $${CPP}
 		if [ $$? != 0 ]; then
 			echo "\033[1;31mFAIL:\033[0m $${FILE}\t\033[1;31mCompiler Error\033[0m"
 		else
@@ -111,7 +115,9 @@ test-all:app
 	:
 
 test-example:app
-	$(BINARY) $(EXAMPLE_PATH)/src/example.adb -a
+	$(BINARY) $(EXAMPLE_PATH)/src/example.adb -t -o $(EXAMPLE_PATH)/src/example.toks
+	$(BINARY) $(EXAMPLE_PATH)/src/example.adb -a -o $(EXAMPLE_PATH)/src/example.ast
+	$(BINARY) $(EXAMPLE_PATH)/src/example.adb -c -o $(EXAMPLE_PATH)/src/example.cpp
 
 run:
 	@gprbuild -p $(EXAMPLE_PATH)/default.gpr -Xver=opt
@@ -120,7 +126,7 @@ run:
 clean:
 	@rm -rf $(BUILD_PATH) $(LEXER)
 
-clean-test:
+clean-example:
 	@rm -rf $(OUTPUT_EXAMPLE1) $(OUTPUT_EXAMPLE2)
 
 clean-all:clean clean-test

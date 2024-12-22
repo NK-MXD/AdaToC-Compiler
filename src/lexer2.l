@@ -198,7 +198,7 @@ BASED_LITERAL           {BASE}#{BASED_INTEGER}(\.{BASED_INTEGER})?#{EXPONENT}?
 %%
 "."                     return('.');
 "<"                     return('<');
-"("                     return('(');
+"("                     return('('); 
 "+"                     return('+');
 "|"                     return('|');
 "&"                     return('&');
