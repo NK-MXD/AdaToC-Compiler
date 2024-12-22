@@ -1,9 +1,0 @@
-project main is
---    for Object_Dir use "obj";
-   for Main use ("greet.adb");
-
-   package Compiler is
-      for Default_Switches ("Ada") use ("-g");
-   end Compiler;
-
-end main;

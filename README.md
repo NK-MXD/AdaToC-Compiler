@@ -7,7 +7,9 @@ The project is to implement transform from high-level language Ada to high-level
 - 2023.11.1 ~ 2023.11.31: Building benchmark of the program.
 - 2023.12.1 ~ 2023.12.31: Exploring the implement frame of Ada to C.
 - 2024.1.1 ~ 2024.2.29: Try to implement the synax analysize of Ada to Ast and confirm whether the implementation from ir to C is feasible.
-- 2024.3.1 ~ 2024.3.31: New method.
+- 2024.3.1 ~ 2024.3.31: Build Mid-end.
+- 2024.4.1 ~ 2024.4.30: Complete PhaseOne all cases.
+- 2024.5.1 ~ 2024.5.31: Graduation Reply.
 
 ## How to Run Cases
 
